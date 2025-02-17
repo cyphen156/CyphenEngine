@@ -67,5 +67,6 @@
   <ItemGroup>
     <Text Include="DevLog\25.02.11.txt" />
     <Text Include="DevLog\Todos.txt" />
+    <Text Include="DevLog\25.02.17.txt" />
   </ItemGroup>
 </Project>

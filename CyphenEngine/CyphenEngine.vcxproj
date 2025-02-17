@@ -156,6 +156,7 @@
   </ItemGroup>
   <ItemGroup>
     <Text Include="DevLog\25.02.11.txt" />
+    <Text Include="DevLog\25.02.17.txt" />
     <Text Include="DevLog\Todos.txt" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

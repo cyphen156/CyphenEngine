@@ -3,10 +3,10 @@
 #define NOMINMAX
 
 #define SINGLE(type);	public:\
-							static type* GetInst()\
+							static type* GetInstance()\
 							{\
-								static type mgr;\
-								return &mgr;\
+								static type typeInstance;\
+								return &typeInstance;\
 							}\
 						private:\
 							type();\

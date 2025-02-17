@@ -3,16 +3,16 @@
 #2. Project Init
 
 #3. 작성된 코드
-pch.h				//	미리 컴파일 된 헤더,
+pch.h				:	미리 컴파일 된 헤더,
 						메모리 누수체크기능 포함,
 						framework.h 헤더 포함,
 						define.h 헤더 포함,
 						std 네임스페이스 사용설정
 
-define.h			//	전역 매크로,
+define.h			:	전역 매크로,
 						싱글턴 매크로 작성
 
-types.h				//	enum과 같은 기본 자료형역할을 할 전역 타입용 헤더
+types.h				:	enum과 같은 기본 자료형역할을 할 전역 타입용 헤더
 
 #4. 업데이트 된 코드
 README.md			:	프로젝트의 설계 원칙 기술

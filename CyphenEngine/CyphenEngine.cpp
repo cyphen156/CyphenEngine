@@ -12,7 +12,8 @@ HWND g_hMainWindow = nullptr;                   // 엔진 자체의 윈도우 ->
 WCHAR szTitle[MAX_LOADSTRING];                  // 제목 표시줄 텍스트입니다.
 WCHAR szWindowClass[MAX_LOADSTRING];            // 기본 창 클래스 이름입니다.
 
-void EngineRun();
+void InitEngine();
+void RunEngine();
 
 // 이 코드 모듈에 포함된 함수의 선언을 전달합니다:
 ATOM                MyRegisterClass(HINSTANCE hInstance);
@@ -43,6 +44,8 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     {
         return FALSE;
     }
+    
+    InitEngine();
 
     HACCEL hAccelTable = LoadAccelerators(hInstance, MAKEINTRESOURCE(IDC_CYPHENENGINE));
 
@@ -65,7 +68,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
         }
         else
         {
-            EngineRun();
+            RunEngine();
         }
     }
 #ifdef _DEBUG
@@ -73,12 +76,6 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 #endif
     return (int) msg.wParam;
 }
-
-void EngineRun()
-{
-    //Core::GetInst()->progress();
-}
-
 //
 //  함수: MyRegisterClass()
 //
@@ -199,4 +196,20 @@ INT_PTR CALLBACK About(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
         break;
     }
     return (INT_PTR)FALSE;
+}
+
+/**
+ * @ 커스텀 코드 영역
+ *
+ * 엔진 코어의 이니시에이팅을 담당
+ */
+void InitEngine()
+{
+    Core::GetInstance()->Init(g_hMainWindow);
+}
+
+// 엔진 실행
+void RunEngine()
+{
+    Core::GetInstance()->Progress();
 }
