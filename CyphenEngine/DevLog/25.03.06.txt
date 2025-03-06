@@ -1,0 +1,31 @@
+#1. 프로젝트 구조 설계
+1_1 불필요한 폴더 삭제
+
+#2. 기본 렌더링 머신으로 DX11+선택/DX12은 3년 뒤에 공부
+	-> AddOn에서 Core로 구조 변경
+
+#3. 추가된 코드
+AnimationMgr		:	애니메이터가 만든 애니메이션을 관리
+Animator.cpp		:	불러온 리소스를 활용해 애니메이션을 만들어주는 클래스
+AudioMgr.cpp		:	사운드 관리
+EventMgr.cpp		:	이벤트 처리 관리, 엔진 실행을 제외한 모든 것들은 이벤트 매니저를 통해 관리
+InputMgr.cpp		:	사용자 입력 처리 관리
+NetworkMgr.cpp		:	서버와 클라이언트의 통신을 관리할 주체
+PathMgr.cpp			:	파일 경로를 관리, 참고로 TCP포트도 파일이다.
+PhysicsEngine.cpp	:	물리 처리를 담당할 서브 엔진
+Renderer.cpp		:	화면에 렌더링 할 서브 엔진
+ResourceMgr.cpp		:	PathMgr과 주로 연계되어 모든 리소스들을 관리할 주체
+TimeMgr.cpp			:	게임의 프레임과 시간동기화를 위한 관리자
+WindowMgr.cpp		:	화면 내의 창 인터페이스를 관리할 매니저
+UIMgr.cpp			:	사용자 UI를 처리
+Logger.cpp			:	영구적인 기록을 관리할 로거
+
+
+#4. 업데이트 된 코드
+define.h			:	memcpy, memmove로 인한 싱글턴 객체 생성 방지
+
+CyphenEngine.cpp	:	Init() 함수 수정 :: FAILED(hr)조건 체크를 통한 프로그램 종료 제어	
+Core.cpp			:	1. 각 매니저 Init함수에 등록
+						2. Pause()함수를 통한 엔진 일시중지 && 인풋 매니저를 제외한 모든 클래스 일시정지
+						3. 소멸자에 각 매니저 등록
+#5.	이제 부터는 부득이한 경우가 아니라면 CyphenEngine.cpp, Core.cpp는 만지지 않는다.

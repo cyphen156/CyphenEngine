@@ -8,8 +8,10 @@
 #define new new(_NORMAL_BLOCK, __FILE__, __LINE__)
 #endif
 
+#include <iostream>
 #include "framework.h"
 #include "define.h"
+#include "types.h"
 
 using namespace std;
 #endif // PCH_H

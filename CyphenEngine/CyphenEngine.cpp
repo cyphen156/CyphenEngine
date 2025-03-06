@@ -54,22 +54,26 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     // 기본 메시지 루프입니다:
     while (1)
     {
+        // 메세지 루프는 더이상 사용하지 않는다.
+        // --> 인풋 매니저를 통해 관리한다
+        // Core::GetInstance()->GetEngineStatus() != Status::Stopped
         if (PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE))
         {
             if (msg.message == WM_QUIT)
             {
                 break;
             }
-            /*if (!TranslateAccelerator(msg.hwnd, hAccelTable, &msg))
-            {*/
+            if (!TranslateAccelerator(msg.hwnd, hAccelTable, &msg))
+            {
             TranslateMessage(&msg);
             DispatchMessage(&msg);
-            //}
+            }
         }
         else
         {
             RunEngine();
         }
+        //RunEngine();
     }
 #ifdef _DEBUG
     _ASSERT(_CrtCheckMemory());
@@ -205,7 +209,11 @@ INT_PTR CALLBACK About(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
  */
 void InitEngine()
 {
-    Core::GetInstance()->Init(g_hMainWindow);
+    HRESULT hr = Core::GetInstance()->Init(g_hMainWindow);
+    if (FAILED(hr))
+    {
+        exit(1);
+    }
 }
 
 // 엔진 실행
