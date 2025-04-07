@@ -147,6 +147,7 @@
     <ClInclude Include="Core\NetworkMgr.h" />
     <ClInclude Include="Core\PhysicsEngine.h" />
     <ClInclude Include="Core\Renderer.h" />
+    <ClInclude Include="Core\RendererD3DX11.h" />
     <ClInclude Include="types.h" />
     <ClInclude Include="framework.h" />
     <ClInclude Include="pch.h" />
@@ -160,6 +161,7 @@
     <ClCompile Include="Core\Animator.cpp" />
     <ClCompile Include="Core\AudioMgr.cpp" />
     <ClCompile Include="Core\Core.cpp" />
+    <ClCompile Include="Core\RendererD3DX11.cpp" />
     <ClCompile Include="CyphenEngine.cpp" />
     <ClCompile Include="Core\PathMgr.cpp" />
     <ClCompile Include="Core\EventMgr.cpp" />
@@ -184,6 +186,7 @@
     <Text Include="DevLog\25.02.11.txt" />
     <Text Include="DevLog\25.02.17.txt" />
     <Text Include="DevLog\25.03.06.txt" />
+    <Text Include="DevLog\25.04.07.txt" />
     <Text Include="DevLog\Todos.txt" />
   </ItemGroup>
   <ItemGroup>

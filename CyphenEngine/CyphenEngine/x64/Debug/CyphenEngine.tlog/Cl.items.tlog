@@ -2,6 +2,7 @@ C:\Project\CyphenEngine\CyphenEngine\Core\AnimationMgr.cpp;C:\Project\CyphenEngi
 C:\Project\CyphenEngine\CyphenEngine\Core\Animator.cpp;C:\Project\CyphenEngine\CyphenEngine\CyphenEngine\x64\Debug\Animator.obj
 C:\Project\CyphenEngine\CyphenEngine\Core\AudioMgr.cpp;C:\Project\CyphenEngine\CyphenEngine\CyphenEngine\x64\Debug\AudioMgr.obj
 C:\Project\CyphenEngine\CyphenEngine\Core\Core.cpp;C:\Project\CyphenEngine\CyphenEngine\CyphenEngine\x64\Debug\Core.obj
+C:\Project\CyphenEngine\CyphenEngine\Core\RendererD3DX11.cpp;C:\Project\CyphenEngine\CyphenEngine\CyphenEngine\x64\Debug\RendererD3DX11.obj
 C:\Project\CyphenEngine\CyphenEngine\CyphenEngine.cpp;C:\Project\CyphenEngine\CyphenEngine\CyphenEngine\x64\Debug\CyphenEngine.obj
 C:\Project\CyphenEngine\CyphenEngine\Core\PathMgr.cpp;C:\Project\CyphenEngine\CyphenEngine\CyphenEngine\x64\Debug\PathMgr.obj
 C:\Project\CyphenEngine\CyphenEngine\Core\EventMgr.cpp;C:\Project\CyphenEngine\CyphenEngine\CyphenEngine\x64\Debug\EventMgr.obj

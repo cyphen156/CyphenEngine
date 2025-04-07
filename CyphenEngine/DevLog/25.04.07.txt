@@ -1,0 +1,12 @@
+#1. DirectX 11 초기화
+
+#2. Renderer모듈 개발 시작
+
+#3. 작성된 코드
+
+
+#4. 업데이트 된 코드
+types.h			:		enum class RendererType { DX11, DX12, ... GDI_PLUS, NONE == DX11}
+
+RendererDX11.h		:		DirectX 11 Init
+RendererDX11.cpp	:		DirectX 11 Init
