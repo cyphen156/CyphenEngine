@@ -133,47 +133,24 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="Core\AnimationMgr.h" />
-    <ClInclude Include="Core\Animator.h" />
-    <ClInclude Include="Core\AudioMgr.h" />
-    <ClInclude Include="Core\Core.h" />
+    <ClInclude Include="Core\Public\Core.h" />
     <ClInclude Include="define.h" />
     <ClInclude Include="CyphenEngine.h" />
-    <ClInclude Include="Core\PathMgr.h" />
-    <ClInclude Include="Core\ResourceMgr.h" />
-    <ClInclude Include="Core\EventMgr.h" />
-    <ClInclude Include="Core\InputMgr.h" />
-    <ClInclude Include="Core\TimeMgr.h" />
-    <ClInclude Include="Core\NetworkMgr.h" />
-    <ClInclude Include="Core\PhysicsEngine.h" />
-    <ClInclude Include="Core\Renderer.h" />
-    <ClInclude Include="Core\RendererD3DX11.h" />
+    <ClInclude Include="Core\Public\Event.h" />
+    <ClInclude Include="Core\Public\Input.h" />
+    <ClInclude Include="Core\Public\Logger.h" />
     <ClInclude Include="types.h" />
     <ClInclude Include="framework.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="Resource.h" />
     <ClInclude Include="targetver.h" />
-    <ClInclude Include="Core\WindowMgr.h" />
-    <ClInclude Include="Core\UIMgr.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Core\AnimationMgr.cpp" />
-    <ClCompile Include="Core\Animator.cpp" />
-    <ClCompile Include="Core\AudioMgr.cpp" />
-    <ClCompile Include="Core\Core.cpp" />
-    <ClCompile Include="Core\RendererD3DX11.cpp" />
+    <ClCompile Include="Core\Private\Core.cpp" />
     <ClCompile Include="CyphenEngine.cpp" />
-    <ClCompile Include="Core\PathMgr.cpp" />
-    <ClCompile Include="Core\EventMgr.cpp" />
-    <ClCompile Include="Core\InputMgr.cpp" />
-    <ClCompile Include="Core\NetworkMgr.cpp" />
+    <ClCompile Include="Core\Private\Event.cpp" />
+    <ClCompile Include="Core\Private\Input.cpp" />
     <ClCompile Include="pch.cpp" />
-    <ClCompile Include="Core\ResourceMgr.cpp" />
-    <ClCompile Include="Core\TimeMgr.cpp" />
-    <ClCompile Include="Core\PhysicsEngine.cpp" />
-    <ClCompile Include="Core\WindowMgr.cpp" />
-    <ClCompile Include="Core\Renderer.cpp" />
-    <ClCompile Include="Core\UIMgr.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="CyphenEngine.rc" />
@@ -187,6 +164,7 @@
     <Text Include="DevLog\25.02.17.txt" />
     <Text Include="DevLog\25.03.06.txt" />
     <Text Include="DevLog\25.04.07.txt" />
+    <Text Include="DevLog\25.06.04.txt" />
     <Text Include="DevLog\Todos.txt" />
   </ItemGroup>
   <ItemGroup>

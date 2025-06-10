@@ -2,7 +2,7 @@
 //
 #include "pch.h"
 #include "CyphenEngine.h"
-#include "Core/Core.h"
+#include "Core/Public/Core.h"
 
 #define MAX_LOADSTRING 100
 

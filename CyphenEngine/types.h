@@ -1,11 +1,14 @@
 #pragma once
 
-enum Status
+enum EngineStatus
 {
-	Stopped,
+	Initializing,
+	Ready,
+	Running,
 	Paused,
-
-	Running
+	Terminated,
+	
+	None
 };
 
 enum class RendererType
