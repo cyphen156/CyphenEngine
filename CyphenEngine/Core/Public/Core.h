@@ -6,14 +6,14 @@ class Core
 private:
 	HWND	m_hwnd;
 	HDC		m_hdc;
-	Status EngineStatus;
+	EngineStatus engineStatus;
 
 public:
 	int Init(HWND hwnd);
 	void Progress();
 	void Pause();
-	void SetEngineStatus(Status status);
-	Status GetEngineStatus();
+	void SetEngineStatus(EngineStatus status);
+	EngineStatus GetEngineStatus();
 
 protected:
 
