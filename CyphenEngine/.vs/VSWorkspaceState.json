@@ -1,0 +1,16 @@
+{
+  "ExpandedNodes": [
+    "",
+    "\\Editor",
+    "\\pch",
+    "\\Platform",
+    "\\Runtime",
+    "\\Runtime\\Common",
+    "\\Runtime\\Common\\Public",
+    "\\Runtime\\Core",
+    "\\Runtime\\Core\\Private",
+    "\\Runtime\\Core\\Public"
+  ],
+  "SelectedNode": "\\Editor\\Private",
+  "PreviewInSolutionExplorer": false
+}
