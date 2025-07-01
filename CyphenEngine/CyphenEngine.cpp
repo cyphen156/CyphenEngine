@@ -210,6 +210,7 @@ INT_PTR CALLBACK About(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 void InitEngine()
 {
     HRESULT hr = Core::GetInstance()->Init(g_hMainWindow);
+
     if (FAILED(hr))
     {
         exit(1);

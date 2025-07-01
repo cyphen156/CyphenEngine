@@ -139,6 +139,7 @@
     <ClInclude Include="Core\Public\Event.h" />
     <ClInclude Include="Core\Public\Input.h" />
     <ClInclude Include="Core\Public\Logger.h" />
+    <ClInclude Include="Core\Public\Engine.h" />
     <ClInclude Include="types.h" />
     <ClInclude Include="framework.h" />
     <ClInclude Include="pch.h" />
@@ -150,6 +151,7 @@
     <ClCompile Include="CyphenEngine.cpp" />
     <ClCompile Include="Core\Private\Event.cpp" />
     <ClCompile Include="Core\Private\Input.cpp" />
+    <ClCompile Include="Core\Private\Engine.cpp" />
     <ClCompile Include="pch.cpp" />
   </ItemGroup>
   <ItemGroup>
