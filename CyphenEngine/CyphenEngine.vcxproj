@@ -133,33 +133,37 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="Build\Public\define.h" />
+    <ClInclude Include="Build\Public\framework.h" />
+    <ClInclude Include="Build\Public\targetver.h" />
     <ClInclude Include="Core\Public\Core.h" />
-    <ClInclude Include="define.h" />
-    <ClInclude Include="CyphenEngine.h" />
     <ClInclude Include="Core\Public\Event.h" />
     <ClInclude Include="Core\Public\Input.h" />
     <ClInclude Include="Core\Public\Logger.h" />
     <ClInclude Include="Core\Public\Engine.h" />
-    <ClInclude Include="types.h" />
-    <ClInclude Include="framework.h" />
-    <ClInclude Include="pch.h" />
-    <ClInclude Include="Resource.h" />
-    <ClInclude Include="targetver.h" />
+    <ClInclude Include="Launch\Public\CyphenEngine.h" />
+    <ClInclude Include="Launch\Public\Resource.h" />
+    <ClInclude Include="pch\Public\pch.h" />
+    <ClInclude Include="Platform\Windows\Public\WindowManager.h" />
+    <ClInclude Include="Runtime\Common\Public\types.h" />
+    <ClInclude Include="Runtime\Core\Public\Core.h" />
+    <ClInclude Include="Runtime\Core\Public\Engine.h" />
+    <ClInclude Include="Runtime\Core\Public\Event.h" />
+    <ClInclude Include="Runtime\Core\Public\Input.h" />
+    <ClInclude Include="Build\Public\Logger.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Core\Private\Core.cpp" />
-    <ClCompile Include="CyphenEngine.cpp" />
     <ClCompile Include="Core\Private\Event.cpp" />
     <ClCompile Include="Core\Private\Input.cpp" />
     <ClCompile Include="Core\Private\Engine.cpp" />
-    <ClCompile Include="pch.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ResourceCompile Include="CyphenEngine.rc" />
-  </ItemGroup>
-  <ItemGroup>
-    <Image Include="CyphenEngine.ico" />
-    <Image Include="small.ico" />
+    <ClCompile Include="Launch\Private\CyphenEngine.cpp" />
+    <ClCompile Include="pch\Private\pch.cpp" />
+    <ClCompile Include="Platform\Windows\Private\WindowManager.cpp" />
+    <ClCompile Include="Runtime\Core\Private\Core.cpp" />
+    <ClCompile Include="Runtime\Core\Private\Engine.cpp" />
+    <ClCompile Include="Runtime\Core\Private\Event.cpp" />
+    <ClCompile Include="Runtime\Core\Private\Input.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="DevLog\25.02.11.txt" />
@@ -168,10 +172,19 @@
     <Text Include="DevLog\25.04.07.txt" />
     <Text Include="DevLog\25.06.04.txt" />
     <Text Include="DevLog\25.06.12.txt" />
+    <Text Include="DevLog\25.07.02.txt" />
     <Text Include="DevLog\Todos.txt" />
+    <Text Include="DevLog\25.07.03.txt" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="cpp.hint" />
+    <None Include="Build\Public\cpp.hint" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="Launch\Resource\CyphenEngine.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="Launch\Resource\CyphenEngine.ico" />
+    <Image Include="Launch\Resource\small.ico" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

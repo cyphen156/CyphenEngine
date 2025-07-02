@@ -3,48 +3,24 @@
   "WorkspaceRootPath": "C:\\Project\\CyphenEngine\\CyphenEngine\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{25519C91-15A4-4D25-8AC7-534E79B88DCA}|CyphenEngine.vcxproj|C:\\Project\\CyphenEngine\\CyphenEngine\\Core\\Private\\Core.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
-      "RelativeMoniker": "D:0:0:{25519C91-15A4-4D25-8AC7-534E79B88DCA}|CyphenEngine.vcxproj|solutionrelative:Core\\Private\\Core.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{25519C91-15A4-4D25-8AC7-534E79B88DCA}|CyphenEngine.vcxproj|C:\\Project\\CyphenEngine\\CyphenEngine\\CyphenEngine.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
-      "RelativeMoniker": "D:0:0:{25519C91-15A4-4D25-8AC7-534E79B88DCA}|CyphenEngine.vcxproj|solutionrelative:CyphenEngine.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{25519C91-15A4-4D25-8AC7-534E79B88DCA}|CyphenEngine.vcxproj|C:\\Project\\CyphenEngine\\CyphenEngine\\Core\\Public\\Core.h||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
-      "RelativeMoniker": "D:0:0:{25519C91-15A4-4D25-8AC7-534E79B88DCA}|CyphenEngine.vcxproj|solutionrelative:Core\\Public\\Core.h||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{25519C91-15A4-4D25-8AC7-534E79B88DCA}|CyphenEngine.vcxproj|C:\\Project\\CyphenEngine\\CyphenEngine\\Core\\Private\\Engine.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
-      "RelativeMoniker": "D:0:0:{25519C91-15A4-4D25-8AC7-534E79B88DCA}|CyphenEngine.vcxproj|solutionrelative:Core\\Private\\Engine.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{25519C91-15A4-4D25-8AC7-534E79B88DCA}|CyphenEngine.vcxproj|C:\\Project\\CyphenEngine\\CyphenEngine\\Core\\Public\\Engine.h||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
-      "RelativeMoniker": "D:0:0:{25519C91-15A4-4D25-8AC7-534E79B88DCA}|CyphenEngine.vcxproj|solutionrelative:Core\\Public\\Engine.h||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{25519C91-15A4-4D25-8AC7-534E79B88DCA}|CyphenEngine.vcxproj|C:\\Project\\CyphenEngine\\CyphenEngine\\define.h||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
-      "RelativeMoniker": "D:0:0:{25519C91-15A4-4D25-8AC7-534E79B88DCA}|CyphenEngine.vcxproj|solutionrelative:define.h||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
+      "AbsoluteMoniker": "D:0:0:{25519C91-15A4-4D25-8AC7-534E79B88DCA}|CyphenEngine.vcxproj|C:\\Project\\CyphenEngine\\CyphenEngine\\Launch\\Private\\CyphenEngine.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
+      "RelativeMoniker": "D:0:0:{25519C91-15A4-4D25-8AC7-534E79B88DCA}|CyphenEngine.vcxproj|solutionrelative:Launch\\Private\\CyphenEngine.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{25519C91-15A4-4D25-8AC7-534E79B88DCA}|CyphenEngine.vcxproj|C:\\Project\\CyphenEngine\\CyphenEngine\\DevLog\\Todos.txt||{8B382828-6202-11D1-8870-0000F87579D2}",
       "RelativeMoniker": "D:0:0:{25519C91-15A4-4D25-8AC7-534E79B88DCA}|CyphenEngine.vcxproj|solutionrelative:DevLog\\Todos.txt||{8B382828-6202-11D1-8870-0000F87579D2}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{25519C91-15A4-4D25-8AC7-534E79B88DCA}|CyphenEngine.vcxproj|C:\\Project\\CyphenEngine\\CyphenEngine\\DevLog\\25.06.12.txt||{8B382828-6202-11D1-8870-0000F87579D2}",
-      "RelativeMoniker": "D:0:0:{25519C91-15A4-4D25-8AC7-534E79B88DCA}|CyphenEngine.vcxproj|solutionrelative:DevLog\\25.06.12.txt||{8B382828-6202-11D1-8870-0000F87579D2}"
+      "AbsoluteMoniker": "D:0:0:{25519C91-15A4-4D25-8AC7-534E79B88DCA}|CyphenEngine.vcxproj|C:\\Project\\CyphenEngine\\CyphenEngine\\Build\\Public\\define.h||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
+      "RelativeMoniker": "D:0:0:{25519C91-15A4-4D25-8AC7-534E79B88DCA}|CyphenEngine.vcxproj|solutionrelative:Build\\Public\\define.h||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{25519C91-15A4-4D25-8AC7-534E79B88DCA}|CyphenEngine.vcxproj|C:\\Project\\CyphenEngine\\CyphenEngine\\DevLog\\25.06.04.txt||{8B382828-6202-11D1-8870-0000F87579D2}",
-      "RelativeMoniker": "D:0:0:{25519C91-15A4-4D25-8AC7-534E79B88DCA}|CyphenEngine.vcxproj|solutionrelative:DevLog\\25.06.04.txt||{8B382828-6202-11D1-8870-0000F87579D2}"
+      "AbsoluteMoniker": "D:0:0:{25519C91-15A4-4D25-8AC7-534E79B88DCA}|CyphenEngine.vcxproj|C:\\Project\\CyphenEngine\\CyphenEngine\\Runtime\\Common\\Public\\types.h||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
+      "RelativeMoniker": "D:0:0:{25519C91-15A4-4D25-8AC7-534E79B88DCA}|CyphenEngine.vcxproj|solutionrelative:Runtime\\Common\\Public\\types.h||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{25519C91-15A4-4D25-8AC7-534E79B88DCA}|CyphenEngine.vcxproj|C:\\Project\\CyphenEngine\\CyphenEngine\\types.h||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
-      "RelativeMoniker": "D:0:0:{25519C91-15A4-4D25-8AC7-534E79B88DCA}|CyphenEngine.vcxproj|solutionrelative:types.h||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{25519C91-15A4-4D25-8AC7-534E79B88DCA}|CyphenEngine.vcxproj|C:\\Project\\CyphenEngine\\CyphenEngine\\pch.h||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
-      "RelativeMoniker": "D:0:0:{25519C91-15A4-4D25-8AC7-534E79B88DCA}|CyphenEngine.vcxproj|solutionrelative:pch.h||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
+      "AbsoluteMoniker": "D:0:0:{25519C91-15A4-4D25-8AC7-534E79B88DCA}|CyphenEngine.vcxproj|C:\\Project\\CyphenEngine\\CyphenEngine\\pch\\Public\\pch.h||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
+      "RelativeMoniker": "D:0:0:{25519C91-15A4-4D25-8AC7-534E79B88DCA}|CyphenEngine.vcxproj|solutionrelative:pch\\Public\\pch.h||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
     }
   ],
   "DocumentGroupContainers": [
@@ -54,152 +30,72 @@
       "DocumentGroups": [
         {
           "DockedWidth": 238,
-          "SelectedChildIndex": 7,
+          "SelectedChildIndex": 4,
           "Children": [
             {
               "$type": "Document",
-              "DocumentIndex": 6,
+              "DocumentIndex": 1,
               "Title": "Todos.txt",
               "DocumentMoniker": "C:\\Project\\CyphenEngine\\CyphenEngine\\DevLog\\Todos.txt",
               "RelativeDocumentMoniker": "DevLog\\Todos.txt",
               "ToolTip": "C:\\Project\\CyphenEngine\\CyphenEngine\\DevLog\\Todos.txt",
               "RelativeToolTip": "DevLog\\Todos.txt",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAUAAAAeAAAAAAAAAA==",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAYAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003109|",
-              "WhenOpened": "2025-02-11T12:17:24.114Z",
-              "IsPinned": true,
-              "EditorCaption": ""
+              "WhenOpened": "2025-07-01T17:11:18.136Z",
+              "IsPinned": true
             },
             {
               "$type": "Document",
-              "DocumentIndex": 5,
+              "DocumentIndex": 2,
               "Title": "define.h",
-              "DocumentMoniker": "C:\\Project\\CyphenEngine\\CyphenEngine\\define.h",
-              "RelativeDocumentMoniker": "define.h",
-              "ToolTip": "C:\\Project\\CyphenEngine\\CyphenEngine\\define.h",
-              "RelativeToolTip": "define.h",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAA4AAAALAAAAAAAAAA==",
+              "DocumentMoniker": "C:\\Project\\CyphenEngine\\CyphenEngine\\Build\\Public\\define.h",
+              "RelativeDocumentMoniker": "Build\\Public\\define.h",
+              "ToolTip": "C:\\Project\\CyphenEngine\\CyphenEngine\\Build\\Public\\define.h",
+              "RelativeToolTip": "Build\\Public\\define.h",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAkAAAAJAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000680|",
               "WhenOpened": "2025-02-11T12:16:00.361Z",
-              "IsPinned": true,
-              "EditorCaption": ""
+              "IsPinned": true
             },
             {
               "$type": "Document",
-              "DocumentIndex": 9,
+              "DocumentIndex": 3,
               "Title": "types.h",
-              "DocumentMoniker": "C:\\Project\\CyphenEngine\\CyphenEngine\\types.h",
-              "RelativeDocumentMoniker": "types.h",
-              "ToolTip": "C:\\Project\\CyphenEngine\\CyphenEngine\\types.h",
-              "RelativeToolTip": "types.h",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAoAAAALAAAAAAAAAA==",
+              "DocumentMoniker": "C:\\Project\\CyphenEngine\\CyphenEngine\\Runtime\\Common\\Public\\types.h",
+              "RelativeDocumentMoniker": "Runtime\\Common\\Public\\types.h",
+              "ToolTip": "C:\\Project\\CyphenEngine\\CyphenEngine\\Runtime\\Common\\Public\\types.h",
+              "RelativeToolTip": "Runtime\\Common\\Public\\types.h",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAUAAAAHAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000680|",
               "WhenOpened": "2025-03-06T08:44:40.277Z",
               "IsPinned": true
             },
             {
               "$type": "Document",
-              "DocumentIndex": 10,
+              "DocumentIndex": 4,
               "Title": "pch.h",
-              "DocumentMoniker": "C:\\Project\\CyphenEngine\\CyphenEngine\\pch.h",
-              "RelativeDocumentMoniker": "pch.h",
-              "ToolTip": "C:\\Project\\CyphenEngine\\CyphenEngine\\pch.h",
-              "RelativeToolTip": "pch.h",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAA0AAAAMAAAAAAAAAA==",
+              "DocumentMoniker": "C:\\Project\\CyphenEngine\\CyphenEngine\\pch\\Public\\pch.h",
+              "RelativeDocumentMoniker": "pch\\Public\\pch.h",
+              "ToolTip": "C:\\Project\\CyphenEngine\\CyphenEngine\\pch\\Public\\pch.h",
+              "RelativeToolTip": "pch\\Public\\pch.h",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAsAAAAWAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000680|",
               "WhenOpened": "2025-03-06T11:01:07.514Z",
               "IsPinned": true
             },
             {
               "$type": "Document",
-              "DocumentIndex": 1,
+              "DocumentIndex": 0,
               "Title": "CyphenEngine.cpp",
-              "DocumentMoniker": "C:\\Project\\CyphenEngine\\CyphenEngine\\CyphenEngine.cpp",
-              "RelativeDocumentMoniker": "CyphenEngine.cpp",
-              "ToolTip": "C:\\Project\\CyphenEngine\\CyphenEngine\\CyphenEngine.cpp",
-              "RelativeToolTip": "CyphenEngine.cpp",
-              "ViewState": "AgIAAL4AAAAAAAAAAAAiwMgAAAAFAAAAAAAAAA==",
+              "DocumentMoniker": "C:\\Project\\CyphenEngine\\CyphenEngine\\Launch\\Private\\CyphenEngine.cpp",
+              "RelativeDocumentMoniker": "Launch\\Private\\CyphenEngine.cpp",
+              "ToolTip": "C:\\Project\\CyphenEngine\\CyphenEngine\\Launch\\Private\\CyphenEngine.cpp",
+              "RelativeToolTip": "Launch\\Private\\CyphenEngine.cpp",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAA0AAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000677|",
               "WhenOpened": "2025-03-06T10:33:10.92Z",
               "IsPinned": true,
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 3,
-              "Title": "Engine.cpp",
-              "DocumentMoniker": "C:\\Project\\CyphenEngine\\CyphenEngine\\Core\\Private\\Engine.cpp",
-              "RelativeDocumentMoniker": "Core\\Private\\Engine.cpp",
-              "ToolTip": "C:\\Project\\CyphenEngine\\CyphenEngine\\Core\\Private\\Engine.cpp",
-              "RelativeToolTip": "Core\\Private\\Engine.cpp",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAA4AAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000677|",
-              "WhenOpened": "2025-07-01T10:54:15.791Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 4,
-              "Title": "Engine.h",
-              "DocumentMoniker": "C:\\Project\\CyphenEngine\\CyphenEngine\\Core\\Public\\Engine.h",
-              "RelativeDocumentMoniker": "Core\\Public\\Engine.h",
-              "ToolTip": "C:\\Project\\CyphenEngine\\CyphenEngine\\Core\\Public\\Engine.h",
-              "RelativeToolTip": "Core\\Public\\Engine.h",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAoAAAAKAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000680|",
-              "WhenOpened": "2025-07-01T10:53:51.3Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 0,
-              "Title": "Core.cpp",
-              "DocumentMoniker": "C:\\Project\\CyphenEngine\\CyphenEngine\\Core\\Private\\Core.cpp",
-              "RelativeDocumentMoniker": "Core\\Private\\Core.cpp",
-              "ToolTip": "C:\\Project\\CyphenEngine\\CyphenEngine\\Core\\Private\\Core.cpp",
-              "RelativeToolTip": "Core\\Private\\Core.cpp",
-              "ViewState": "AgIAAAIAAAAAAAAAAAASwAsAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000677|",
-              "WhenOpened": "2025-07-01T10:29:09.6Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 2,
-              "Title": "Core.h",
-              "DocumentMoniker": "C:\\Project\\CyphenEngine\\CyphenEngine\\Core\\Public\\Core.h",
-              "RelativeDocumentMoniker": "Core\\Public\\Core.h",
-              "ToolTip": "C:\\Project\\CyphenEngine\\CyphenEngine\\Core\\Public\\Core.h",
-              "RelativeToolTip": "Core\\Public\\Core.h",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAUAAAAIAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000680|",
-              "WhenOpened": "2025-06-12T03:10:14.462Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 7,
-              "Title": "25.06.12.txt",
-              "DocumentMoniker": "C:\\Project\\CyphenEngine\\CyphenEngine\\DevLog\\25.06.12.txt",
-              "RelativeDocumentMoniker": "DevLog\\25.06.12.txt",
-              "ToolTip": "C:\\Project\\CyphenEngine\\CyphenEngine\\DevLog\\25.06.12.txt",
-              "RelativeToolTip": "DevLog\\25.06.12.txt",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAEAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003109|",
-              "WhenOpened": "2025-06-12T01:20:30.754Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 8,
-              "Title": "25.06.04.txt",
-              "DocumentMoniker": "C:\\Project\\CyphenEngine\\CyphenEngine\\DevLog\\25.06.04.txt",
-              "RelativeDocumentMoniker": "DevLog\\25.06.04.txt",
-              "ToolTip": "C:\\Project\\CyphenEngine\\CyphenEngine\\DevLog\\25.06.04.txt",
-              "RelativeToolTip": "DevLog\\25.06.04.txt",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAYAAAANAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003109|",
-              "WhenOpened": "2025-06-12T01:19:35.119Z",
               "EditorCaption": ""
             }
           ]
