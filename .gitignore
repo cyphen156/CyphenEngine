@@ -33,7 +33,5 @@
 
 **/.vs/
 
-**/CyphenEngine.vcxproj
-**/CyphenEngine.vcxproj.filters
 **/CyphenEngine.vcxproj.user
 CyphenEngine/CyphenEngine/
