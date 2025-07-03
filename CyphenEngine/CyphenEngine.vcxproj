@@ -106,7 +106,7 @@
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeader>Create</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
-      <AdditionalIncludeDirectories>$(ProjectDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)Source;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -123,7 +123,7 @@
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeader>Create</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
-      <AdditionalIncludeDirectories>$(ProjectDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)Source;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -151,6 +151,15 @@
     <ClInclude Include="Runtime\Core\Public\Event.h" />
     <ClInclude Include="Runtime\Core\Public\Input.h" />
     <ClInclude Include="Build\Public\Logger.h" />
+    <ClInclude Include="Source\Build\Public\define.h" />
+    <ClInclude Include="Source\Build\Public\framework.h" />
+    <ClInclude Include="Source\Build\Public\targetver.h" />
+    <ClInclude Include="Source\Common\Public\Logger.h" />
+    <ClInclude Include="Source\Common\Public\types.h" />
+    <ClInclude Include="Source\Launch\Public\CyphenEngine.h" />
+    <ClInclude Include="Source\pch.h" />
+    <ClInclude Include="Source\Platform\Windows\Public\LaunchWindows.h" />
+    <ClInclude Include="Source\Resource\Resource.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Core\Private\Core.cpp" />
@@ -164,6 +173,9 @@
     <ClCompile Include="Runtime\Core\Private\Engine.cpp" />
     <ClCompile Include="Runtime\Core\Private\Event.cpp" />
     <ClCompile Include="Runtime\Core\Private\Input.cpp" />
+    <ClCompile Include="Source\Launch\Private\CyphenEngine.cpp" />
+    <ClCompile Include="Source\pch.cpp" />
+    <ClCompile Include="Source\Platform\Windows\Private\LaunchWindows.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="DevLog\25.02.11.txt" />
@@ -173,18 +185,26 @@
     <Text Include="DevLog\25.06.04.txt" />
     <Text Include="DevLog\25.06.12.txt" />
     <Text Include="DevLog\25.07.02.txt" />
-    <Text Include="DevLog\Todos.txt" />
     <Text Include="DevLog\25.07.03.txt" />
+    <Text Include="DevLog\Todos.txt" />
+    <Text Include="DevLog\폴더 기능 정리.txt" />
   </ItemGroup>
   <ItemGroup>
+    <None Include=".vs\ProjectSettings.json" />
+    <None Include=".vs\slnx.sqlite" />
+    <None Include=".vs\VSWorkspaceState.json" />
     <None Include="Build\Public\cpp.hint" />
+    <None Include="Source\Build\Public\cpp.hint" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Launch\Resource\CyphenEngine.rc" />
+    <ResourceCompile Include="Source\Resource\CyphenEngine.rc" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="Launch\Resource\CyphenEngine.ico" />
     <Image Include="Launch\Resource\small.ico" />
+    <Image Include="Source\Resource\CyphenEngine.ico" />
+    <Image Include="Source\Resource\small.ico" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

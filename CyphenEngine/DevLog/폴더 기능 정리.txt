@@ -1,0 +1,15 @@
+Launch : 애플리케이션 진입점
+
+Build : 빌드 프로세스
+
+Pch : 사전 컴파일 헤더
+
+Common : 공통 설정
+
+Resource : 리소스 파일
+
+Editor : 에디터 관련 설정
+
+Runtime : 런타임 관련 설정
+
+Platform : 플랫폼 관련 설정
