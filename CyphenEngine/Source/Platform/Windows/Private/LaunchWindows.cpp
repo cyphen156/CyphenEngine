@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "Platform/Windows/Public/LaunchWindows.h"
+#include "Launch/Public/CyphenEngine.h"
 
 #define MAX_LOADSTRING 100
 
@@ -39,6 +40,15 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
         return FALSE;
     }
 
+    // 엔진 인스턴스 생성
+    GEngine = new CyphenEngine();
+
+    // 초기화
+    if (!GEngine->InitEngine(g_hMainWindow))
+    {
+        return -1;
+    }
+
     HACCEL hAccelTable = LoadAccelerators(hInstance, MAKEINTRESOURCE(IDC_CYPHENENGINE));
 
     MSG msg;
@@ -63,10 +73,18 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
         }
         else
         {
-
+            if (GEngine->_engineStatus == Terminated)
+            {
+                break;
+            }
+            
+            GEngine->Run();
         }
-        //RunEngine();
     }
+
+    delete GEngine;
+    GEngine = nullptr;
+
 #ifdef _DEBUG
     _ASSERT(_CrtCheckMemory());
 #endif

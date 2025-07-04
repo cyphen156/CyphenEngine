@@ -1,8 +1,23 @@
 #pragma once
 
-// ÇÃ·§Æû È®ÀÎ
+
+class CyphenEngine
+{
+public:
+	EngineStatus _engineStatus;
+	
+	CyphenEngine();
+	~CyphenEngine();
+
 #if defined(PLATFORM_WINDOWS)
-	#include "Platform/Windows/Public/LaunchWindows.h"
+	bool InitEngine(HWND g_hMainWindow);
 #elif defined(PLATFORM_LINUX)
-	#include "Platform/Linux/Public/LaunchLinux.h"
+	bool InitEngine();
 #endif
+	
+	void Run();
+	void HotReload();
+	void Shutdown();
+};
+
+extern CyphenEngine* GEngine;
