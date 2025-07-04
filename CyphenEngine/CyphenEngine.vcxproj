@@ -133,6 +133,8 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="Source\Platform\Independent\Public\LaunchIndependent.h" />
+    <ClInclude Include="Source\Platform\Linux\Public\LaunchLinux.h" />
     <ClInclude Include="Source\Runtime\Public\Path.h" />
     <ClInclude Include="Source\Build\Public\define.h" />
     <ClInclude Include="Source\Build\Public\framework.h" />
@@ -143,13 +145,17 @@
     <ClInclude Include="Source\pch.h" />
     <ClInclude Include="Source\Platform\Windows\Public\LaunchWindows.h" />
     <ClInclude Include="Source\Resource\Resource.h" />
+    <ClInclude Include="Source\Runtime\Public\Time.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Source\Platform\Independent\Private\LaunchIndependent.cpp" />
+    <ClCompile Include="Source\Platform\Linux\Private\LaunchLinux.cpp" />
     <ClCompile Include="Source\Runtime\Private\Path.cpp" />
     <ClCompile Include="Source\Common\Private\Logger.cpp" />
     <ClCompile Include="Source\Launch\Private\CyphenEngine.cpp" />
     <ClCompile Include="Source\pch.cpp" />
     <ClCompile Include="Source\Platform\Windows\Private\LaunchWindows.cpp" />
+    <ClCompile Include="Source\Runtime\Private\Time.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="DevLog\25.02.11.txt" />

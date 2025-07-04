@@ -15,11 +15,16 @@
 * TSLASH		L'\\'
 * TSLASH_STR	L"\\"
 */
-	#define TSTRING		wstring
-	#define TCHAR		wchar_t
-	#define TTEXT(str)	L##str
-	#define TSLASH		L'\\'
-	#define TSLASH_STR	L"\\"
+	// Path
+	#define TSTRING			wstring
+	#define TCHAR			wchar_t
+	#define TTEXT(str)		L##str
+	#define TSLASH			L'\\'
+	#define TSLASH_STR		L"\\"
+	
+	// Time
+	#define LARGEINTEGER	LARGE_INTEGER
+
 #elif defined(__linux__)
 	#define PLATFORM_LINUX 1
 /**
@@ -32,13 +37,15 @@
 * TSLASH		'/'
 * TSLASH_STR	"/"
 */
-	#define TSTRING		string
-	#define TCHAR		char
-	#define TTEXT(str)	str
-	#define TSLASH		'/'
-	#define TSLASH_STR	"/"
+	#define TSTRING			string
+	#define TCHAR			char
+	#define TTEXT(str)		str
+	#define TSLASH			'/'
+	#define TSLASH_STR		"/"
+
+	#define LARGEINTEGER	int64_t
 #else
-	#error "Unsupported Platform"
+	#define PLATFORM_UNKNOWN 1
 #endif
 
 // Define Macro for Singletons
