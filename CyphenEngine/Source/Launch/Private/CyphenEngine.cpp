@@ -3,6 +3,7 @@
 #include "pch.h"
 #include "Launch/Public/CyphenEngine.h"
 #include "Runtime/Public/Path.h"
+#include "Runtime/Public/Time.h"
 
 /**
  * @ 애플리케이션 진입점
@@ -25,6 +26,7 @@ CyphenEngine::~CyphenEngine()
 bool CyphenEngine::InitEngine(HWND g_hMainWindow)  
 {  
 	Path::Init();
+	Time::Init();
 
 	_engineStatus = Ready;
 	return true;

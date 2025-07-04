@@ -45,7 +45,7 @@
 
 	#define LARGEINTEGER	int64_t
 #else
-	#define PLATFORM_UNKNOWN 1
+	#define PLATFORM_INDEPENDENT 1
 #endif
 
 // Define Macro for Singletons
