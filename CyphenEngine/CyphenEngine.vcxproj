@@ -133,6 +133,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="Source\Launch\Public\Path.h" />
     <ClInclude Include="Source\Build\Public\define.h" />
     <ClInclude Include="Source\Build\Public\framework.h" />
     <ClInclude Include="Source\Build\Public\targetver.h" />
@@ -144,6 +145,8 @@
     <ClInclude Include="Source\Resource\Resource.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Source\Launch\Private\Path.cpp" />
+    <ClCompile Include="Source\Common\Private\Logger.cpp" />
     <ClCompile Include="Source\Launch\Private\CyphenEngine.cpp" />
     <ClCompile Include="Source\pch.cpp" />
     <ClCompile Include="Source\Platform\Windows\Private\LaunchWindows.cpp" />
@@ -157,6 +160,7 @@
     <Text Include="DevLog\25.06.12.txt" />
     <Text Include="DevLog\25.07.02.txt" />
     <Text Include="DevLog\25.07.03.txt" />
+    <Text Include="DevLog\25.07.04.txt" />
     <Text Include="DevLog\Todos.txt" />
     <Text Include="DevLog\폴더 기능 정리.txt" />
   </ItemGroup>

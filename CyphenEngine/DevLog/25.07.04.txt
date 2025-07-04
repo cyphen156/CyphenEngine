@@ -1,0 +1,21 @@
+#1. CyphenEngine.cpp 
+	Visual Studio .vcxproj 필터 항목 내 불필요한 중복 참조 제거
+	플랫폼 종속성 분리 목적의 애플리케이션 진입점 구조 재설계
+	진입점은 빌드시 플랫폼마다 교체 방식으로 설계 확정
+
+#2. 진입점 설계 및 런처 구조 정비
+	wWinMain()에서 창 생성 → CyphenEngine 초기화 → 메시지 루프 실행으로 구조 고정
+	CyphenEngine 객체는 전역 포인터(GEngine)로 관리
+	→ extern 선언 + .cpp 내 실제 정의(GEngine = nullptr) 처리
+
+#3. CyphenEngine 클래스 생성 및 초기화
+1. CyphenEngine 클래스 생성
+	플랫폼 분기 방식으로 InitEngine() / ShutdownEngine() 함수 분리
+	내부 상태를 EngineStatus로 관리
+	Run(), Shutdown(), HotReload() 함수 선언 (구현은 추후 확장 예정)
+	GEngine->_engineStatus로 런타임 상태 판단
+
+#4. 전역 매크로와 헤더 정리
+	define.h		:		플랫폼 매크로 (PLATFORM_WINDOWS, PLATFORM_LINUX) 정의
+	framework.h		:		플랫폼 분기 정의 정리
+	pch.h			:		프레임워크 헤더 및 커스텀 타입 정리

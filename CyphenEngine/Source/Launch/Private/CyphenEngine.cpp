@@ -2,6 +2,7 @@
 //
 #include "pch.h"
 #include "Launch/Public/CyphenEngine.h"
+#include "Launch/Public/Path.h"
 
 /**
  * @ 애플리케이션 진입점
@@ -10,8 +11,7 @@
  */
 CyphenEngine* GEngine = nullptr;
 
-#if defined(PLATFORM_WINDOWS)
-CyphenEngine::CyphenEngine() : 
+CyphenEngine::CyphenEngine() :
 	_engineStatus(EngineStatus::Initializing)
 {
 }
@@ -19,18 +19,25 @@ CyphenEngine::~CyphenEngine()
 {
 
 }
+
+#if defined(PLATFORM_WINDOWS)
 // Windows용 초기화 함수
 bool CyphenEngine::InitEngine(HWND g_hMainWindow)  
 {  
+	Path::Init();
+
 	_engineStatus = Ready;
 	return true;
 }  
+
 #elif defined(PLATFORM_LINUX)
 // Linux용 초기화 함수
 bool CyphenEngine::InitEngine()  
 {  
+	_engineStatus = Ready;
 	return true;  
-}  
+}
+
 #endif
 
 void CyphenEngine::Run()
@@ -41,7 +48,12 @@ void CyphenEngine::HotReload()
 {
 }
 
-void CyphenEngine::Shutdown()
+// 엔진 상태가 종료되었을 때 호출될 해제 함수
+void CyphenEngine::ShutdownEngine()
 {
-	_engineStatus = EngineStatus::Terminated;
+#if defined(PLATFORM_WINDOWS)
+
+#elif defined(PLATFORM_LINUX)
+
+#endif
 }

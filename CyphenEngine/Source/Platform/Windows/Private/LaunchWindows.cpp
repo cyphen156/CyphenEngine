@@ -1,6 +1,7 @@
 #include "pch.h"
 #include "Platform/Windows/Public/LaunchWindows.h"
 #include "Launch/Public/CyphenEngine.h"
+#include "Launch/Public/Path.h"
 
 #define MAX_LOADSTRING 100
 
@@ -49,6 +50,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
         return -1;
     }
 
+    MessageBox(nullptr, Path::Root().c_str(), L"Error", MB_OK);
     HACCEL hAccelTable = LoadAccelerators(hInstance, MAKEINTRESOURCE(IDC_CYPHENENGINE));
 
     MSG msg;
@@ -75,6 +77,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
         {
             if (GEngine->_engineStatus == Terminated)
             {
+                GEngine->ShutdownEngine();
                 break;
             }
             

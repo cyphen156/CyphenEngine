@@ -9,13 +9,16 @@
 #endif
 
 // C 표준 헤더 파일입니다.
-#include <iostream>
 #include <stdlib.h>
 #include <malloc.h>
 #include <memory.h>
 #include <tchar.h>
 
-// 커스텀 필수 헤더 포함
+// C++ 표준 헤더 파일 입니다.
+#include <iostream>
+
+
+// 커스텀 필수 헤더 파일 입니다.
 #include "Build/Public/define.h"
 #include "Build/Public/framework.h"
 #include "Common/Public/types.h"
