@@ -133,6 +133,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="Source\Runtime\Public\File.h" />
     <ClInclude Include="Source\Platform\Independent\Public\LaunchIndependent.h" />
     <ClInclude Include="Source\Platform\Linux\Public\LaunchLinux.h" />
     <ClInclude Include="Source\Runtime\Public\Path.h" />
@@ -148,6 +149,7 @@
     <ClInclude Include="Source\Runtime\Public\Time.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Source\Runtime\Private\File.cpp" />
     <ClCompile Include="Source\Platform\Independent\Private\LaunchIndependent.cpp" />
     <ClCompile Include="Source\Platform\Linux\Private\LaunchLinux.cpp" />
     <ClCompile Include="Source\Runtime\Private\Path.cpp" />
@@ -167,6 +169,7 @@
     <Text Include="DevLog\25.07.02.txt" />
     <Text Include="DevLog\25.07.03.txt" />
     <Text Include="DevLog\25.07.04.txt" />
+    <Text Include="DevLog\25.07.09.txt" />
     <Text Include="DevLog\Todos.txt" />
     <Text Include="DevLog\폴더 기능 정리.txt" />
   </ItemGroup>

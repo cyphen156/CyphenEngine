@@ -1,7 +1,6 @@
 #include "pch.h"
 #include "RunTime/Public/Time.h"
 
-
 #if defined(PLATFORM_WINDOWS)
 	LARGEINTEGER	Time::_Frequency = {};
 #elif defined(PLATFORM_LINUX)
@@ -60,3 +59,9 @@ void Time::Update()
         _accumulatedTime = 0.0;
     }
 }
+
+double Time::SystemDateTime()
+{
+    return 0.0;
+}
+

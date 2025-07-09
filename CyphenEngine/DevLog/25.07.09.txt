@@ -1,0 +1,8 @@
+#1. File.cpp
+파일 입출력 클래스
+파일 CURD관리
+C style IO
+
+#2. Logger.cpp
+파일 입출력 및 디버그 로그 제공
+추후 콘솔 창 Window를 만들어 거기에 텍스트 제공 예정

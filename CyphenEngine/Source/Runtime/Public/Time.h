@@ -22,4 +22,5 @@ public:
 	static void Update();
 	static double DeltaTime() { return _deltaTime; }
 	static unsigned int FPS() { return _fps; }
+	static double SystemDateTime();
 };
