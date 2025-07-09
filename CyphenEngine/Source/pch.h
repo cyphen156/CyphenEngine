@@ -16,6 +16,7 @@
 
 // C++ 표준 헤더 파일 입니다.
 #include <iostream>
+#include <string>
 
 
 // 커스텀 필수 헤더 파일 입니다.

@@ -28,7 +28,6 @@ bool CyphenEngine::InitEngine(HWND g_hMainWindow)
 	Path::Init();
 	Time::Init();
 
-
 	_engineStatus = Ready;
 	return true;
 }  

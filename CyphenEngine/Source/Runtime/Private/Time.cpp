@@ -60,8 +60,71 @@ void Time::Update()
     }
 }
 
-double Time::SystemDateTime()
+TSTRING Time::SystemDateTime()
 {
-    return 0.0;
+    TCHAR result[32];
+    int year, month, day, hour, minute, second, msec;
+
+    int i = 0;
+
+
+#if defined(PLATFORM_WINDOWS)
+    SYSTEMTIME systemTime;
+    GetLocalTime(&systemTime);
+
+    year = systemTime.wYear;
+    month = systemTime.wMonth;
+    day = systemTime.wDay;
+    hour = systemTime.wHour;
+    minute = systemTime.wMinute;
+    second = systemTime.wSecond;
+    msec = systemTime.wMilliseconds;
+
+#elif defined(PLATFORM_LINUX)
+    tm localTime = {};
+    localtime_r(&_tv.tv_sec, &localTime);
+
+    year = localTime.tm_year + 1900;
+    month = localTime.tm_mon + 1;
+    day = localTime.tm_mday;
+    hour = localTime.tm_hour;
+    minute = localTime.tm_min;
+    second = localTime.tm_sec;
+    msec = static_cast<int>(_tv.tv_usec / 1000);
+#else
+#endif
+    result[i++] = TTEXT('0') + (year / 1000) % 10;
+    result[i++] = TTEXT('0') + (year / 100) % 10;
+    result[i++] = TTEXT('0') + (year / 10) % 10;
+    result[i++] = TTEXT('0') + year % 10;
+    result[i++] = TTEXT('-');
+
+    result[i++] = TTEXT('0') + (month / 10);
+    result[i++] = TTEXT('0') + (month % 10);
+    result[i++] = TTEXT('-');
+
+    result[i++] = TTEXT('0') + (day / 10);
+    result[i++] = TTEXT('0') + (day % 10);
+    result[i++] = TTEXT(' ');
+
+    result[i++] = TTEXT('0') + (hour / 10);
+    result[i++] = TTEXT('0') + (hour % 10);
+    result[i++] = TTEXT(':');
+
+    result[i++] = TTEXT('0') + (minute / 10);
+    result[i++] = TTEXT('0') + (minute % 10);
+    result[i++] = TTEXT(':');
+
+    result[i++] = TTEXT('0') + (second / 10);
+    result[i++] = TTEXT('0') + (second % 10);
+    result[i++] = TTEXT('.');
+
+    result[i++] = TTEXT('0') + (msec / 100);
+    result[i++] = TTEXT('0') + ((msec / 10) % 10);
+    result[i++] = TTEXT('0') + (msec % 10);
+
+    result[i] = TTEXT('\0');
+
+    return TSTRING(result);
 }
 

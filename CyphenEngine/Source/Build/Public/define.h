@@ -21,7 +21,8 @@
 	#define TTEXT(str)		L##str
 	#define TSLASH			L'\\'
 	#define TSLASH_STR		L"\\"
-	
+	#define TO_TSTRING(str) to_wstring(str)
+
 	// Time
 	#define LARGEINTEGER	LARGE_INTEGER
 
