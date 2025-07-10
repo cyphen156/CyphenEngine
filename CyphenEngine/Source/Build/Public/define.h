@@ -2,27 +2,31 @@
 
 #define NOMINMAX
 
+// Global Macro
+#define LOG_INTERNAL(level, msg)	Logger::InternalLog(level, TTEXT(msg), __FILE__, __LINE__, __func__)
+
 // Define the platform
 #if defined(_WIN32)
 	#define PLATFORM_WINDOWS 1
-/**
-* PlatForm == WINDOWS
-* DO NOT USE	"/"
-* Just Use		"\\" 
-* TSTRING		wstirng,
-* TCHAR			char
-* TTEXT(str)	L##str
-* TSLASH		L'\\'
-* TSLASH_STR	L"\\"
-*/
-	// Path
-	#define TSTRING			wstring
-	#define TCHAR			wchar_t
-	#define TTEXT(str)		L##str
-	#define TSLASH			L'\\'
-	#define TSLASH_STR		L"\\"
-	#define TO_TSTRING(str) to_wstring(str)
 
+// Path
+	/**
+	* PlatForm == WINDOWS
+	* DO NOT USE	"/"
+	* Just Use		"\\"
+	* TSTRING		wstirng,
+	* TCHAR			char
+	* TTEXT(str)	L##str
+	* TSLASH		L'\\'
+	* TSLASH_STR	L"\\"
+	*/
+	#define TSTRING					wstring
+	#define TCHAR					wchar_t
+	#define TTEXT(str)				L##str
+	#define TSLASH					L'\\'
+	#define TSLASH_STR				L"\\"
+	#define TO_TSTRING(str)			to_wstring(str)
+	#define ENUM_TO_TSTRING(name)	TTEXT(#name)
 	// Time
 	#define LARGEINTEGER	LARGE_INTEGER
 

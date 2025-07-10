@@ -147,6 +147,7 @@
     <ClInclude Include="Source\Platform\Windows\Public\LaunchWindows.h" />
     <ClInclude Include="Source\Resource\Resource.h" />
     <ClInclude Include="Source\Runtime\Public\Time.h" />
+    <ClInclude Include="Source\Utility\Public\TstringUtility.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source\Runtime\Private\File.cpp" />
@@ -158,6 +159,7 @@
     <ClCompile Include="Source\pch.cpp" />
     <ClCompile Include="Source\Platform\Windows\Private\LaunchWindows.cpp" />
     <ClCompile Include="Source\Runtime\Private\Time.cpp" />
+    <ClCompile Include="Source\Utility\Private\TstringUtility.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="DevLog\25.02.11.txt" />

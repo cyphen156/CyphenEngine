@@ -21,3 +21,11 @@ enum class RendererType
 
 	NONE
 };
+
+enum class LogLevel
+{
+	Info,
+	Warning,
+	Error,
+	Fatal
+};

@@ -1,6 +1,7 @@
 #include "pch.h"
 #include "Platform/Windows/Public/LaunchWindows.h"
 #include "Launch/Public/CyphenEngine.h"
+#include <Common/Public/Logger.h>
 
 #define MAX_LOADSTRING 100
 
@@ -76,7 +77,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
                 GEngine->ShutdownEngine();
                 break;
             }
-            
+            LOG_INTERNAL(LogLevel::Fatal, "");
             GEngine->Run();
         }
     }
