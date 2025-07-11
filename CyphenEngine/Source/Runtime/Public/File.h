@@ -5,7 +5,7 @@
 class File
 {
 public:
-	static FILE* OpenFile(const TSTRING& path, const TSTRING& fileName);
+	static FILE* OpenFile(const TSTRING& path, const TSTRING& fileName, const TCHAR* mode);
 
 	static bool Exists(const TSTRING& path, const TSTRING& fileName);
 

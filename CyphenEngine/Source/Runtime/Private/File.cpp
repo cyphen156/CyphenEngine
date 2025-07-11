@@ -2,21 +2,21 @@
 #include "Runtime/Public/File.h"
 #include "Runtime/Public/Path.h"
 
-FILE* OpenFile(const TSTRING& path, const TSTRING& fileName)
+FILE* File::OpenFile(const TSTRING& path, const TSTRING& fileName, const TCHAR* mode)
 {
 	TSTRING fullPath = Path::Combine(path, fileName);
 
 #if defined(PLATFORM_WINDOWS)
-	FILE* file = _wfopen(fullPath.c_str(), L"rb");
+	FILE* file = _wfopen(fullPath.c_str(), mode);
 #elif defined(PLATFORM_LINUX)
-	FILE* file = fopen(fullPath.c_str(), "rb");
+	FILE* file = fopen(fullPath.c_str(), mode);
 #endif
 	return file;
 }
 
 bool File::Exists(const TSTRING& path, const TSTRING& fileName)
 {
-	FILE* file = OpenFile(path, fileName);
+	FILE* file = OpenFile(path, fileName, TTEXT("rb"));
 
 	if (file)
 	{
@@ -28,7 +28,21 @@ bool File::Exists(const TSTRING& path, const TSTRING& fileName)
 
 void File::Create(const TSTRING& path, const TSTRING& fileName)
 {
+	FILE* file = OpenFile(path, fileName, TTEXT("wb"));
 
+	if (!file)
+	{
+		TSTRING fullPath = Path::Combine(path, fileName);
+		LOG_INTERNAL(LogLevel::Error, "Create File Failed : " + fullPath);
+	}
+	
+	if (Exists(path, fileName))
+	{
+		TSTRING fullPath = Path::Combine(path, fileName);
+		LOG_INTERNAL(LogLevel::Error, "Create File Failed : " + fullPath);
+	}
+
+	fclose(file);
 }
 
 bool File::Delete(const TSTRING& path, const TSTRING& fileName)

@@ -23,6 +23,7 @@
 #include "Build/Public/define.h"
 #include "Build/Public/framework.h"
 #include "Common/Public/types.h"
+#include "Common/Public/Logger.h"
 
 
 using namespace std;

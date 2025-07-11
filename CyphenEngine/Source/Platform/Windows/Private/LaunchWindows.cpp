@@ -1,7 +1,6 @@
 #include "pch.h"
 #include "Platform/Windows/Public/LaunchWindows.h"
 #include "Launch/Public/CyphenEngine.h"
-#include <Common/Public/Logger.h>
 
 #define MAX_LOADSTRING 100
 
