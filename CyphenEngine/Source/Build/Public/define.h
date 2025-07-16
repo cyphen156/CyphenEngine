@@ -4,6 +4,7 @@
 
 // Global Macro
 #define LOG_INTERNAL(level, msg)	Logger::InternalLog(level, TTEXT(msg), __FILE__, __LINE__, __func__)
+#define LOG_INTERNAL_T(level, tstr)	Logger::InternalLog(level, tstr, __FILE__, __LINE__, __func__)
 
 // Define the platform
 #if defined(_WIN32)

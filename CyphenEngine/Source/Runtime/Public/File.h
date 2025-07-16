@@ -5,12 +5,12 @@
 class File
 {
 public:
-	static FILE* OpenFile(const TSTRING& path, const TSTRING& fileName, const TCHAR* mode);
+	static FILE* OpenFile(const TSTRING& path, const TSTRING& fileName, const TCHAR* mode = TTEXT("rt"));
 
 	static bool Exists(const TSTRING& path, const TSTRING& fileName);
 
-	static void Create(const TSTRING& path, const TSTRING& fileName);
-	static bool Delete(const TSTRING& path, const TSTRING& fileName);
+	static void Create(const TSTRING& path, const TSTRING& fileName, const TCHAR* mode = TTEXT("wt"));
+	static void Delete(const TSTRING& path, const TSTRING& fileName);
 
 	static bool ReadAll(const TSTRING& path, const TSTRING& fileName, TSTRING& outdata);
 
@@ -25,4 +25,3 @@ public:
 	// Always override
 	static bool WriteAllBytes(const TSTRING& path, const TSTRING& fileName, const vector<char>& bytes);
 };
-
