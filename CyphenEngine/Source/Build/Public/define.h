@@ -29,7 +29,7 @@ class Logger;
 	#define TSLASH					L'\\'
 	#define TSLASH_STR				L"\\"
 	#define TO_TSTRING(str)			to_wstring(str)
-	#define ENUM_TO_TSTRING(name)	TTEXT(#name)
+
 	// Time
 	#define LARGEINTEGER	LARGE_INTEGER
 

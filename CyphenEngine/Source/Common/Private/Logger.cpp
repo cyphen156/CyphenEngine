@@ -47,7 +47,9 @@ void Logger::ForceError(const TSTRING& message)
 void Logger::InternalLog(LogLevel level, const TSTRING& message, const char* file, int line , const char* func)
 {
 	TSTRING time = Time::SystemDateTime();
-	TSTRING log = TTEXT("[") + time + TTEXT("]\n[") + ENUM_TO_TSTRING(level) + TTEXT("]\n") + message +
+	TSTRING levelStr = LogLevelNames[static_cast<size_t>(level)];
+
+	TSTRING log = TTEXT("[") + time + TTEXT("]\n[") + levelStr + TTEXT("]\n") + message +
 		TTEXT(" (") + TstringUtility::CharToTString(file) + TTEXT(":") + TO_TSTRING(line) +
 		TTEXT(") <") + TstringUtility::CharToTString(func) + TTEXT(">");
 

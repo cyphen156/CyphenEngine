@@ -27,5 +27,14 @@ enum class LogLevel
 	Info,
 	Warning,
 	Error,
-	Fatal
+	Fatal,
+
+	COUNT
+};
+
+constexpr const TCHAR* LogLevelNames[] = {
+	TTEXT("Info"),
+	TTEXT("Warning"),
+	TTEXT("Error"),
+	TTEXT("Fatal")
 };

@@ -62,7 +62,35 @@ TSTRING Path::Config()
 
 TSTRING Path::Combine(const TSTRING& base, const TSTRING& relative)
 {
-    return base + TSLASH_STR + relative;
+    if (base.empty())
+    {
+        return relative;
+    }
+
+    if (relative.empty())
+    {
+        return base;
+    }
+
+    TSTRING result = base;
+
+    // base 끝에 슬래시 없으면 추가
+    if (base.back() != TSLASH)
+    {
+        result += TSLASH;
+    }
+
+    // relative 앞에 슬래시 있으면 제거
+    if (!relative.empty() && relative.front() == TSLASH)
+    {
+        result += relative.substr(1);
+    }
+    else
+    {
+        result += relative;
+    }
+
+    return result;
 }
 
 void Path::SetCurrentDir(const TSTRING& currentDirectory)
