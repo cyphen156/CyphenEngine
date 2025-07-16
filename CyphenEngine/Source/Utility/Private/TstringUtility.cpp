@@ -3,12 +3,11 @@
 
 TSTRING TstringUtility::CharToTString(const char* str)
 {
-	const char* src = str;
 	TSTRING result;
 
-	while (*src)
+	while (*str)
 	{
-		result += (TCHAR)(unsigned char)(*src++);
+		result += (TCHAR)(unsigned char)(*str++);
 	}
 	return result;
 }

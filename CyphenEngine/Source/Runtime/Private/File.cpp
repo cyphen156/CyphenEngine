@@ -2,7 +2,7 @@
 #include "Runtime/Public/File.h"
 #include "Runtime/Public/Path.h"
 #include "Utility/Public/TstringUtility.h"	
-
+#include "Common/Public/Logger.h"
 
 FILE* File::OpenFile(const TSTRING& path, const TSTRING& fileName, const TCHAR* mode)
 {

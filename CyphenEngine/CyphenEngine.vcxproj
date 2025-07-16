@@ -154,7 +154,9 @@
     <ClCompile Include="Source\Platform\Independent\Private\LaunchIndependent.cpp" />
     <ClCompile Include="Source\Platform\Linux\Private\LaunchLinux.cpp" />
     <ClCompile Include="Source\Runtime\Private\Path.cpp" />
-    <ClCompile Include="Source\Common\Private\Logger.cpp" />
+    <ClCompile Include="Source\Common\Private\Logger.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
+    </ClCompile>
     <ClCompile Include="Source\Launch\Private\CyphenEngine.cpp" />
     <ClCompile Include="Source\pch.cpp" />
     <ClCompile Include="Source\Platform\Windows\Private\LaunchWindows.cpp" />
