@@ -22,6 +22,16 @@ enum class RendererType
 	NONE
 };
 
+constexpr const TCHAR* RendererNames[] = {
+	TTEXT("DX11"),
+	TTEXT("DX12"),	
+	TTEXT("VULKAN"),
+	TTEXT("METAL"),
+	TTEXT("GDI_PLUS"),
+
+	TTEXT("NONE")
+};
+
 enum class LogLevel
 {
 	Info,

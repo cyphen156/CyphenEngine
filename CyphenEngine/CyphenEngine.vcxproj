@@ -133,6 +133,8 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="Source\Modules\Renderer\Public\D3dx11Renderer.h" />
+    <ClInclude Include="Source\Modules\Renderer\Public\Renderer.h" />
     <ClInclude Include="Source\Runtime\Public\File.h" />
     <ClInclude Include="Source\Platform\Independent\Public\LaunchIndependent.h" />
     <ClInclude Include="Source\Platform\Linux\Public\LaunchLinux.h" />
@@ -150,6 +152,8 @@
     <ClInclude Include="Source\Utility\Public\TstringUtility.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Source\Modules\Renderer\Private\D3dx11Renderer.cpp" />
+    <ClCompile Include="Source\Modules\Renderer\Private\Renderer.cpp" />
     <ClCompile Include="Source\Runtime\Private\File.cpp" />
     <ClCompile Include="Source\Platform\Independent\Private\LaunchIndependent.cpp" />
     <ClCompile Include="Source\Platform\Linux\Private\LaunchLinux.cpp" />
