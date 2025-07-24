@@ -4,6 +4,7 @@
 #include "Launch/Public/CyphenEngine.h"
 #include "Runtime/Public/Path.h"
 #include "Runtime/Public/Time.h"
+#include "Modules/Renderer/Public/Renderer.h"
 
 /**
  * @ 애플리케이션 진입점
@@ -27,6 +28,7 @@ bool CyphenEngine::InitEngine(HWND g_hMainWindow)
 {  
 	Path::Init();
 	Time::Init();
+	Renderer::Initialize();
 
 	_engineStatus = Ready;
 	return true;

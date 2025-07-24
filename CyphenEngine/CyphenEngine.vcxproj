@@ -133,7 +133,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="Source\Modules\Renderer\Public\D3dx11Renderer.h" />
+    <ClInclude Include="Source\Modules\Renderer\Public\Dx11Renderer.h" />
     <ClInclude Include="Source\Modules\Renderer\Public\Renderer.h" />
     <ClInclude Include="Source\Runtime\Public\File.h" />
     <ClInclude Include="Source\Platform\Independent\Public\LaunchIndependent.h" />
@@ -152,7 +152,7 @@
     <ClInclude Include="Source\Utility\Public\TstringUtility.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Source\Modules\Renderer\Private\D3dx11Renderer.cpp" />
+    <ClCompile Include="Source\Modules\Renderer\Private\Dx11Renderer.cpp" />
     <ClCompile Include="Source\Modules\Renderer\Private\Renderer.cpp" />
     <ClCompile Include="Source\Runtime\Private\File.cpp" />
     <ClCompile Include="Source\Platform\Independent\Private\LaunchIndependent.cpp" />
@@ -179,6 +179,7 @@
     <Text Include="DevLog\25.07.04.txt" />
     <Text Include="DevLog\25.07.09.txt" />
     <Text Include="DevLog\25.07.17.txt" />
+    <Text Include="DevLog\25.07.24.txt" />
     <Text Include="DevLog\Todos.txt" />
     <Text Include="DevLog\폴더 기능 정리.txt" />
   </ItemGroup>

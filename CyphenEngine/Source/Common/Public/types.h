@@ -13,21 +13,23 @@ enum EngineStatus
 
 enum class RendererType
 {
-	DX11,
-	DX12,
-	VULKAN,
-	METAL,
-	GDI_PLUS,
+	Dx11,
+	Dx12,
+	Vulkan,
+	OpenGL,
+	Metal,
+	GDI_Plus,
 
 	NONE
 };
 
 constexpr const TCHAR* RendererNames[] = {
-	TTEXT("DX11"),
-	TTEXT("DX12"),	
-	TTEXT("VULKAN"),
-	TTEXT("METAL"),
-	TTEXT("GDI_PLUS"),
+	TTEXT("Dx11"),
+	TTEXT("Dx12"),	
+	TTEXT("Vulkan"),
+	TTEXT("OpenGL"),
+	TTEXT("Metal"),
+	TTEXT("GDI_Plus"),
 
 	TTEXT("NONE")
 };

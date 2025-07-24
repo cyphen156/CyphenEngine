@@ -5,13 +5,33 @@
 class Logger;
 
 // Global Macro
+// ============================================================================
+// Logging Macro
+// ----------------------------------------------------------------------------
+// 로그 메시지를 출력할 때 사용하는 매크로입니다.
+// 자동으로 파일명, 라인 번호, 함수명을 함께 출력합니다.
+//
+// 사용 예시:
+//   LOG_INTERNAL(LogLevel::Info, "엔진 초기화 완료");
+//   LOG_INTERNAL_T(LogLevel::Error, TTEXT("오류 발생: ") + 오류메시지);
+//
+// - LOG_INTERNAL(level, msg)
+//   : ASCII 문자열(리터럴)을 로그로 출력할 때 사용
+//
+// - LOG_INTERNAL_T(level, tstr)
+//   : TSTRING 또는 TTEXT(str) 기반 유니코드 문자열 출력 시 사용
+//
+// 주의:
+//   LOG_INTERNAL_T는 문자열 결합 시 반드시 TSTRING으로 캐스팅해야 합니다.
+//
+// ============================================================================
 #define LOG_INTERNAL(level, msg)	Logger::InternalLog(level, TTEXT(msg), __FILE__, __LINE__, __func__)
 #define LOG_INTERNAL_T(level, tstr)	Logger::InternalLog(level, tstr, __FILE__, __LINE__, __func__)
 
 // Define the platform
 #if defined(_WIN32)
 	#define PLATFORM_WINDOWS 1
-
+	
 // Path
 	/**
 	* PlatForm == WINDOWS
@@ -52,6 +72,12 @@ class Logger;
 	#define TSLASH_STR		"/"
 
 	#define LARGEINTEGER	int64_t
+#elif defined(__ANDROID__)
+	#define PLATFORM_ANDROID 1
+
+#elif defined(__APPLE__) || defined(__MACH__)
+	#define PLATFORM_MAC 1
+
 #else
 	#define PLATFORM_INDEPENDENT 1
 #endif
