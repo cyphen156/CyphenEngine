@@ -29,7 +29,7 @@ class Logger;
 #define LOG_INTERNAL_T(level, tstr)	Logger::InternalLog(level, tstr, __FILE__, __LINE__, __func__)
 
 // Define the platform
-#if defined(_WIN32)
+#if defined(_WIN32) || defined(_WIN64)
 	#define PLATFORM_WINDOWS 1
 	
 // Path
@@ -72,10 +72,11 @@ class Logger;
 	#define TSLASH_STR		"/"
 
 	#define LARGEINTEGER	int64_t
-#elif defined(__ANDROID__)
+
+#elif defined(__ANDROID__)	// 빌드환경에서 ANDROID 타겟을 지원해야함
 	#define PLATFORM_ANDROID 1
 
-#elif defined(__APPLE__) || defined(__MACH__)
+#elif defined(__APPLE__) && defined(__MACH__)	
 	#define PLATFORM_MAC 1
 
 #else

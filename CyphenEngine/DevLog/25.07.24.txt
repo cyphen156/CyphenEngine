@@ -1,1 +1,15 @@
 #1. 렌더러 구현 방향 결정
+	-> 렌더러는 RHI(Rendering Hardware Interface)별로 개별 모듈(DLL)로 분리하여 빌드
+	-> Renderer 네임스페이스는 **전처리 기반 래퍼 역할(CIL)**을 수행하며, 
+	   내부적으로 rendererType, initialized, rendererName을 상태로 관리
+	
+	=> #define RENDERER_XXX 매크로를 통해 렌더러 선택, 
+	   해당 매크로는 빌드 시점에 수동 또는 빌드 시스템으로 전달
+
+	현재는 define.h에서 수동 설정으로 빌드 (빌드 시스템은 추후 구축)
+	렌더러 변경을 위해 런처 기반 실행파일 분기 구조를 채택할 계획
+	예: CyphenGame_DX11.exe, CyphenGame_Vulkan.exe 식으로 다중 실행파일 존재
+	Renderer::Initialize()에서 렌더러 타입을 매크로로 결정
+
+	** 주의 **
+	추후 Renderer가 네임스페이스 → 클래스 구조로 변경될 가능성 매우 높음

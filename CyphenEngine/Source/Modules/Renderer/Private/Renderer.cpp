@@ -43,7 +43,7 @@ namespace Renderer
 			LOG_INTERNAL_T(LogLevel::Info, TTEXT("Renderer initialized: ") + rendererName);
 	}
 
-	void Shutdown()
+	void Shutdown() 
 	{
 		initialized = false;
 		rendererType = RendererType::NONE;
