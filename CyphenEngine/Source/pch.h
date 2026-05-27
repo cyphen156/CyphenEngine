@@ -8,15 +8,9 @@
 #define new new(_NORMAL_BLOCK, __FILE__, __LINE__)
 #endif
 
-// C 표준 헤더 파일입니다.
-#include <stdio.h>
-#include <stdlib.h>
-#include <malloc.h>
-#include <memory.h>
-
-// C++ 표준 헤더 파일 입니다.
-#include <iostream>
-#include <string>
-
+// 커스텀 필수 헤더
+#include "Build/Public/PlatformDefine.h"
+#include "Build/Public/framework.h"
+#include "Build/Public/define.h"
 
 #endif // PCH_H

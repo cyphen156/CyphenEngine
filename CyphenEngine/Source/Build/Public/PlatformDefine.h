@@ -1,7 +1,14 @@
 #pragma once
-// 빌드 시스템이 TARGET_PLATFORM_* 매크로를 주입한다.
-// 추후 빌드 시스템(CMake 등) 구축 시 설정 파일에서 읽어 자동 주입 예정.
-// 현재는 vcxproj PreprocessorDefinitions에서 수동 주입.
+
+// ============================================================================
+// PlatformDefine
+// ----------------------------------------------------------------------------
+// 빌드 시스템이 주입한 TARGET_PLATFORM_* 매크로를 기준으로
+// 엔진 내부에서 사용할 PLATFORM_* 매크로를 확정합니다.
+//
+// 현재는 vcxproj PreprocessorDefinitions에서 TARGET_PLATFORM_WINDOWS를
+// 수동 주입합니다.
+// ============================================================================
 
 #if defined(TARGET_PLATFORM_WINDOWS)
 #define PLATFORM_WINDOWS 1
