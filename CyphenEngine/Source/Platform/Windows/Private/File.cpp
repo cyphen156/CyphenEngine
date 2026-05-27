@@ -121,7 +121,7 @@ bool File::WriteAll(const TSTRING& path, const TSTRING& fileName, const TSTRING&
 
 bool File::AppendData(const TSTRING& path, const TSTRING& fileName, const TSTRING& data)
 {
-	FILE* file = OpenFile(path, fileName, TTEXT("at")); // append text ¸ðµå
+	FILE* file = OpenFile(path, fileName, TTEXT("at")); // append text ëª¨ë“œ
 
 	TSTRING fullPath = Path::Combine(path, fileName);
 

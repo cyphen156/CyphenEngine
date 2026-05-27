@@ -1,202 +1,223 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <ItemGroup Label="ProjectConfigurations">
-    <ProjectConfiguration Include="Debug|Win32">
-      <Configuration>Debug</Configuration>
-      <Platform>Win32</Platform>
-    </ProjectConfiguration>
-    <ProjectConfiguration Include="Release|Win32">
-      <Configuration>Release</Configuration>
-      <Platform>Win32</Platform>
-    </ProjectConfiguration>
-    <ProjectConfiguration Include="Debug|x64">
-      <Configuration>Debug</Configuration>
-      <Platform>x64</Platform>
-    </ProjectConfiguration>
-    <ProjectConfiguration Include="Release|x64">
-      <Configuration>Release</Configuration>
-      <Platform>x64</Platform>
-    </ProjectConfiguration>
-  </ItemGroup>
-  <PropertyGroup Label="Globals">
-    <VCProjectVersion>17.0</VCProjectVersion>
-    <Keyword>Win32Proj</Keyword>
-    <ProjectGuid>{25519c91-15a4-4d25-8ac7-534e79b88dca}</ProjectGuid>
-    <RootNamespace>CyphenEngine</RootNamespace>
-    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
-  </PropertyGroup>
-  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
-    <ConfigurationType>Application</ConfigurationType>
-    <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v143</PlatformToolset>
-    <CharacterSet>Unicode</CharacterSet>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
-    <ConfigurationType>Application</ConfigurationType>
-    <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v143</PlatformToolset>
-    <WholeProgramOptimization>true</WholeProgramOptimization>
-    <CharacterSet>Unicode</CharacterSet>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
-    <ConfigurationType>Application</ConfigurationType>
-    <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v143</PlatformToolset>
-    <CharacterSet>Unicode</CharacterSet>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
-    <ConfigurationType>Application</ConfigurationType>
-    <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v143</PlatformToolset>
-    <WholeProgramOptimization>true</WholeProgramOptimization>
-    <CharacterSet>Unicode</CharacterSet>
-  </PropertyGroup>
-  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
-  <ImportGroup Label="ExtensionSettings">
-  </ImportGroup>
-  <ImportGroup Label="Shared">
-  </ImportGroup>
-  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-  </ImportGroup>
-  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-  </ImportGroup>
-  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-  </ImportGroup>
-  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-  </ImportGroup>
-  <PropertyGroup Label="UserMacros" />
-  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <ClCompile>
-      <WarningLevel>Level3</WarningLevel>
-      <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <ConformanceMode>true</ConformanceMode>
-    </ClCompile>
-    <Link>
-      <SubSystem>Windows</SubSystem>
-      <GenerateDebugInformation>true</GenerateDebugInformation>
-    </Link>
-  </ItemDefinitionGroup>
-  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <ClCompile>
-      <WarningLevel>Level3</WarningLevel>
-      <FunctionLevelLinking>true</FunctionLevelLinking>
-      <IntrinsicFunctions>true</IntrinsicFunctions>
-      <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <ConformanceMode>true</ConformanceMode>
-    </ClCompile>
-    <Link>
-      <SubSystem>Windows</SubSystem>
-      <EnableCOMDATFolding>true</EnableCOMDATFolding>
-      <OptimizeReferences>true</OptimizeReferences>
-      <GenerateDebugInformation>true</GenerateDebugInformation>
-    </Link>
-  </ItemDefinitionGroup>
-  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <ClCompile>
-      <WarningLevel>Level3</WarningLevel>
-      <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <ConformanceMode>true</ConformanceMode>
-      <PrecompiledHeader>Create</PrecompiledHeader>
-      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
-      <AdditionalIncludeDirectories>$(ProjectDir)Source;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-    </ClCompile>
-    <Link>
-      <SubSystem>Windows</SubSystem>
-      <GenerateDebugInformation>true</GenerateDebugInformation>
-    </Link>
-  </ItemDefinitionGroup>
-  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <ClCompile>
-      <WarningLevel>Level3</WarningLevel>
-      <FunctionLevelLinking>true</FunctionLevelLinking>
-      <IntrinsicFunctions>true</IntrinsicFunctions>
-      <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <ConformanceMode>true</ConformanceMode>
-      <PrecompiledHeader>Create</PrecompiledHeader>
-      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
-      <AdditionalIncludeDirectories>$(ProjectDir)Source;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-    </ClCompile>
-    <Link>
-      <SubSystem>Windows</SubSystem>
-      <EnableCOMDATFolding>true</EnableCOMDATFolding>
-      <OptimizeReferences>true</OptimizeReferences>
-      <GenerateDebugInformation>true</GenerateDebugInformation>
-    </Link>
-  </ItemDefinitionGroup>
-  <ItemGroup>
-    <ClInclude Include="Source\Modules\Renderer\Public\Dx11Renderer.h" />
-    <ClInclude Include="Source\Modules\Renderer\Public\Renderer.h" />
-    <ClInclude Include="Source\Runtime\Public\File.h" />
-    <ClInclude Include="Source\Platform\Independent\Public\LaunchIndependent.h" />
-    <ClInclude Include="Source\Platform\Linux\Public\LaunchLinux.h" />
-    <ClInclude Include="Source\Runtime\Public\Path.h" />
-    <ClInclude Include="Source\Build\Public\define.h" />
-    <ClInclude Include="Source\Build\Public\framework.h" />
-    <ClInclude Include="Source\Build\Public\targetver.h" />
-    <ClInclude Include="Source\Common\Public\Logger.h" />
-    <ClInclude Include="Source\Common\Public\types.h" />
-    <ClInclude Include="Source\Launch\Public\CyphenEngine.h" />
-    <ClInclude Include="Source\pch.h" />
-    <ClInclude Include="Source\Platform\Windows\Public\LaunchWindows.h" />
-    <ClInclude Include="Source\Resource\Resource.h" />
-    <ClInclude Include="Source\Runtime\Public\Time.h" />
-    <ClInclude Include="Source\Utility\Public\TstringUtility.h" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClCompile Include="Source\Modules\Renderer\Private\Dx11Renderer.cpp" />
-    <ClCompile Include="Source\Modules\Renderer\Private\Renderer.cpp" />
-    <ClCompile Include="Source\Runtime\Private\File.cpp" />
-    <ClCompile Include="Source\Platform\Independent\Private\LaunchIndependent.cpp" />
-    <ClCompile Include="Source\Platform\Linux\Private\LaunchLinux.cpp" />
-    <ClCompile Include="Source\Runtime\Private\Path.cpp" />
-    <ClCompile Include="Source\Common\Private\Logger.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
-    </ClCompile>
-    <ClCompile Include="Source\Launch\Private\CyphenEngine.cpp" />
-    <ClCompile Include="Source\pch.cpp" />
-    <ClCompile Include="Source\Platform\Windows\Private\LaunchWindows.cpp" />
-    <ClCompile Include="Source\Runtime\Private\Time.cpp" />
-    <ClCompile Include="Source\Utility\Private\TstringUtility.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <Text Include="DevLog\2025\25.02.11.txt" />
-    <Text Include="DevLog\2025\25.02.17.txt" />
-    <Text Include="DevLog\2025\25.03.06.txt" />
-    <Text Include="DevLog\2025\25.04.07.txt" />
-    <Text Include="DevLog\2025\25.06.04.txt" />
-    <Text Include="DevLog\25.06.12.txt" />
-    <Text Include="DevLog\2025\25.07.02.txt" />
-    <Text Include="DevLog\2025\25.07.03.txt" />
-    <Text Include="DevLog\2025\25.07.04.txt" />
-    <Text Include="DevLog\2025\25.07.09.txt" />
-    <Text Include="DevLog\2025\25.07.17.txt" />
-    <Text Include="DevLog\2025\25.07.24.txt" />
-    <Text Include="DevLog\Todos.txt" />
-    <Text Include="DevLog\폴더 기능 정리.txt" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include=".vs\ProjectSettings.json" />
-    <None Include=".vs\slnx.sqlite" />
-    <None Include=".vs\VSWorkspaceState.json" />
-    <None Include="Source\Build\Public\cpp.hint" />
-  </ItemGroup>
-  <ItemGroup>
-    <ResourceCompile Include="Source\Resource\CyphenEngine.rc" />
-  </ItemGroup>
-  <ItemGroup>
-    <Image Include="Source\Resource\CyphenEngine.ico" />
-    <Image Include="Source\Resource\small.ico" />
-  </ItemGroup>
-  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
-  <ImportGroup Label="ExtensionTargets">
-  </ImportGroup>
+	<ItemGroup Label="ProjectConfigurations">
+		<ProjectConfiguration Include="Debug|Win32">
+			<Configuration>Debug</Configuration>
+			<Platform>Win32</Platform>
+		</ProjectConfiguration>
+		<ProjectConfiguration Include="Release|Win32">
+			<Configuration>Release</Configuration>
+			<Platform>Win32</Platform>
+		</ProjectConfiguration>
+		<ProjectConfiguration Include="Debug|x64">
+			<Configuration>Debug</Configuration>
+			<Platform>x64</Platform>
+		</ProjectConfiguration>
+		<ProjectConfiguration Include="Release|x64">
+			<Configuration>Release</Configuration>
+			<Platform>x64</Platform>
+		</ProjectConfiguration>
+	</ItemGroup>
+	<PropertyGroup Label="Globals">
+		<VCProjectVersion>17.0</VCProjectVersion>
+		<Keyword>Win32Proj</Keyword>
+		<ProjectGuid>{25519c91-15a4-4d25-8ac7-534e79b88dca}</ProjectGuid>
+		<RootNamespace>CyphenEngine</RootNamespace>
+		<WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+	</PropertyGroup>
+	<Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+		<ConfigurationType>Application</ConfigurationType>
+		<UseDebugLibraries>true</UseDebugLibraries>
+		<PlatformToolset>v143</PlatformToolset>
+		<CharacterSet>Unicode</CharacterSet>
+	</PropertyGroup>
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+		<ConfigurationType>Application</ConfigurationType>
+		<UseDebugLibraries>false</UseDebugLibraries>
+		<PlatformToolset>v143</PlatformToolset>
+		<WholeProgramOptimization>true</WholeProgramOptimization>
+		<CharacterSet>Unicode</CharacterSet>
+	</PropertyGroup>
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+		<ConfigurationType>Application</ConfigurationType>
+		<UseDebugLibraries>true</UseDebugLibraries>
+		<PlatformToolset>v143</PlatformToolset>
+		<CharacterSet>Unicode</CharacterSet>
+	</PropertyGroup>
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+		<ConfigurationType>Application</ConfigurationType>
+		<UseDebugLibraries>false</UseDebugLibraries>
+		<PlatformToolset>v143</PlatformToolset>
+		<WholeProgramOptimization>true</WholeProgramOptimization>
+		<CharacterSet>Unicode</CharacterSet>
+	</PropertyGroup>
+	<Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+	<ImportGroup Label="ExtensionSettings">
+	</ImportGroup>
+	<ImportGroup Label="Shared">
+	</ImportGroup>
+	<ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+		<Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+	</ImportGroup>
+	<ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+		<Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+	</ImportGroup>
+	<ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+		<Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+	</ImportGroup>
+	<ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+		<Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+	</ImportGroup>
+	<PropertyGroup Label="UserMacros" />
+	<ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+		<ClCompile>
+			<WarningLevel>Level3</WarningLevel>
+			<SDLCheck>true</SDLCheck>
+			<PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;TARGET_PLATFORM_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+			<ConformanceMode>true</ConformanceMode>
+		</ClCompile>
+		<Link>
+			<SubSystem>Windows</SubSystem>
+			<GenerateDebugInformation>true</GenerateDebugInformation>
+		</Link>
+	</ItemDefinitionGroup>
+	<ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+		<ClCompile>
+			<WarningLevel>Level3</WarningLevel>
+			<FunctionLevelLinking>true</FunctionLevelLinking>
+			<IntrinsicFunctions>true</IntrinsicFunctions>
+			<SDLCheck>true</SDLCheck>
+			<PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;TARGET_PLATFORM_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+			<ConformanceMode>true</ConformanceMode>
+		</ClCompile>
+		<Link>
+			<SubSystem>Windows</SubSystem>
+			<EnableCOMDATFolding>true</EnableCOMDATFolding>
+			<OptimizeReferences>true</OptimizeReferences>
+			<GenerateDebugInformation>true</GenerateDebugInformation>
+		</Link>
+	</ItemDefinitionGroup>
+	<ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+		<ClCompile>
+			<WarningLevel>Level3</WarningLevel>
+			<SDLCheck>true</SDLCheck>
+			<PreprocessorDefinitions>_DEBUG;_WINDOWS;TARGET_PLATFORM_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+			<ConformanceMode>true</ConformanceMode>
+			<PrecompiledHeader>Use</PrecompiledHeader>
+			<PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+			<AdditionalIncludeDirectories>$(ProjectDir)Source;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+		</ClCompile>
+		<Link>
+			<SubSystem>Windows</SubSystem>
+			<GenerateDebugInformation>true</GenerateDebugInformation>
+		</Link>
+	</ItemDefinitionGroup>
+	<ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+		<ClCompile>
+			<WarningLevel>Level3</WarningLevel>
+			<FunctionLevelLinking>true</FunctionLevelLinking>
+			<IntrinsicFunctions>true</IntrinsicFunctions>
+			<SDLCheck>true</SDLCheck>
+			<PreprocessorDefinitions>NDEBUG;_WINDOWS;TARGET_PLATFORM_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+			<ConformanceMode>true</ConformanceMode>
+			<PrecompiledHeader>Use</PrecompiledHeader>
+			<PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+			<AdditionalIncludeDirectories>$(ProjectDir)Source;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+		</ClCompile>
+		<Link>
+			<SubSystem>Windows</SubSystem>
+			<EnableCOMDATFolding>true</EnableCOMDATFolding>
+			<OptimizeReferences>true</OptimizeReferences>
+			<GenerateDebugInformation>true</GenerateDebugInformation>
+		</Link>
+	</ItemDefinitionGroup>
+
+	<!-- 헤더 파일 -->
+	<ItemGroup>
+		<ClInclude Include="Source\Build\Public\define.h" />
+		<ClInclude Include="Source\Build\Public\framework.h" />
+		<ClInclude Include="Source\Build\Public\targetver.h" />
+		<ClInclude Include="Source\Core\Public\File.h" />
+		<ClInclude Include="Source\Core\Public\Logger.h" />
+		<ClInclude Include="Source\Core\Public\Path.h" />
+		<ClInclude Include="Source\Core\Public\Time.h" />
+		<ClInclude Include="Source\Core\Public\TstringUtility.h" />
+		<ClInclude Include="Source\Core\Public\types.h" />
+		<ClInclude Include="Source\Modules\Renderer\Public\Dx11Renderer.h" />
+		<ClInclude Include="Source\Modules\Renderer\Public\Renderer.h" />
+		<ClInclude Include="Source\Resource\Resource.h" />
+		<ClInclude Include="Source\Runtime\Public\CyphenEngine.h" />
+		<ClInclude Include="Source\pch.h" />
+	</ItemGroup>
+
+	<!-- 소스 파일 -->
+	<ItemGroup>
+		<!-- pch : Create -->
+		<ClCompile Include="Source\pch.cpp">
+			<PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
+			<PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
+		</ClCompile>
+
+		<!-- Core -->
+		<ClCompile Include="Source\Core\Private\Logger.cpp" />
+		<ClCompile Include="Source\Core\Private\TstringUtility.cpp" />
+
+		<!-- Platform - Windows -->
+		<ClCompile Include="Source\Platform\Windows\Private\Launch.cpp" />
+		<ClCompile Include="Source\Platform\Windows\Private\File.cpp" />
+		<ClCompile Include="Source\Platform\Windows\Private\Path.cpp" />
+		<ClCompile Include="Source\Platform\Windows\Private\Time.cpp" />
+
+		<!-- Platform - Linux (Windows 빌드 시 제외) -->
+		<ClCompile Include="Source\Platform\Linux\Private\Launch.cpp">
+			<ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+			<ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+			<ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+			<ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+		</ClCompile>
+
+		<!-- Runtime -->
+		<ClCompile Include="Source\Runtime\Private\CyphenEngine.cpp" />
+
+		<!-- Modules -->
+		<ClCompile Include="Source\Modules\Renderer\Private\Dx11Renderer.cpp" />
+		<ClCompile Include="Source\Modules\Renderer\Private\Renderer.cpp" />
+	</ItemGroup>
+
+	<!-- DevLog -->
+	<ItemGroup>
+		<Text Include="DevLog\2025\25.02.11.txt" />
+		<Text Include="DevLog\2025\25.02.17.txt" />
+		<Text Include="DevLog\2025\25.03.06.txt" />
+		<Text Include="DevLog\2025\25.04.07.txt" />
+		<Text Include="DevLog\2025\25.06.04.txt" />
+		<Text Include="DevLog\2025\25.07.02.txt" />
+		<Text Include="DevLog\2025\25.07.03.txt" />
+		<Text Include="DevLog\2025\25.07.04.txt" />
+		<Text Include="DevLog\2025\25.07.09.txt" />
+		<Text Include="DevLog\2025\25.07.17.txt" />
+		<Text Include="DevLog\2025\25.07.24.txt" />
+		<Text Include="DevLog\2026\26.05.27.txt" />
+		<Text Include="DevLog\Todos.txt" />
+		<Text Include="DevLog\폴더 기능 정리.txt" />
+	</ItemGroup>
+
+	<!-- 기타 -->
+	<ItemGroup>
+		<None Include=".vs\ProjectSettings.json" />
+		<None Include=".vs\slnx.sqlite" />
+		<None Include=".vs\VSWorkspaceState.json" />
+		<None Include="Source\Build\Public\cpp.hint" />
+	</ItemGroup>
+	<ItemGroup>
+		<ResourceCompile Include="Source\Resource\CyphenEngine.rc" />
+	</ItemGroup>
+	<ItemGroup>
+		<Image Include="Source\Resource\CyphenEngine.ico" />
+		<Image Include="Source\Resource\small.ico" />
+	</ItemGroup>
+	<Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+	<ImportGroup Label="ExtensionTargets">
+	</ImportGroup>
 </Project>

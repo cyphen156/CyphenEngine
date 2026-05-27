@@ -1,15 +1,92 @@
-Launch : 애플리케이션 진입점
+Build
+    빌드 시스템 규약 및 설정을 관리합니다.
 
-Build : 빌드 프로세스
+    - 플랫폼 타겟 정의
+    - Debug / Release 설정
+    - 모듈 활성화 여부
+    - Export / Import 규약
+    - 문자열 정책 및 시스템 헤더 설정
 
-Pch : 사전 컴파일 헤더
 
-Common : 공통 설정
+Core
+    Runtime과 Editor 양쪽에서 사용하는
+    OS 비종속 엔진 기반 계층입니다.
 
-Resource : 리소스 파일
+    - CString / CTEXT 문자열 규약
+    - Types / Enum 정의
+    - Logger
+    - 공통 Utility
+    - 공통 선언 및 구현
 
-Editor : 에디터 관련 설정
+    주의:
+    Core는 Windows/Linux API를 직접 호출하지 않습니다.
 
-Runtime : 런타임 관련 설정
 
-Platform : 플랫폼 관련 설정
+Editor
+    CyphenEngine Editor Runtime 계층입니다.
+
+    - PIE
+    - SceneView
+    - GameView
+    - Inspector
+    - Content Browser
+
+    Editor는 Runtime을 사용하지만,
+    Runtime은 Editor를 알지 못합니다.
+
+
+Modules
+    선택적으로 포함 가능한 엔진 기능 모듈입니다.
+
+    - Renderer
+    - Audio
+    - Physics
+    - Input
+
+    빌드 설정에 따라 활성화 여부가 결정됩니다.
+
+
+Platform
+    플랫폼별 진입점 및 OS 종속 구현 계층입니다.
+
+    Windows:
+    - wWinMain
+    - QueryPerformanceCounter
+    - GetCurrentDirectoryW
+
+    Linux:
+    - main
+    - clock_gettime
+    - getcwd
+
+    플랫폼별 cpp 구현은
+    빌드 타겟에 따라 선택됩니다.
+
+
+Resource
+    애플리케이션 리소스 파일을 관리합니다.
+
+    - .rc
+    - .ico
+    - resource.h
+
+
+Runtime
+    게임 실행을 담당하는 엔진 본체입니다.
+
+    - CyphenEngine
+    - GameRuntime
+    - World
+    - Scene
+    - Tick / Render 루프
+
+    Runtime은 게임 실행 로직만 담당하며,
+    Editor 계층에는 의존하지 않습니다.
+
+
+pch
+    공통 include 및 사전 컴파일 헤더입니다.
+
+    - 표준 라이브러리
+    - 공통 헤더 include
+    - Build / Core 기본 include

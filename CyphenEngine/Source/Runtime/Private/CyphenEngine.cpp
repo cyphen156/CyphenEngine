@@ -1,4 +1,4 @@
-﻿// CyphenEngine.cpp : 애플리케이션에 대한 공통 진입점을 정의합니다.
+// CyphenEngine.cpp : 애플리케이션에 대한 공통 진입점을 정의합니다.
 //
 #include "pch.h"
 #include "Launch/Public/CyphenEngine.h"

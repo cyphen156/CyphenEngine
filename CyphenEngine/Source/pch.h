@@ -8,22 +8,15 @@
 #define new new(_NORMAL_BLOCK, __FILE__, __LINE__)
 #endif
 
-// C Ç¥ÁØ Çì´õ ÆÄÀÏÀÔ´Ï´Ù.
+// C í‘œì¤€ í—¤ë” íŒŒì¼ì…ë‹ˆë‹¤.
 #include <stdio.h>
 #include <stdlib.h>
 #include <malloc.h>
 #include <memory.h>
-#include <tchar.h>
 
-// C++ Ç¥ÁØ Çì´õ ÆÄÀÏ ÀÔ´Ï´Ù.
+// C++ í‘œì¤€ í—¤ë” íŒŒì¼ ì…ë‹ˆë‹¤.
 #include <iostream>
 #include <string>
 
 
-// Ä¿½ºÅÒ ÇÊ¼ö Çì´õ ÆÄÀÏ ÀÔ´Ï´Ù.
-#include "Build/Public/define.h"
-#include "Build/Public/framework.h"
-#include "Common/Public/types.h"
-
-using namespace std;
 #endif // PCH_H
