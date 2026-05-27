@@ -168,18 +168,18 @@
     <ClCompile Include="Source\Utility\Private\TstringUtility.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <Text Include="DevLog\25.02.11.txt" />
-    <Text Include="DevLog\25.02.17.txt" />
-    <Text Include="DevLog\25.03.06.txt" />
-    <Text Include="DevLog\25.04.07.txt" />
-    <Text Include="DevLog\25.06.04.txt" />
+    <Text Include="DevLog\2025\25.02.11.txt" />
+    <Text Include="DevLog\2025\25.02.17.txt" />
+    <Text Include="DevLog\2025\25.03.06.txt" />
+    <Text Include="DevLog\2025\25.04.07.txt" />
+    <Text Include="DevLog\2025\25.06.04.txt" />
     <Text Include="DevLog\25.06.12.txt" />
-    <Text Include="DevLog\25.07.02.txt" />
-    <Text Include="DevLog\25.07.03.txt" />
-    <Text Include="DevLog\25.07.04.txt" />
-    <Text Include="DevLog\25.07.09.txt" />
-    <Text Include="DevLog\25.07.17.txt" />
-    <Text Include="DevLog\25.07.24.txt" />
+    <Text Include="DevLog\2025\25.07.02.txt" />
+    <Text Include="DevLog\2025\25.07.03.txt" />
+    <Text Include="DevLog\2025\25.07.04.txt" />
+    <Text Include="DevLog\2025\25.07.09.txt" />
+    <Text Include="DevLog\2025\25.07.17.txt" />
+    <Text Include="DevLog\2025\25.07.24.txt" />
     <Text Include="DevLog\Todos.txt" />
     <Text Include="DevLog\폴더 기능 정리.txt" />
   </ItemGroup>
