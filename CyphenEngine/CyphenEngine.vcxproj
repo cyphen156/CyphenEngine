@@ -138,11 +138,12 @@
     <ClInclude Include="Source\Build\Public\framework.h" />
     <ClInclude Include="Source\Build\Public\PlatformDefine.h" />
     <ClInclude Include="Source\Build\Public\targetver.h" />
+    <ClInclude Include="Source\Core\Public\CChar.h" />
+    <ClInclude Include="Source\Core\Public\CString.h" />
     <ClInclude Include="Source\Core\Public\File.h" />
     <ClInclude Include="Source\Core\Public\Logger.h" />
     <ClInclude Include="Source\Core\Public\Path.h" />
     <ClInclude Include="Source\Core\Public\Time.h" />
-    <ClInclude Include="Source\Core\Public\TstringUtility.h" />
     <ClInclude Include="Source\Core\Public\types.h" />
     <ClInclude Include="Source\Modules\Renderer\Public\Dx11Renderer.h" />
     <ClInclude Include="Source\Modules\Renderer\Public\Renderer.h" />
@@ -159,7 +160,6 @@
     </ClCompile>
     <!-- Core -->
     <ClCompile Include="Source\Core\Private\Logger.cpp" />
-    <ClCompile Include="Source\Core\Private\TstringUtility.cpp" />
     <!-- Platform - Windows -->
     <ClCompile Include="Source\Platform\Windows\Private\Launch.cpp" />
     <ClCompile Include="Source\Platform\Windows\Private\File.cpp" />

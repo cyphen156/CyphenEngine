@@ -1,4 +1,5 @@
 #pragma once
+#include "Core/Public/CChar.h"
 
 enum EngineStatus
 {
@@ -7,7 +8,7 @@ enum EngineStatus
 	Running,
 	Paused,
 	Terminated,
-	
+
 	None
 };
 
@@ -23,15 +24,16 @@ enum class RendererType
 	NONE
 };
 
-constexpr const TCHAR* RendererNames[] = {
-	TTEXT("Dx11"),
-	TTEXT("Dx12"),	
-	TTEXT("Vulkan"),
-	TTEXT("OpenGL"),
-	TTEXT("Metal"),
-	TTEXT("GDI_Plus"),
+constexpr const CChar* RendererNames[] =
+{
+	CTEXT("Dx11"),
+	CTEXT("Dx12"),
+	CTEXT("Vulkan"),
+	CTEXT("OpenGL"),
+	CTEXT("Metal"),
+	CTEXT("GDI_Plus"),
 
-	TTEXT("NONE")
+	CTEXT("NONE")
 };
 
 enum class LogLevel
@@ -44,9 +46,10 @@ enum class LogLevel
 	COUNT
 };
 
-constexpr const TCHAR* LogLevelNames[] = {
-	TTEXT("Info"),
-	TTEXT("Warning"),
-	TTEXT("Error"),
-	TTEXT("Fatal")
+constexpr const CChar* LogLevelNames[] =
+{
+	CTEXT("Info"),
+	CTEXT("Warning"),
+	CTEXT("Error"),
+	CTEXT("Fatal")
 };
