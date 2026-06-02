@@ -145,10 +145,10 @@
     <ClInclude Include="Source\Core\Public\Path.h" />
     <ClInclude Include="Source\Core\Public\Time.h" />
     <ClInclude Include="Source\Core\Public\types.h" />
+    <ClInclude Include="Source\Engine\Public\CyphenEngine.h" />
     <ClInclude Include="Source\Modules\Renderer\Public\Dx11Renderer.h" />
     <ClInclude Include="Source\Modules\Renderer\Public\Renderer.h" />
     <ClInclude Include="Source\Resource\Resource.h" />
-    <ClInclude Include="Source\Runtime\Public\CyphenEngine.h" />
     <ClInclude Include="Source\pch.h" />
   </ItemGroup>
   <!-- 소스 파일 -->
@@ -160,7 +160,9 @@
     </ClCompile>
     <!-- Core -->
     <ClCompile Include="Source\Core\Private\Logger.cpp" />
-    <!-- Platform - Windows -->
+	<!-- Engine -->
+	<ClCompile Include="Source\Engine\Private\CyphenEngine.cpp" />
+	<!-- Platform - Windows -->
     <ClCompile Include="Source\Platform\Windows\Private\Launch.cpp" />
     <ClCompile Include="Source\Platform\Windows\Private\File.cpp" />
     <ClCompile Include="Source\Platform\Windows\Private\Path.cpp" />
@@ -173,7 +175,6 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </ClCompile>
     <!-- Runtime -->
-    <ClCompile Include="Source\Runtime\Private\CyphenEngine.cpp" />
     <!-- Modules -->
     <ClCompile Include="Source\Modules\Renderer\Private\Dx11Renderer.cpp" />
     <ClCompile Include="Source\Modules\Renderer\Private\Renderer.cpp" />

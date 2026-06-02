@@ -81,7 +81,6 @@ Resource
 Runtime
     게임 실행을 담당하는 엔진 본체입니다.
 
-    - CyphenEngine
     - GameRuntime
     - World
     - Scene
