@@ -1,8 +1,9 @@
 #pragma once
 
-#include "Core/Public/types.h"
+#include <atomic>
 
-class Launch;
+#include "Core/Public/types.h"
+#include "HAL/Public/Launch.h"
 
 /**
  * 플랫폼 독립 애플리케이션 호스트입니다.
@@ -35,8 +36,11 @@ private:
 	void Run();
 	void ShutdownEngine();
 
+	bool RequestShutdown();
+	bool ChangeEngineStatus(EngineStatus expected, EngineStatus desired);
+
 private:
-	EngineStatus engineStatus;
+	std::atomic<EngineStatus> engineStatus;
 };
 
 extern const CyphenEngine* const GEngine;

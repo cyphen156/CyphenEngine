@@ -10,18 +10,20 @@
 // 수동 주입합니다.
 // ============================================================================
 
+#if (defined(TARGET_PLATFORM_WINDOWS) + defined(TARGET_PLATFORM_LINUX) + defined(TARGET_PLATFORM_ANDROID) + defined(TARGET_PLATFORM_MAC)) != 1
+	#error "Exactly one TARGET_PLATFORM_* must be defined in build settings."
+#endif
+
 #if defined(TARGET_PLATFORM_WINDOWS)
-#define PLATFORM_WINDOWS 1
+	#define PLATFORM_WINDOWS 1
 
 #elif defined(TARGET_PLATFORM_LINUX)
-#define PLATFORM_LINUX 1
+	#define PLATFORM_LINUX 1
 
 #elif defined(TARGET_PLATFORM_ANDROID)
-#define PLATFORM_ANDROID 1
+	#define PLATFORM_ANDROID 1
 
 #elif defined(TARGET_PLATFORM_MAC)
-#define PLATFORM_MAC 1
+	#define PLATFORM_MAC 1
 
-#else
-#error "No target platform defined. Please define TARGET_PLATFORM_* in build settings."
 #endif

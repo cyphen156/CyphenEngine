@@ -7,6 +7,7 @@ enum EngineStatus
 	Ready,
 	Running,
 	Paused,
+	Terminating,
 	Terminated,
 
 	None

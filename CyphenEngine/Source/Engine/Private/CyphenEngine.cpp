@@ -1,9 +1,6 @@
 #include "pch.h"
-#include "Engine/Public/CyphenEngine.h"
 
-#include "Core/Public/Path.h"
-#include "Core/Public/Time.h"
-#include "Modules/Renderer/Public/Renderer.h"
+#include "Engine/Public/CyphenEngine.h"
 
 CyphenEngine::CyphenEngine()
 	: engineStatus(Initializing)
@@ -16,53 +13,70 @@ CyphenEngine::~CyphenEngine()
 
 EngineStatus CyphenEngine::GetEngineStatus() const
 {
-	return engineStatus;
+	return engineStatus.load();
 }
 
 bool CyphenEngine::InitEngine()
 {
-	if (engineStatus != Initializing)
+	if (engineStatus.load() != Initializing)
 	{
 		return false;
 	}
 
-	Path::Init();
-	Time::Init();
-	Renderer::Initialize();
-
-	engineStatus = Ready;
+	engineStatus.store(Ready);
 
 	return true;
 }
 
+// 엔진의 메인 루프입니다. Run()이 호출되면 엔진은 Running 상태가 될 때까지 대기한 후, Running 상태가 유지되는 동안 계속해서 루프를 실행합니다.
 void CyphenEngine::Run()
 {
-	if (engineStatus == Ready)
+	if (ChangeEngineStatus(Ready, Running) == false)
 	{
-		engineStatus = Running;
-	}
+		if (engineStatus.load() == Terminating)
+		{
+			ShutdownEngine();
+		}
 
-	if (engineStatus != Running)
-	{
 		return;
 	}
 
-	Time::Update();
+	while (engineStatus.load() == Running)
+	{
+		// TODO:
+		// Time::Update();
+		// BUILD_TARGET 기준 Runtime Tick
+	}
 
-	// TODO:
-	// Module Update
-	// Runtime Update
-	// Editor Update
+	ShutdownEngine();
 }
 
 void CyphenEngine::ShutdownEngine()
 {
-	if (engineStatus == Terminated)
+	if (engineStatus.load() == Terminated)
 	{
 		return;
 	}
 
-	Renderer::Shutdown();
+	engineStatus.store(Terminated);
+}
 
-	engineStatus = Terminated;
+bool CyphenEngine::RequestShutdown()
+{
+	EngineStatus currentStatus = engineStatus.load();
+
+	while (currentStatus != Terminating && currentStatus != Terminated)
+	{
+		if (engineStatus.compare_exchange_strong(currentStatus, Terminating))
+		{
+			return true;
+		}
+	}
+
+	return false;
+}
+
+bool CyphenEngine::ChangeEngineStatus(EngineStatus expected, EngineStatus desired)
+{
+	return engineStatus.compare_exchange_strong(expected, desired);
 }

@@ -1,20 +1,92 @@
 #include "pch.h"
-#include "Platform/Windows/Public/LaunchWindows.h"
-#include "Launch/Public/CyphenEngine.h"
+
+#include <thread>
+
+#include "HAL/Public/Launch.h"
+#include "Platform/Windows/Resource/Resource.h"
+#include "Engine/Public/CyphenEngine.h"
 
 #define MAX_LOADSTRING 100
 
-// 전역 변수:
+// 전역 변수
 HINSTANCE hInst = nullptr;                      // 현재 인스턴스입니다.
-HWND g_hMainWindow = nullptr;                   // 엔진 자체의 윈도우 -> 주 윈도우
+HWND g_hMainWindow = nullptr;                   // 엔진 자체의 윈도우
 WCHAR szTitle[MAX_LOADSTRING];                  // 제목 표시줄 텍스트입니다.
 WCHAR szWindowClass[MAX_LOADSTRING];            // 기본 창 클래스 이름입니다.
 
-// 이 코드 모듈에 포함된 함수의 선언을 전달합니다:
+// 이 코드 모듈에 포함된 함수의 선언을 전달합니다
 ATOM                MyRegisterClass(HINSTANCE hInstance);
 HWND                InitInstance(HINSTANCE, int);
 LRESULT CALLBACK    WndProc(HWND, UINT, WPARAM, LPARAM);
 INT_PTR CALLBACK    About(HWND, UINT, WPARAM, LPARAM);
+
+int APIENTRY wWinMain(
+	_In_ HINSTANCE hInstance,
+	_In_opt_ HINSTANCE hPrevInstance,
+	_In_ LPWSTR lpCmdLine,
+	_In_ int nCmdShow);
+
+class Launch
+{
+public:
+	static const CyphenEngine& GetEngine();
+
+private:
+	friend int APIENTRY wWinMain(
+		_In_ HINSTANCE hInstance,
+		_In_opt_ HINSTANCE hPrevInstance,
+		_In_ LPWSTR lpCmdLine,
+		_In_ int nCmdShow);
+
+	static HANDLE GetEngineThreadHandle();
+	static bool StartEngineThread();
+	static void RequestEngineShutdown();
+	static void JoinEngineThread();
+
+private:
+	static CyphenEngine engineInstance;
+	static std::thread engineThread;
+};
+
+CyphenEngine Launch::engineInstance;
+std::thread Launch::engineThread;
+
+const CyphenEngine* const GEngine = &Launch::GetEngine();
+
+const CyphenEngine& Launch::GetEngine()
+{
+	return engineInstance;
+}
+
+HANDLE Launch::GetEngineThreadHandle()
+{
+	return engineThread.native_handle();
+}
+
+bool Launch::StartEngineThread()
+{
+	if (engineInstance.InitEngine() == false)
+	{
+		return false;
+	}
+	engineThread = std::thread(&CyphenEngine::Run, &engineInstance);
+
+	return true;
+}
+
+
+void Launch::RequestEngineShutdown()
+{
+	engineInstance.RequestShutdown();
+}
+
+void Launch::JoinEngineThread()
+{
+	if (engineThread.joinable())
+	{
+		engineThread.join();
+	}
+}
 
 int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 	_In_opt_ HINSTANCE hPrevInstance,
@@ -40,49 +112,73 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 		return FALSE;
 	}
 
-	// 엔진 인스턴스 생성
-	GEngine = new CyphenEngine();
-
 	// 초기화
-	if (!GEngine->InitEngine(g_hMainWindow))
-	{
-		return -1;
-	}
-
-	//MessageBox(nullptr, Path::Root().c_str(), L"Error", MB_OK);
 	HACCEL hAccelTable = LoadAccelerators(hInstance, MAKEINTRESOURCE(IDC_CYPHENENGINE));
 
-	MSG msg;
+	// 엔진의 메인 루프를 별도의 스레드로 실행합니다.
+	bool isEngineStarted = Launch::StartEngineThread();
 
-	// 기본 메시지 루프입니다:
-	while (1)
+	if (!isEngineStarted)
 	{
-		if (PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE))
+		return FALSE;
+	}
+
+	HANDLE engineThreadHandle = Launch::GetEngineThreadHandle();
+
+	HANDLE waitHandles[] =
+	{
+		engineThreadHandle,
+	};
+
+	const DWORD waitHandleCount = static_cast<DWORD>(sizeof(waitHandles) / sizeof(waitHandles[0]));
+	const DWORD engineThreadSignaledResult = WAIT_OBJECT_0;
+	const DWORD messageQueueSignaledResult = WAIT_OBJECT_0 + waitHandleCount;
+
+	MSG msg = {};
+
+	bool canAcceptMessage = true;
+
+	while (canAcceptMessage)
+	{
+		DWORD waitResult = MsgWaitForMultipleObjectsEx(
+			waitHandleCount,
+			waitHandles,
+			INFINITE,
+			QS_ALLINPUT,
+			MWMO_INPUTAVAILABLE);
+
+		if (waitResult == engineThreadSignaledResult)
 		{
-			if (msg.message == WM_QUIT)
+			break;
+		}
+
+		if (waitResult == messageQueueSignaledResult)
+		{
+			while (PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE))
 			{
-				break;
-			}
-			if (!TranslateAccelerator(msg.hwnd, hAccelTable, &msg))
-			{
-				TranslateMessage(&msg);
-				DispatchMessage(&msg);
+				if (msg.message == WM_QUIT)
+				{
+					Launch::RequestEngineShutdown();
+					canAcceptMessage = false;
+					break;
+				}
+
+				if (!TranslateAccelerator(msg.hwnd, hAccelTable, &msg))
+				{
+					TranslateMessage(&msg);
+					DispatchMessage(&msg);
+				}
 			}
 		}
-		else
-		{
-			if (GEngine->_engineStatus == Terminated)
-			{
-				GEngine->ShutdownEngine();
-				break;
-			}
 
-			GEngine->Run();
+		if (waitResult == WAIT_FAILED)
+		{
+			Launch::RequestEngineShutdown();
+			break;
 		}
 	}
 
-	delete GEngine;
-	GEngine = nullptr;
+	Launch::JoinEngineThread();
 
 #ifdef _DEBUG
 	_ASSERT(_CrtCheckMemory());

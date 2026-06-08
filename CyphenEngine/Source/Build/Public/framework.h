@@ -13,7 +13,7 @@
 	#define NOMINMAX
 	#define WIN32_LEAN_AND_MEAN
 
-	#include "targetver.h"
+	#include "Platform/Windows/Public/targetver.h"
 	#include <Windows.h>
 
 	using LARGEINTEGER = LARGE_INTEGER;
