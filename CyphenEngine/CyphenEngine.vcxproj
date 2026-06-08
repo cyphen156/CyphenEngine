@@ -163,6 +163,7 @@
     <Text Include="DevLog\2025\25.07.24.txt" />
     <Text Include="DevLog\2026\26.05.27.txt" />
     <Text Include="DevLog\2026\26.06.01.txt" />
+    <Text Include="DevLog\2026\26.06.08.txt" />
     <Text Include="DevLog\Todos.txt" />
     <Text Include="DevLog\폴더 기능 정리.txt" />
   </ItemGroup>
