@@ -89,7 +89,9 @@
     <ClInclude Include="Source\Build\Public\framework.h" />
     <ClInclude Include="Source\Build\Public\PlatformDefine.h" />
     <ClInclude Include="Source\Core\Public\CDateTime.h" />
+    <ClInclude Include="Source\Core\Public\Path.h" />
     <ClInclude Include="Source\Core\Public\Time.h" />
+    <ClInclude Include="Source\HAL\Private\PlatformPath.h" />
     <ClInclude Include="Source\HAL\Public\Launch.h" />
     <!-- Platform -->
     <ClInclude Include="Source\Platform\Windows\Public\targetver.h" />
@@ -101,7 +103,6 @@
     <ClInclude Include="Source\Core\Public\types.h" />
     <!-- HAL -->
     <ClInclude Include="Source\HAL\Public\File.h" />
-    <ClInclude Include="Source\HAL\Public\Path.h" />
     <ClInclude Include="Source\HAL\Private\PlatformTime.h" />
     <!-- Engine -->
     <ClInclude Include="Source\Engine\Public\CyphenEngine.h" />
@@ -111,6 +112,7 @@
   <!-- 소스 파일 -->
   <ItemGroup>
     <!-- pch : Create -->
+    <ClCompile Include="Source\Core\Private\Path.cpp" />
     <ClCompile Include="Source\Core\Private\Time.cpp" />
     <ClCompile Include="Source\pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
@@ -123,7 +125,6 @@
     <!-- Platform - Windows -->
     <ClCompile Include="Source\Platform\Windows\Private\Launch.cpp" />
     <ClCompile Include="Source\Platform\Windows\Private\File.cpp" />
-    <ClCompile Include="Source\Platform\Windows\Private\Path.cpp" />
     <!-- Platform - Linux (현재 전체 제외) -->
     <ClCompile Include="Source\Platform\Linux\Private\Launch.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
@@ -141,6 +142,7 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </ClCompile>
+    <ClCompile Include="Source\Platform\Windows\Private\PlatformPath.cpp" />
     <ClCompile Include="Source\Platform\Windows\Private\PlatformTime.cpp" />
   </ItemGroup>
   <!-- 리소스 -->

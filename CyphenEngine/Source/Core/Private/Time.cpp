@@ -8,6 +8,26 @@ double Time::previousTime = 0.0;
 double Time::currentTime = 0.0;
 double Time::deltaTime = 0.0;
 
+double Time::ElapsedTime()
+{
+	return currentTime - startTime;
+}
+
+double Time::DeltaTime()
+{
+	return deltaTime;
+}
+
+CDateTime Time::LocalDateTime()
+{
+	return PlatformTime::LocalDateTime();
+}
+
+CDateTime Time::UtcDateTime()
+{
+	return PlatformTime::UtcDateTime();
+}
+
 bool Time::Init()
 {
 	if (PlatformTime::Init() == false)
@@ -29,24 +49,4 @@ void Time::Tick()
 	currentTime = PlatformTime::MonotonicSeconds();
 
 	deltaTime = currentTime - previousTime;
-}
-
-double Time::ElapsedTime()
-{
-	return currentTime - startTime;
-}
-
-double Time::DeltaTime()
-{
-	return deltaTime;
-}
-
-CDateTime Time::LocalDateTime()
-{
-	return PlatformTime::LocalDateTime();
-}
-
-CDateTime Time::UtcDateTime()
-{
-	return PlatformTime::UtcDateTime();
 }

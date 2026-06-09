@@ -2,6 +2,8 @@
 
 #include "Core/Public/CDateTime.h"
 
+class CyphenEngine;
+
 // ============================================================================
 // Time
 // ----------------------------------------------------------------------------
@@ -33,9 +35,6 @@
 class Time final
 {
 public:
-	static bool Init();
-	static void Tick();
-
 	static double ElapsedTime();
 	static double DeltaTime();
 
@@ -43,6 +42,8 @@ public:
 	static CDateTime UtcDateTime();
 
 private:
+	friend class CyphenEngine;
+
 	Time() = delete;
 	~Time() = delete;
 
@@ -52,6 +53,9 @@ private:
 	Time(Time&& other) = delete;
 	Time& operator=(Time&& other) = delete;
 
+	static bool Init();
+	static void Tick();
+	
 	// PlatformTime::MonotonicSeconds()에서 가져온 초 단위 단조 시간입니다.
 	static double startTime;
 	static double previousTime;
