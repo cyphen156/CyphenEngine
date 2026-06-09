@@ -88,7 +88,7 @@
     <ClInclude Include="Source\Build\Public\define.h" />
     <ClInclude Include="Source\Build\Public\framework.h" />
     <ClInclude Include="Source\Build\Public\PlatformDefine.h" />
-    <ClInclude Include="Source\Core\Public\CSystemDateTime.h" />
+    <ClInclude Include="Source\Core\Public\CDateTime.h" />
     <ClInclude Include="Source\Core\Public\Time.h" />
     <ClInclude Include="Source\HAL\Public\Launch.h" />
     <!-- Platform -->

@@ -3,55 +3,50 @@
 #include "Core/Public/Time.h"
 #include "HAL/Private/PlatformTime.h"
 
-double Time::startSeconds = 0.0;
-double Time::previousSeconds = 0.0;
-double Time::currentSeconds = 0.0;
-double Time::deltaSeconds = 0.0;
+double Time::startTime = 0.0;
+double Time::previousTime = 0.0;
+double Time::currentTime = 0.0;
+double Time::deltaTime = 0.0;
 
 bool Time::Init()
 {
-	if (PlatformTime::Init() != true)
+	if (PlatformTime::Init() == false)
 	{
 		return false;
 	}
 
-	startSeconds = PlatformTime::NowSeconds();
-	previousSeconds = startSeconds;
-	currentSeconds = startSeconds;
-	deltaSeconds = 0.0;
+	currentTime = PlatformTime::MonotonicSeconds();
+	previousTime = currentTime;
+	startTime = currentTime;
+	deltaTime = 0.0;
 
 	return true;
 }
 
 void Time::Tick()
 {
-	previousSeconds = currentSeconds;
-	currentSeconds = PlatformTime::NowSeconds();
+	previousTime = currentTime;
+	currentTime = PlatformTime::MonotonicSeconds();
 
-	deltaSeconds = currentSeconds - previousSeconds;
+	deltaTime = currentTime - previousTime;
 }
 
-double Time::NowSeconds()
+double Time::ElapsedTime()
 {
-	return PlatformTime::NowSeconds();
+	return currentTime - startTime;
 }
 
-double Time::EngineElapsedSeconds()
+double Time::DeltaTime()
 {
-	return currentSeconds - startSeconds;
+	return deltaTime;
 }
 
-double Time::DeltaSeconds()
+CDateTime Time::LocalDateTime()
 {
-	return deltaSeconds;
+	return PlatformTime::LocalDateTime();
 }
 
-CSystemDateTime Time::LocalSystemDateTime()
+CDateTime Time::UtcDateTime()
 {
-	return PlatformTime::LocalSystemDateTime();
-}
-
-CSystemDateTime Time::UtcSystemDateTime()
-{
-	return PlatformTime::UtcSystemDateTime();
+	return PlatformTime::UtcDateTime();
 }

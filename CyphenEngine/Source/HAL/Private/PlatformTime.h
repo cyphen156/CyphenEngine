@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Core/Public/CSystemDateTime.h"
+#include "Core/Public/CDateTime.h"
 
 class Time;
 
@@ -13,13 +13,13 @@ class Time;
 // OS별 시간 획득 방식을 숨기고, Time이 사용할 수 있는 공통 값으로 변환합니다.
 //
 // 책임:
-//   - 고해상도 단조 시간 획득
+//   - 플랫폼 단조 시간 획득
 //   - 현재 Local 시스템 날짜/시간 획득
 //   - 현재 UTC 시스템 날짜/시간 획득
 //
 // 비책임:
-//   - DeltaSeconds 계산
-//   - EngineElapsedSeconds 계산
+//   - DeltaTime 계산
+//   - ElapsedTime 계산
 //   - CString 포맷
 //   - FPS / FixedUpdate / FrameLimiter 정책
 //
@@ -43,10 +43,9 @@ private:
 	PlatformTime(PlatformTime&& other) = delete;
 	PlatformTime& operator=(PlatformTime&& other) = delete;
 
-private:
 	static bool Init();
-	static double NowSeconds();
+	static double MonotonicSeconds();
 
-	static CSystemDateTime LocalSystemDateTime();
-	static CSystemDateTime UtcSystemDateTime();
+	static CDateTime LocalDateTime();
+	static CDateTime UtcDateTime();
 };
