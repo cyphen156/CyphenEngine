@@ -3,7 +3,6 @@
 #include <atomic>
 
 #include "Core/Public/types.h"
-#include "HAL/Public/Launch.h"
 
 /**
  * 플랫폼 독립 애플리케이션 호스트입니다.
@@ -15,6 +14,9 @@
  * 외부에서는 CyphenEngine 인스턴스를 직접 생성하거나 파괴할 수 없습니다.
  * 생명주기 제어는 Launch 계층에서만 수행합니다.
  */
+
+class Launch;
+
 class CyphenEngine
 {
 public:

@@ -1,6 +1,7 @@
 #include "pch.h"
 
 #include "Engine/Public/CyphenEngine.h"
+#include "Core/Public/Time.h"
 
 CyphenEngine::CyphenEngine()
 	: engineStatus(Initializing)
@@ -19,6 +20,11 @@ EngineStatus CyphenEngine::GetEngineStatus() const
 bool CyphenEngine::InitEngine()
 {
 	if (engineStatus.load() != Initializing)
+	{
+		return false;
+	}
+
+	if (Time::Init() == false)
 	{
 		return false;
 	}
@@ -43,8 +49,8 @@ void CyphenEngine::Run()
 
 	while (engineStatus.load() == Running)
 	{
+		Time::Tick();
 		// TODO:
-		// Time::Update();
 		// BUILD_TARGET 기준 Runtime Tick
 	}
 
