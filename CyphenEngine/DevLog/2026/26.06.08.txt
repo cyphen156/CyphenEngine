@@ -29,90 +29,90 @@ Branch: #1-프로젝트-리팩토링
 1. 메시지 루프와 엔진 실행 루프 분리
 	wWinMain은 Win32 메시지 루프를 유지하도록 정리했습니다.
 
-    Launch 클래스가 CyphenEngine 인스턴스와 engineThread를 정적 멤버로 소유하고,
-    CyphenEngine::Run을 별도 엔진 스레드에서 실행하도록 변경했습니다.
+	Launch 클래스가 CyphenEngine 인스턴스와 engineThread를 정적 멤버로 소유하고,
+	CyphenEngine::Run을 별도 엔진 스레드에서 실행하도록 변경했습니다.
 
-    기존처럼 메시지 처리 여부에 따라 엔진 Tick이 밀리는 구조가 아니라,
-    메시지 스레드와 엔진 스레드가 독립적으로 동작할 수 있는 기반을 만들었습니다.
+	기존처럼 메시지 처리 여부에 따라 엔진 Tick이 밀리는 구조가 아니라,
+	메시지 스레드와 엔진 스레드가 독립적으로 동작할 수 있는 기반을 만들었습니다.
 
 2. 메시지 대기 구조 정리
-    MsgWaitForMultipleObjectsEx를 사용하여
-    OS 메시지 큐와 엔진 스레드 종료 신호를 동시에 감시하도록 정리했습니다.
+	MsgWaitForMultipleObjectsEx를 사용하여
+	OS 메시지 큐와 엔진 스레드 종료 신호를 동시에 감시하도록 정리했습니다.
 
-    메시지 큐에 처리할 메시지가 들어오면 PeekMessage로 메시지를 꺼내고,
-    DispatchMessage를 통해 WndProc으로 전달합니다.
+	메시지 큐에 처리할 메시지가 들어오면 PeekMessage로 메시지를 꺼내고,
+	DispatchMessage를 통해 WndProc으로 전달합니다.
 
-    엔진 스레드가 내부적으로 종료될 경우,
-    메시지 스레드는 engineThreadHandle의 signaled 상태를 감지하고 메시지 루프를 빠져나올 수 있도록 정리했습니다.
+	엔진 스레드가 내부적으로 종료될 경우,
+	메시지 스레드는 engineThreadHandle의 signaled 상태를 감지하고 메시지 루프를 빠져나올 수 있도록 정리했습니다.
 
-    waitHandleCount 및 signaled result 값을 상수로 분리하여,
-    대기 대상 개수와 반환값 계산이 하드코딩되지 않도록 정리했습니다.
+	waitHandleCount 및 signaled result 값을 상수로 분리하여,
+	대기 대상 개수와 반환값 계산이 하드코딩되지 않도록 정리했습니다.
 
 3. 종료 시퀀스 정리
-    외부 종료 경로와 내부 종료 경로를 분리해서 정리했습니다.
+	외부 종료 경로와 내부 종료 경로를 분리해서 정리했습니다.
 
-    외부 종료는 WM_QUIT 수신 후 Launch::RequestEngineShutdown을 호출하고,
-    CyphenEngine::RequestShutdown을 통해 엔진 상태를 Terminating으로 전환하도록 정리했습니다.
+	외부 종료는 WM_QUIT 수신 후 Launch::RequestEngineShutdown을 호출하고,
+	CyphenEngine::RequestShutdown을 통해 엔진 상태를 Terminating으로 전환하도록 정리했습니다.
 
-    메시지 스레드는 ShutdownEngine을 직접 호출하지 않고,
-    메시지 루프를 빠져나온 뒤 JoinEngineThread로 엔진 스레드 종료를 기다립니다.
+	메시지 스레드는 ShutdownEngine을 직접 호출하지 않고,
+	메시지 루프를 빠져나온 뒤 JoinEngineThread로 엔진 스레드 종료를 기다립니다.
 
-    내부 종료는 엔진 내부에서 Terminating 상태로 전환된 뒤,
-    Running 루프 조건이 false가 되어 Run 루프를 빠져나오고,
-    엔진 스레드 안에서 ShutdownEngine을 직접 호출하는 흐름으로 정리했습니다.
+	내부 종료는 엔진 내부에서 Terminating 상태로 전환된 뒤,
+	Running 루프 조건이 false가 되어 Run 루프를 빠져나오고,
+	엔진 스레드 안에서 ShutdownEngine을 직접 호출하는 흐름으로 정리했습니다.
 
 4. EngineStatus 상태 흐름 정리
-    EngineStatus에 Terminating 상태를 추가했습니다.
+	EngineStatus에 Terminating 상태를 추가했습니다.
 
-    Terminating은 실제 정리가 끝난 상태가 아니라,
-    종료 요청이 들어왔고 Running 루프를 빠져나가야 하는 중간 상태로 정의했습니다.
+	Terminating은 실제 정리가 끝난 상태가 아니라,
+	종료 요청이 들어왔고 Running 루프를 빠져나가야 하는 중간 상태로 정의했습니다.
 
-    Terminated는 ShutdownEngine이 끝난 뒤의 최종 종료 상태로 유지했습니다.
+	Terminated는 ShutdownEngine이 끝난 뒤의 최종 종료 상태로 유지했습니다.
 
-    이번 작업 기준 상태 전이는 다음 흐름으로 정리했습니다.
+	이번 작업 기준 상태 전이는 다음 흐름으로 정리했습니다.
 
-    Initializing → Ready
-    Ready → Running
-    Running → Terminating
-    Terminating → Terminated
+	Initializing → Ready
+	Ready → Running
+	Running → Terminating
+	Terminating → Terminated
 
 5. CyphenEngine 상태 전이 함수 정리
-    ChangeEngineStatus(expected, desired)를 추가하여,
-    compare_exchange_strong 기반으로 상태 전이를 처리하도록 정리했습니다.
+	ChangeEngineStatus(expected, desired)를 추가하여,
+	compare_exchange_strong 기반으로 상태 전이를 처리하도록 정리했습니다.
 
-    RequestShutdown은 외부 종료 요청을 받는 진입점으로 두고,
-    CAS 루프를 통해 Terminating 상태로 전환하도록 정리했습니다.
+	RequestShutdown은 외부 종료 요청을 받는 진입점으로 두고,
+	CAS 루프를 통해 Terminating 상태로 전환하도록 정리했습니다.
 
-    이미 Terminating 또는 Terminated 상태라면 추가 종료 요청은 실패 처리하도록 했습니다.
+	이미 Terminating 또는 Terminated 상태라면 추가 종료 요청은 실패 처리하도록 했습니다.
 
-    Run은 Ready에서 Running으로 전환한 뒤,
-    Running 상태 동안 엔진 루프를 유지하고,
-    Running이 아닌 상태로 바뀌면 루프를 빠져나와 ShutdownEngine을 호출하도록 정리했습니다.
+	Run은 Ready에서 Running으로 전환한 뒤,
+	Running 상태 동안 엔진 루프를 유지하고,
+	Running이 아닌 상태로 바뀌면 루프를 빠져나와 ShutdownEngine을 호출하도록 정리했습니다.
 
 6. BuildInfo 계층 추가
-    BuildInfo.h를 추가하여 빌드 타겟과 빌드 플랫폼 정보를 컴파일 타임 상수로 확정했습니다.
+	BuildInfo.h를 추가하여 빌드 타겟과 빌드 플랫폼 정보를 컴파일 타임 상수로 확정했습니다.
 
-    BUILD_TARGET_EDITOR / BUILD_TARGET_GAME / BUILD_TARGET_SERVER 기준으로 BuildTarget을 확정하고,
-    PLATFORM_* 기준으로 BuildPlatform을 확정하도록 정리했습니다.
+	BUILD_TARGET_EDITOR / BUILD_TARGET_GAME / BUILD_TARGET_SERVER 기준으로 BuildTarget을 확정하고,
+	PLATFORM_* 기준으로 BuildPlatform을 확정하도록 정리했습니다.
 
-    IsEditorBuild, IsGameBuild, IsServerBuild,
-    IsWindowsBuild, IsLinuxBuild, IsAndroidBuild, IsMacBuild 등의 constexpr 편의 플래그를 추가했습니다.
+	IsEditorBuild, IsGameBuild, IsServerBuild,
+	IsWindowsBuild, IsLinuxBuild, IsAndroidBuild, IsMacBuild 등의 constexpr 편의 플래그를 추가했습니다.
 
-    BUILD_TARGET_*가 중복 정의되거나 정의되지 않은 경우 컴파일 에러가 발생하도록 정리했습니다.
+	BUILD_TARGET_*가 중복 정의되거나 정의되지 않은 경우 컴파일 에러가 발생하도록 정리했습니다.
 
 7. PCH 및 빌드 헤더 의존 정리
-    BuildInfo.h가 pch.h에 의존하지 않도록 정리했습니다.
+	BuildInfo.h가 pch.h에 의존하지 않도록 정리했습니다.
 
-    BuildInfo.h는 PlatformDefine.h를 직접 참조하여,
-    PLATFORM_* 확정 결과를 기준으로 BuildPlatform을 결정하도록 정리했습니다.
+	BuildInfo.h는 PlatformDefine.h를 직접 참조하여,
+	PLATFORM_* 확정 결과를 기준으로 BuildPlatform을 결정하도록 정리했습니다.
 
-    pch.h에는 BuildInfo.h 및 types.h include를 추가하고,
-    플랫폼 정의 / 빌드 정보 / 프레임워크 / 공통 매크로 include 흐름을 정리했습니다.
+	pch.h에는 BuildInfo.h 및 types.h include를 추가하고,
+	플랫폼 정의 / 빌드 정보 / 프레임워크 / 공통 매크로 include 흐름을 정리했습니다.
 
 8. 후속 작업 기준 정리
-    이번 작업에서는 이벤트 큐, PlatformEventQueue, RuntimeConfig, LaunchContext, Renderer 동적 모듈 구조는 추가하지 않았습니다.
+	이번 작업에서는 이벤트 큐, PlatformEventQueue, RuntimeConfig, LaunchContext, Renderer 동적 모듈 구조는 추가하지 않았습니다.
 
-    현재 단계에서는 메시지 루프와 엔진 실행 루프를 분리하고,
-    종료 요청과 실제 종료 처리를 상태 기반으로 분리하는 것에 집중했습니다.
+	현재 단계에서는 메시지 루프와 엔진 실행 루프를 분리하고,
+	종료 요청과 실제 종료 처리를 상태 기반으로 분리하는 것에 집중했습니다.
 
-    다음 작업 범위는 Time 클래스, File 클래스, Path 클래스 정리로 이어가기로 했습니다.
+	다음 작업 범위는 Time 클래스, File 클래스, Path 클래스 정리로 이어가기로 했습니다.

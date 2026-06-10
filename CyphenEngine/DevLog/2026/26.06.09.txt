@@ -2,121 +2,119 @@ Date: 2026-06-10
 Branch: #1-프로젝트-리팩토링
 
 작업 요약
-    Time 시스템과 Path 시스템의 Core / Platform 책임 경계를 재정리했습니다.
+	Time 시스템과 Path 시스템의 Core / Platform 책임 경계를 재정리했습니다.
 
-    Time 작업에서는 플랫폼별 시간 획득 책임을 PlatformTime HAL로 분리하고,
-    Core Time은 엔진 루프 기준의 시간 샘플, ElapsedTime, DeltaTime 계산만 담당하도록 정리했습니다.
+	Time 작업에서는 플랫폼별 시간 획득 책임을 PlatformTime HAL로 분리하고,
+	Core Time은 엔진 루프 기준의 시간 샘플, ElapsedTime, DeltaTime 계산만 담당하도록 정리했습니다.
 
-    Path 작업에서는 Path가 프로젝트 루트나 Content / Saved / Logs 같은 엔진 정책 경로를 보관하는 시스템이 아니라,
-    외부에서 전달받은 경로 문자열을 조작하고 판별하는 무상태 정적 경로 유틸리티라는 기준을 확정했습니다.
+	Path 작업에서는 Path가 프로젝트 루트나 Content / Saved / Logs 같은 엔진 정책 경로를 보관하는 시스템이 아니라,
+	외부에서 전달받은 경로 문자열을 조작하고 판별하는 무상태 정적 경로 유틸리티라는 기준을 확정했습니다.
 
 
 진행한 커밋
-    #1_9 [Refactor] Time 시스템 Core 정책과 PlatformTime HAL 분리
-
-    #1_10 [Refactor] Time 시스템 책임 분리 및 플랫폼 단조 시간 처리 정리
-
-    #1_11 [Refactor] Path 경로 유틸리티 헤더 정의
+	#1_9 [Refactor] Time 시스템 Core 정책과 PlatformTime HAL 분리
+	#1_10 [Refactor] Time 시스템 책임 분리 및 플랫폼 단조 시간 처리 정리
+	#1_11 [Refactor] Path 경로 유틸리티 헤더 정의
 
 
 주요 정리 내용
-    1. Time / PlatformTime 책임 분리
-        PlatformTime은 OS별 시간 획득과 단조 시간 정규화를 담당하도록 분리했습니다.
+	1. Time / PlatformTime 책임 분리
+		PlatformTime은 OS별 시간 획득과 단조 시간 정규화를 담당하도록 분리했습니다.
 
-        Windows 구현에서는 QueryPerformanceFrequency / QueryPerformanceCounter 기반 고해상도 단조 시간을 사용하고,
-        QueryPerformanceFrequency 실패 시 GetTickCount64 fallback을 사용하는 구조로 정리했습니다.
+		Windows 구현에서는 QueryPerformanceFrequency / QueryPerformanceCounter 기반 고해상도 단조 시간을 사용하고,
+		QueryPerformanceFrequency 실패 시 GetTickCount64 fallback을 사용하는 구조로 정리했습니다.
 
-        QueryPerformanceFrequency는 성공했으나 QueryPerformanceCounter 초기 획득에 실패한 경우에는
-        고해상도 타이머 상태가 비정상인 것으로 보고 초기화 실패로 처리하는 방향을 확정했습니다.
+		QueryPerformanceFrequency는 성공했으나 QueryPerformanceCounter 초기 획득에 실패한 경우에는
+		고해상도 타이머 상태가 비정상인 것으로 보고 초기화 실패로 처리하는 방향을 확정했습니다.
 
-    2. Time 클래스 역할 정리
-        Time은 Runtime 사용자 공개 API가 아니라 Core 내부 시간 시스템으로 정리했습니다.
+	2. Time 클래스 역할 정리
+		Time은 Runtime 사용자 공개 API가 아니라 Core 내부 시간 시스템으로 정리했습니다.
 
-        Time은 다음 값을 내부에서 관리합니다.
-            startTime
-            previousTime
-            currentTime
-            deltaTime
+		Time은 다음 값을 내부에서 관리합니다.
+			startTime
+			previousTime
+			currentTime
+			deltaTime
 
-        Init() / Tick()은 외부 사용자가 호출하는 API가 아니라,
-        CyphenEngine이 엔진 생명주기 안에서 호출하는 내부 갱신 함수로 보는 방향을 확정했습니다.
+		Init() / Tick()은 외부 사용자가 호출하는 API가 아니라,
+		CyphenEngine이 엔진 생명주기 안에서 호출하는 내부 갱신 함수로 보는 방향을 확정했습니다.
 
-        외부 조회용 API는 다음과 같이 유지합니다.
-            ElapsedTime()
-            DeltaTime()
-            LocalDateTime()
-            UtcDateTime()
+		외부 조회용 API는 다음과 같이 유지합니다.
+			ElapsedTime()
+			DeltaTime()
+			LocalDateTime()
+			UtcDateTime()
 
-    3. CDateTime 값 타입 정리
-        기존 CSystemDateTime은 CDateTime으로 이름을 변경했습니다.
+	3. CDateTime 값 타입 정리
+		기존 CSystemDateTime은 CDateTime으로 이름을 변경했습니다.
 
-        CDateTime은 OS별 날짜/시각 구조체를 Core에 직접 노출하지 않기 위한 순수 값 타입입니다.
+		CDateTime은 OS별 날짜/시각 구조체를 Core에 직접 노출하지 않기 위한 순수 값 타입입니다.
 
-        Windows SYSTEMTIME은 PlatformTime 내부에서만 사용하고,
-        Core 계층에는 CDateTime으로 변환된 값만 전달하도록 정리했습니다.
+		Windows SYSTEMTIME은 PlatformTime 내부에서만 사용하고,
+		Core 계층에는 CDateTime으로 변환된 값만 전달하도록 정리했습니다.
 
-        CDateTime은 Local / UTC 날짜와 시간을 전달하기 위한 타입이며,
-        DeltaTime / ElapsedTime 계산용 타입으로 사용하지 않는다는 기준을 확정했습니다.
+		CDateTime은 Local / UTC 날짜와 시간을 전달하기 위한 타입이며,
+		DeltaTime / ElapsedTime 계산용 타입으로 사용하지 않는다는 기준을 확정했습니다.
 
-    4. Runtime 사용자 API 분리 방향 정리
-        Core Time은 엔진 내부 시간 기준으로 유지하고,
-        사용자 공개 API는 추후 Runtime 계층의 CClock / CDateTime 계열에서 제공하는 방향으로 정리했습니다.
+	4. Runtime 사용자 API 분리 방향 정리
+		Core Time은 엔진 내부 시간 기준으로 유지하고,
+		사용자 공개 API는 추후 Runtime 계층의 CClock / CDateTime 계열에서 제공하는 방향으로 정리했습니다.
 
-        Runtime이 Core Time을 호출하는 것은 정상적인 의존 방향이며,
-        static API 호출이므로 별도 객체 비용 없이 동일한 시간 기준을 사용할 수 있다고 판단했습니다.
+		Runtime이 Core Time을 호출하는 것은 정상적인 의존 방향이며,
+		static API 호출이므로 별도 객체 비용 없이 동일한 시간 기준을 사용할 수 있다고 판단했습니다.
 
-    5. Path 책임 범위 정리
-        Path는 프로젝트 루트나 엔진 정책 경로를 보관하지 않는 무상태 정적 경로 유틸리티로 정의했습니다.
+	5. Path 책임 범위 정리
+		Path는 프로젝트 루트나 엔진 정책 경로를 보관하지 않는 무상태 정적 경로 유틸리티로 정의했습니다.
 
-        Path의 책임은 다음 범위로 제한했습니다.
-            경로 결합
-            경로 구분자 정규화
-            명시된 basePath 기준 절대 경로 / 상대 경로 변환
-            디렉터리명 / 파일명 / 확장자 추출
-            절대 경로 / 상대 경로 판별
+		Path의 책임은 다음 범위로 제한했습니다.
+			경로 결합
+			경로 구분자 정규화
+			명시된 basePath 기준 절대 경로 / 상대 경로 변환
+			디렉터리명 / 파일명 / 확장자 추출
+			절대 경로 / 상대 경로 판별
 
-        Path의 비책임은 다음과 같이 정리했습니다.
-            프로젝트 루트 보관
-            OS 현재 working directory 조회
-            파일 존재 검사
-            파일 읽기 / 쓰기
-            디렉터리 생성 / 삭제
-            Content / Saved / Logs / Config 같은 엔진 정책 경로 제공
-            Resource / Asset 로딩 정책
-            OS working directory 변경
+		Path의 비책임은 다음과 같이 정리했습니다.
+			프로젝트 루트 보관
+			OS 현재 working directory 조회
+			파일 존재 검사
+			파일 읽기 / 쓰기
+			디렉터리 생성 / 삭제
+			Content / Saved / Logs / Config 같은 엔진 정책 경로 제공
+			Resource / Asset 로딩 정책
+			OS working directory 변경
 
-    6. Path API 헤더 정의
-        Path는 순수 헤더 정의까지만 진행했습니다.
+	6. Path API 헤더 정의
+		Path는 순수 헤더 정의까지만 진행했습니다.
 
-        CurrentDirectory(), ProjectRoot(), ToAbsolute(path), ToRelative(path)는 제외했습니다.
-        기준 경로가 필요한 변환은 호출자가 basePath를 명시하도록 정리했습니다.
+		CurrentDirectory(), ProjectRoot(), ToAbsolute(path), ToRelative(path)는 제외했습니다.
+		기준 경로가 필요한 변환은 호출자가 basePath를 명시하도록 정리했습니다.
 
-        Path 헤더에는 다음 API를 정의했습니다.
-            Combine()
-            Normalize()
-            ToAbsolute(path, basePath)
-            ToRelative(path, basePath)
-            GetDirectoryName()
-            GetFileName()
-            GetFileNameWithoutExtension()
-            GetExtension()
-            IsAbsolute()
-            IsRelative()
+		Path 헤더에는 다음 API를 정의했습니다.
+			Combine()
+			Normalize()
+			ToAbsolute(path, basePath)
+			ToRelative(path, basePath)
+			GetDirectoryName()
+			GetFileName()
+			GetFileNameWithoutExtension()
+			GetExtension()
+			IsAbsolute()
+			IsRelative()
 
 
 정리된 설계 기준
-    - Core Time은 내부 시간 시스템이다.
-    - PlatformTime은 OS 시간 획득 HAL이다.
-    - Runtime 사용자 API는 추후 CClock / CDateTime 계층에서 제공한다.
-    - CDateTime은 날짜/시각 값 타입이며, 프레임 시간 계산용 타입이 아니다.
-    - Path는 무상태 경로 문자열 유틸리티다.
-    - 프로젝트 루트와 엔진 정책 경로는 Path가 아니라 Application / ProjectContext / ProjectPath 계층에서 다룬다.
-    - File / FileSystem은 Path를 사용할 수 있지만, Path는 File을 알면 안 된다.
+	- Core Time은 내부 시간 시스템이다.
+	- PlatformTime은 OS 시간 획득 HAL이다.
+	- Runtime 사용자 API는 추후 CClock / CDateTime 계층에서 제공한다.
+	- CDateTime은 날짜/시각 값 타입이며, 프레임 시간 계산용 타입이 아니다.
+	- Path는 무상태 경로 문자열 유틸리티다.
+	- 프로젝트 루트와 엔진 정책 경로는 Path가 아니라 Application / ProjectContext / ProjectPath 계층에서 다룬다.
+	- File / FileSystem은 Path를 사용할 수 있지만, Path는 File을 알면 안 된다.
 
 
 다음 작업
-    - Path.cpp 구현
-    - PlatformPath 포함 여부와 책임 재검토
-    - Application / ProjectContext 쪽 프로젝트 루트 보관 위치 설계
-    - File / FileSystem과 Path의 의존 방향 정리
-    - Runtime CClock / CDateTime 공개 API 설계
+	- Path.cpp 구현
+	- PlatformPath 포함 여부와 책임 재검토
+	- Application / ProjectContext 쪽 프로젝트 루트 보관 위치 설계
+	- File / FileSystem과 Path의 의존 방향 정리
+	- Runtime CClock / CDateTime 공개 API 설계

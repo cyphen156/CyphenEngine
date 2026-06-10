@@ -1,72 +1,73 @@
 ## 해야 할 일
 
 1. Time Class
-
-   * 멀티스레드 분기 가능성을 고려합니다.
-   * 엔진 루프가 별도 스레드로 분리된 구조를 기준으로 초기화 / 업데이트 위치를 재검토합니다.
-   * 우선은 엔진 메인 루프 기준 DeltaTime / FPS / 누적 시간 계산을 정리합니다.
+	- PlatformTime HAL 분리는 완료된 상태입니다.
+	- Core Time은 엔진 루프 기준 DeltaTime / FPS / 누적 시간 계산만 담당합니다.
+	- 멀티스레드 분기 가능성을 고려합니다.
+	- 엔진 루프가 별도 스레드로 분리된 구조를 기준으로 초기화 / 업데이트 위치를 재검토합니다.
 
 2. File Class
-
-   * 반드시 멀티스레드 분기와 동기 / 비동기 분할을 제공합니다.
-   * 멀티스레드 처리는 File 클래스 자체가 아니라 FileSystem 또는 Resource 클래스를 별도로 만들어서 제공할 예정입니다.
-   * 기본적인 파일 입출력은 해결된 상태입니다.
-   * 파일 중간에 데이터 추가하는 기능은 추후 확장합니다.
-   * 파일 확장자 유형을 따로 받아서 처리할 수 있도록 구현합니다.
+	- 기본적인 단일 파일 동기 I/O는 정리된 상태입니다.
+	- File은 bool 반환과 out 파라미터를 사용하는 공개 저수준 API입니다.
+	- File은 TaskSystem / ResourceManager / FileSystem을 알지 않습니다.
+	- PlatformFile은 HAL/Private 내부 구현으로 분리된 상태입니다.
+	- Windows API 문자열 경계는 WindowsString이 담당합니다.
+	- CString과 raw byte 사이의 텍스트 인코딩 변환은 TextCodec이 담당합니다.
+	- 파일 중간에 데이터 추가하는 기능은 추후 확장합니다.
+	- 파일 확장자 유형 기반 처리는 ResourceManager 또는 FileSystem 계층에서 검토합니다.
+	- 비동기 파일 로딩은 File 클래스 자체가 아니라 ResourceManager / TaskSystem 계층에서 처리합니다.
 
 3. Path Class
-
-   * 플랫폼별 경로 구분자를 정리합니다.
-   * 실행 파일 기준 경로 / 프로젝트 기준 경로 / 엔진 기준 경로를 구분할 수 있도록 정리합니다.
-   * 이후 Content / Project / Engine / Saved / Temp 경로 체계를 만들기 위한 기반으로 사용합니다.
-   * CString / CChar 문자열 정책과 충돌하지 않도록 경로 문자열 처리 기준을 정리합니다.
+	- 순수 경로 문자열 유틸리티 구현은 완료된 상태입니다.
+	- Normalize / Combine / GetDirectoryName / GetFileName / GetFileNameWithoutExtension / GetExtension을 제공합니다.
+	- Path는 프로젝트 루트 / Content / Saved / Logs 같은 엔진 정책 경로를 보관하지 않습니다.
+	- PlatformPath는 현재 보류합니다.
+	- Windows 특수 디렉터리, 실행 파일 기준 경로, 현재 작업 디렉터리 등이 필요해지는 시점에 PlatformDirectory 또는 PlatformKnownPath 계층을 별도로 검토합니다.
+	- 이후 Content / Project / Engine / Saved / Temp 경로 체계를 만들기 위한 상위 정책 계층을 검토합니다.
 
 4. Logger Class
+	- 메인 스레드 처리 또는 로그 메시지 큐 스레드 분기 처리를 고려합니다.
+	- 디버그용 윈도우를 만들 경우 해당 창에 텍스트 렌더링을 연결할 예정입니다.
+	- 플랫폼별 출력 처리를 분리합니다.
+	- Fatal / Internal 계열 로그는 크래시 추적을 위해 즉시 출력 및 중단 처리 방향을 고려합니다.
+	- 이후 Diagnostics 계층으로 LogRecord 생성과 큐 적재 책임을 분리할지 검토합니다.
 
-   * 메인 스레드 처리 또는 로그 메시지 큐 스레드 분기 처리를 고려합니다.
-   * 디버그용 윈도우를 만들 경우 해당 창에 텍스트 렌더링을 연결할 예정입니다.
-   * 플랫폼별 출력 처리를 분리합니다.
-   * Fatal / Internal 계열 로그는 크래시 추적을 위해 즉시 출력 및 중단 처리 방향을 고려합니다.
+5. ResourceManager / FileSystem
+	- File이 제공하는 동기 I/O API를 TaskSystem / WorkerThread에 넘겨 비동기 로딩 구조를 구성합니다.
+	- 파일 존재 여부, 삭제, 복사, 이동, 디렉터리 생성 / 삭제 같은 파일 시스템 관리 기능을 별도 계층으로 분리합니다.
+	- AssetId / ResourceHandle / PakHandle / Offset 기반 접근 구조를 검토합니다.
+	- 런타임 hot path에서는 문자열 path 기반 반복 접근을 피하도록 설계합니다.
 
-5. Renderer
+6. Renderer
+	- 플랫폼별 렌더러를 구현합니다.
+		- OpenGL
+		- DirectX
+		- Vulkan
+		- Metal
 
-   * 플랫폼별 렌더러를 구현합니다.
+	- 유저는 런처 실행 시 렌더러를 선택할 수 있습니다.
+		- 렌더러 변경 시 런처 재시작이 필요합니다.
 
-     * OpenGL
-     * DirectX
-     * Vulkan
-     * Metal
+	- 빌드 시점에도 렌더러를 선택할 수 있도록 구현합니다.
+		- 작업 결과물이 렌더러에 종속적이기 때문입니다.
 
-   * 유저는 런처 실행 시 렌더러를 선택할 수 있습니다.
+	- 렌더러 구성 방식 후보
+		1. 렌더러 모듈들을 전부 포함하고 런타임 분기문으로 선택
+			- 매크로 기반 최적화가 어려움
+			- 래퍼 클래스 또는 공통 인터페이스 필요 가능성 있음
 
-     * 렌더러 변경 시 런처 재시작이 필요합니다.
+		2. 외부 런처 사용 및 RHI별 별도 실행 파일 빌드
+			- 매크로가 래퍼 클래스 역할을 대체 가능
+			- 플랫폼 / 렌더러 조합에 따라 실행 파일 수 증가
 
-   * 빌드 시점에도 렌더러를 선택할 수 있도록 구현합니다.
+	- 결정 사항
+		- 렌더러는 모듈 DLL로 구성합니다.
+		- 매크로 기반 빌드로 최적화 가능하게 설계합니다.
+		- 실행 파일 수는 늘어나지만 성능 및 구조적 이점을 우선합니다.
 
-     * 작업 결과물이 렌더러에 종속적이기 때문입니다.
-
-   * 렌더러 구성 방식 후보
-
-     1. 렌더러 모듈들을 전부 포함하고 런타임 분기문으로 선택
-
-        * 매크로 기반 최적화가 어려움
-        * 래퍼 클래스 또는 공통 인터페이스 필요 가능성 있음
-
-     2. 외부 런처 사용 및 RHI별 별도 실행 파일 빌드
-
-        * 매크로가 래퍼 클래스 역할을 대체 가능
-        * 플랫폼 / 렌더러 조합에 따라 실행 파일 수 증가
-
-   * 결정 사항
-
-     * 렌더러는 모듈 DLL로 구성합니다.
-     * 매크로 기반 빌드로 최적화 가능하게 설계합니다.
-     * 실행 파일 수는 늘어나지만 성능 및 구조적 이점을 우선합니다.
-
-6. Deferred
-
-   * BuildInfo를 CyphenEngine::Run 내부 BUILD_TARGET 분기에 실제 연결합니다.
-   * Run 루프에 Time::Update 또는 임시 yield 처리를 추가합니다.
-   * WndProc → PlatformEventQueue → Engine Tick 소비 구조를 추가합니다.
-   * LaunchContext는 엔진 초기화 정보 전달이 필요해지는 시점에 다시 검토합니다.
-   * RuntimeConfig는 렌더러 선택 / PIE / Standalone Play / Multiplay Mode 같은 런타임 옵션을 다룰 때 추가합니다.
+7. Deferred
+	- BuildInfo를 CyphenEngine::Run 내부 BUILD_TARGET 분기에 실제 연결합니다.
+	- Run 루프에 Time::Update 또는 임시 yield 처리를 추가합니다.
+	- WndProc → PlatformEventQueue → Engine Tick 소비 구조를 추가합니다.
+	- LaunchContext는 엔진 초기화 정보 전달이 필요해지는 시점에 다시 검토합니다.
+	- RuntimeConfig는 렌더러 선택 / PIE / Standalone Play / Multiplay Mode 같은 런타임 옵션을 다룰 때 추가합니다.
