@@ -8,32 +8,35 @@
 // - 플랫폼 시스템 헤더 포함
 // - 플랫폼별 OS 타입 규약 확정
 // ============================================================================
-#if defined(PLATFORM_WINDOWS)
 
-	#define NOMINMAX
-	#define WIN32_LEAN_AND_MEAN
+#include "Build/Public/PlatformDefine.h"
 
-	#include "Platform/Windows/Public/targetver.h"
-	#include <Windows.h>
+#if PLATFORM_WINDOWS
 
-	using LARGEINTEGER = LARGE_INTEGER;
+#define NOMINMAX
+#define WIN32_LEAN_AND_MEAN
 
-#elif defined(PLATFORM_LINUX)
+#include "Platform/Windows/Public/targetver.h"
+#include <Windows.h>
 
-	#include <cstdint>
+using LARGEINTEGER = LARGE_INTEGER;
 
-	using LARGEINTEGER = int64_t;
+#elif PLATFORM_LINUX
 
-#elif defined(PLATFORM_ANDROID)
+#include <cstdint>
 
-	#error "Android framework is not implemented."
+using LARGEINTEGER = int64_t;
 
-#elif defined(PLATFORM_MAC)
+#elif PLATFORM_ANDROID
 
-	#error "Mac framework is not implemented."
+#error "Android framework is not implemented."
+
+#elif PLATFORM_MAC
+
+#error "Mac framework is not implemented."
 
 #else
 
-	#error "Unsupported platform."
+#error "Unsupported platform."
 
 #endif

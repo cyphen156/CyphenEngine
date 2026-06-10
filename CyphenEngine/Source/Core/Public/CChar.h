@@ -1,57 +1,49 @@
 #pragma once
 
+#include "Build/Public/define.h"
+
 // ============================================================================
 // CChar
 // ----------------------------------------------------------------------------
-// CyphenEngine character code unit policy.
+// CyphenEngine 내부 문자열 코드 유닛 정책.
 //
-// CChar is the code unit type used by CString.
-// Exactly one policy must be selected.
+// CChar 정책은 Core가 결정하지 않습니다.
+// Build / define.h 또는 빌드 시스템에서 주입된 정책을 소비합니다.
 //
-// Default:
-//     CCHAR_IS_UTF8  = 1
-//     CCHAR_IS_UTF16 = 0
+// CString은 엔진 내부 문자열 타입입니다.
+// 외부 파일 저장 인코딩은 TextEncoding으로 별도 관리합니다.
 //
-// Rules:
-//     CChar is not a user-visible character.
-//     CString indexing is based on CChar code units.
-//     Human-readable text processing belongs to CText or text search layer.
-//     Source files must be saved as UTF-8.
+// 주의:
+//     CString::length()는 사람이 보는 글자 수가 아닙니다.
+//     CString::length()는 CChar 코드 유닛 개수입니다.
 // ============================================================================
 
 using CAnsiChar = char;
 using CUtf8Char = char;
 using CUtf16Char = char16_t;
+using CWideChar = wchar_t;
 using CUtf32Char = char32_t;
 
 #define CANSI_TEXT(str) str
 #define CUTF8_TEXT(str) str
 #define CUTF16_TEXT(str) u##str
+#define CWIDE_TEXT(str) L##str
 #define CUTF32_TEXT(str) U##str
-
-#ifndef CCHAR_IS_UTF8
-#define CCHAR_IS_UTF8 1
-#endif
-
-#ifndef CCHAR_IS_UTF16
-#define CCHAR_IS_UTF16 0
-#endif
-
-#if CCHAR_IS_UTF8 == CCHAR_IS_UTF16
-#error "Exactly one CChar policy must be selected."
-#endif
 
 #if CCHAR_IS_UTF8
 
 using CChar = CUtf8Char;
-
 #define CTEXT(str) CUTF8_TEXT(str)
 
 #elif CCHAR_IS_UTF16
 
 using CChar = CUtf16Char;
-
 #define CTEXT(str) CUTF16_TEXT(str)
+
+#elif CCHAR_IS_WCHAR
+
+using CChar = CWideChar;
+#define CTEXT(str) CWIDE_TEXT(str)
 
 #else
 
@@ -71,5 +63,11 @@ static_assert(sizeof(CChar) == 1, "CChar must be 1 byte in UTF-8 policy.");
 #elif CCHAR_IS_UTF16
 
 static_assert(sizeof(CChar) == 2, "CChar must be 2 bytes in UTF-16 policy.");
+
+#elif CCHAR_IS_WCHAR
+
+#if PLATFORM_WINDOWS
+static_assert(sizeof(CChar) == 2, "CChar must be 2 bytes in Windows wchar policy.");
+#endif
 
 #endif
