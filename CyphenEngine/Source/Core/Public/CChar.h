@@ -16,6 +16,7 @@
 //     CChar is not a user-visible character.
 //     CString indexing is based on CChar code units.
 //     Human-readable text processing belongs to CText or text search layer.
+//     Source files must be saved as UTF-8.
 // ============================================================================
 
 using CAnsiChar = char;
@@ -24,7 +25,7 @@ using CUtf16Char = char16_t;
 using CUtf32Char = char32_t;
 
 #define CANSI_TEXT(str) str
-#define CUTF8_TEXT(str) u8##str
+#define CUTF8_TEXT(str) str
 #define CUTF16_TEXT(str) u##str
 #define CUTF32_TEXT(str) U##str
 
