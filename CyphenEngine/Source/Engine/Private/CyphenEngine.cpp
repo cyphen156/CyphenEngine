@@ -2,6 +2,8 @@
 
 #include "Engine/Public/CyphenEngine.h"
 #include "Core/Public/Time.h"
+#include "Core/Public/Path.h"
+#include "Core/Public/File.h"
 
 CyphenEngine::CyphenEngine()
 	: engineStatus(Initializing)
@@ -50,6 +52,7 @@ void CyphenEngine::Run()
 	while (engineStatus.load() == Running)
 	{
 		Time::Tick();
+
 		// TODO:
 		// BUILD_TARGET 기준 Runtime Tick
 	}
@@ -86,3 +89,5 @@ bool CyphenEngine::ChangeEngineStatus(EngineStatus expected, EngineStatus desire
 {
 	return engineStatus.compare_exchange_strong(expected, desired);
 }
+
+

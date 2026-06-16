@@ -115,6 +115,20 @@ Platform
 	Platform 계층은 Core가 선언한 정책을 실제 OS API 호출로 연결합니다.
 	Windows API 문자열 경계는 WindowsString이 담당합니다.
 
+Test
+	Debug 빌드에서 엔진 내부 기준선을 검증하는 테스트 계층입니다.
+
+	- CoreIo 테스트
+	- 회귀 확인용 최소 테스트 코드
+	- Launch 단계에서 엔진 스레드 시작 전 실행
+	- Runtime / Engine 및 Release 빌드에서는 의존하지 않습니다.
+	- 유일한 호출자는 Launch의 _DEBUG 게이트입니다.
+	- 테스트 실패는 실행 흐름을 차단하지 않고 OutputDebugString으로만 보고합니다.
+
+	주의:
+	테스트 등록기 / 리플렉션 / xUnit 류 프레임워크화를 하지 않습니다.
+	FileSystem / ResourceManager / PlatformKnownPath 같은 미확정 계층을 테스트 편의를 위해 앞당기지 않습니다.
+
 
 Resource
 	애플리케이션 리소스 파일을 관리합니다.

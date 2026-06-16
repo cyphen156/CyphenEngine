@@ -112,6 +112,7 @@
     <ClInclude Include="Source\Platform\Windows\Resource\Resource.h" />
     <!-- pch -->
     <ClInclude Include="Source\pch.h" />
+    <ClInclude Include="Source\Test\CoreIO\CoreIOTests.h" />
   </ItemGroup>
   <!-- 소스 파일 -->
   <ItemGroup>
@@ -150,6 +151,7 @@
     <ClCompile Include="Source\Platform\Windows\Private\PlatformFile.cpp" />
     <ClCompile Include="Source\Platform\Windows\Private\PlatformTime.cpp" />
     <ClCompile Include="Source\Platform\Windows\Private\WindowsString.cpp" />
+    <ClCompile Include="Source\Test\CoreIO\CoreIOTests.cpp" />
   </ItemGroup>
   <!-- 리소스 -->
   <ItemGroup>
@@ -176,8 +178,11 @@
     <Text Include="DevLog\2026\26.06.01.txt" />
     <Text Include="DevLog\2026\26.06.08.txt" />
     <Text Include="DevLog\2026\26.06.09.txt" />
+    <Text Include="DevLog\2026\26.06.10.txt" />
+    <Text Include="DevLog\2026\26.06.15.txt" />
     <Text Include="DevLog\Todos.txt" />
     <Text Include="DevLog\폴더 기능 정리.txt" />
+    <Text Include="Resources\Test\CoreIo\ReadAllText_UTF8_LF.txt" />
   </ItemGroup>
   <!-- 기타 -->
   <ItemGroup>

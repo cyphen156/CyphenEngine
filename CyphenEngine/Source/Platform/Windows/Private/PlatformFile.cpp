@@ -158,6 +158,11 @@ bool PlatformFile::ReadAllBytes(
 
 	if (fileHandle == INVALID_HANDLE_VALUE)
 	{
+		wchar_t currentDirectory[MAX_PATH] = {};
+		::GetCurrentDirectoryW(MAX_PATH, currentDirectory);
+
+		DWORD lastError = ::GetLastError();
+
 		return false;
 	}
 

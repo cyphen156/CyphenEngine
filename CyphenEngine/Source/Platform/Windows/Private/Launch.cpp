@@ -1,5 +1,9 @@
 #include "pch.h"
 
+#ifdef _DEBUG
+#include "Test/CoreIo/CoreIoTests.h" 
+#endif
+
 #include <thread>
 
 #include "HAL/Public/Launch.h"
@@ -7,6 +11,7 @@
 #include "Engine/Public/CyphenEngine.h"
 
 #define MAX_LOADSTRING 100
+
 
 // 전역 변수
 HINSTANCE hInst = nullptr;                      // 현재 인스턴스입니다.
@@ -114,6 +119,10 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 
 	// 초기화
 	HACCEL hAccelTable = LoadAccelerators(hInstance, MAKEINTRESOURCE(IDC_CYPHENENGINE));
+
+#ifdef _DEBUG
+	RunCoreIoTests();
+#endif 
 
 	// 엔진의 메인 루프를 별도의 스레드로 실행합니다.
 	bool isEngineStarted = Launch::StartEngineThread();
