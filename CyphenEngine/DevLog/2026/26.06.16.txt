@@ -1,0 +1,148 @@
+Date: 2026-06-16
+Branch: #1-프로젝트-리팩토링
+
+작업 요약
+	Core I/O 기준선을 테스트로 고정하고, FileSystem 기본 관리 API를 추가했습니다.
+
+	Path / TextCodec / File 기준선 테스트를 먼저 작성한 뒤,
+	FileSystem 파일 / 디렉터리 관리 API를 추가하고 해당 테스트까지 확장했습니다.
+
+	최종적으로 CoreIoTests 기준 PASS=38 / FAIL=0을 확인했습니다.
+
+	또한 README는 상세 구현 문서가 아니라 프로젝트 방향성 문서로 정리하기로 했고,
+	DOD / 모듈식 구조 / 빌드 타임 추상화 / Unreal 참고 방향을 중심으로 갱신 방향을 정리했습니다.
+
+	마지막으로 #1_17 작업 범위를 검토하여,
+	Renderer 진입 전 File I/O / FileSystem 베이스에서 추가로 복구할 기능 범위를 정리했습니다.
+
+
+진행한 커밋
+	#1_14 [Test] Core Path/File/TextCodec 테스트 및 결과 시각화
+	#1_15 [Core] FileSystem 파일 및 디렉터리 관리 API 추가
+	#1_16 [Test] FileSystem 관리 API 테스트 추가
+
+
+주요 정리 내용
+	1. Core I/O 테스트 기준선 추가
+		Source/Test/CoreIo 계층을 추가하고,
+		Debug 전용 Core I/O 테스트를 작성했습니다.
+
+		테스트 대상은 Path, TextCodec, File입니다.
+
+		Launch 단계에서 엔진 스레드 시작 전 테스트를 실행하도록 했고,
+		결과는 OutputDebugString으로 출력하도록 정리했습니다.
+
+		테스트 실패는 엔진 실행 흐름을 차단하지 않습니다.
+
+	2. TextCodec 계약 확인
+		TextCodec의 Encode / Decode 비대칭 계약을 테스트로 고정했습니다.
+
+		Encode는 LineEnding 정책에 따라 줄바꿈을 변환하지만,
+		Decode는 줄바꿈을 정규화하지 않고 원본 CR / LF를 보존합니다.
+
+		UTF-8 BOM은 Encode 시 붙을 수 있지만 Decode 시 제거됩니다.
+
+		Ansi는 현재 7-bit ASCII 범위만 허용하며,
+		0x7F를 초과하는 코드포인트 또는 byte는 실패로 처리합니다.
+
+	3. FileSystem 기본 관리 API 추가
+		File과 FileSystem의 책임을 분리했습니다.
+
+		File은 파일 내용 I/O helper로 유지하고,
+		FileSystem은 파일 시스템 네임스페이스 관리 API를 담당하도록 정리했습니다.
+
+		FileSystem에 다음 API를 추가했습니다.
+
+		- FileExists
+		- DirectoryExists
+		- RemoveFile
+		- MakeDirectory
+		- DeleteDirectory
+
+		FileSystem은 File을 소비하지 않습니다.
+
+		File과 FileSystem은 PlatformFile을 직접 소비하는 형제 계층으로 둡니다.
+
+	4. PlatformFile 역할 확장
+		PlatformFile은 File / FileSystem 뒤에 숨겨지는 플랫폼 파일 시스템 HAL로 정리했습니다.
+
+		파일 내용 byte I/O와 파일 시스템 관리 OS 호출을 함께 담당합니다.
+
+		단, 런타임 인터페이스가 아니라
+		빌드 타겟별 concrete 구현을 선택하는 정적 HAL 계약으로 유지합니다.
+
+	5. FileSystem 테스트 추가
+		CoreIoTests에 FileSystem 테스트를 추가했습니다.
+
+		디렉터리 생성 / 존재 확인 / 멱등 생성 / 삭제,
+		파일 존재 확인 / 삭제,
+		비어 있지 않은 디렉터리 삭제 실패를 검증했습니다.
+
+		최종 테스트 결과는 PASS=38 / FAIL=0으로 확인했습니다.
+
+	6. README 방향성 정리
+		README는 상세 구현 문서가 아니라 프로젝트 방향성 문서로 정리하기로 했습니다.
+
+		핵심 방향은 다음과 같습니다.
+
+		- DOD 지향
+		- 모듈식 엔진
+		- 빌드 타임 추상화
+		- Unreal 쪽 철학 참고
+		- OOP와 DOD의 공존
+		- Core / Platform / HAL 책임 분리
+
+		상세 폴더 책임은 README가 아니라 폴더 기능 정리.txt를 기준으로 관리합니다.
+
+	7. #1_17 작업 범위 검토
+		Unreal의 FFileHelper / IPlatformFile 기준을 참고하여,
+		CyphenEngine의 File / FileSystem 기능 복구 범위를 정리했습니다.
+
+		#1_17 후보 범위는 다음과 같습니다.
+
+		File:
+		- AppendAllBytes
+		- AppendAllText
+
+		FileSystem:
+		- CreateFile
+		- CopyFile
+		- MoveFile
+		- GetFileSize
+
+		보류 항목은 다음과 같습니다.
+
+		- FileHandle / FileStream
+		- Seek / Tell / partial read/write
+		- Directory enumerate
+		- Recursive delete
+		- Timestamp / permission
+		- RuntimePath
+		- ResourceManager
+		- Logger / Diagnostics
+
+
+정리된 설계 기준
+	- File은 Read / Write / Save / Append 계열의 파일 내용 helper로 유지합니다.
+	- FileSystem은 Exists / Create / Delete / Copy / Move / Size / Directory 관리 API를 담당합니다.
+	- PlatformFile은 실제 플랫폼 파일 시스템 접근을 담당합니다.
+	- Core 호출 지점은 플랫폼 종속성을 알지 않습니다.
+	- 플랫폼 종속 구현은 Platform 계층 내부에 둡니다.
+	- 빌드 시점에 고정 가능한 플랫폼 차이는 런타임 인터페이스가 아니라 빌드 시스템으로 선택합니다.
+	- Append는 일반 저장 모델이 아니라 명시적 누적 기록 primitive로 봅니다.
+	- 기본 저장 모델은 whole-file overwrite입니다.
+	- Logger / Diagnostics는 아직 구현하지 않습니다.
+
+
+다음 작업
+	#1_17 [Core] File append 및 FileSystem 기본 파일 관리 API 추가
+
+	구현 후보:
+	- File::AppendAllBytes
+	- File::AppendAllText
+	- FileSystem::CreateFile
+	- FileSystem::CopyFile
+	- FileSystem::MoveFile
+	- FileSystem::GetFileSize
+
+	Renderer 진입 전 File I/O / FileSystem 베이스를 마감하는 것을 목표로 합니다.
