@@ -130,25 +130,15 @@ bool PlatformFile::ReadAllBytes(
 		return false;
 	}
 
-#if CCHAR_IS_WCHAR
+	std::wstring fileName;
 
-	const wchar_t* fileName = path.c_str();
-
-#else
-
-	std::wstring convertedFileName;
-
-	if (!WindowsString::ToWideString(path, convertedFileName))
+	if (!WindowsString::ToWideString(path, fileName))
 	{
 		return false;
 	}
 
-	const wchar_t* fileName = convertedFileName.c_str();
-
-#endif
-
 	HANDLE fileHandle = ::CreateFileW(
-		fileName,
+		fileName.c_str(),
 		GENERIC_READ,
 		FILE_SHARE_READ,
 		nullptr,
@@ -158,11 +148,6 @@ bool PlatformFile::ReadAllBytes(
 
 	if (fileHandle == INVALID_HANDLE_VALUE)
 	{
-		wchar_t currentDirectory[MAX_PATH] = {};
-		::GetCurrentDirectoryW(MAX_PATH, currentDirectory);
-
-		DWORD lastError = ::GetLastError();
-
 		return false;
 	}
 
@@ -182,25 +167,15 @@ bool PlatformFile::WriteAllBytes(
 		return false;
 	}
 
-#if CCHAR_IS_WCHAR
+	std::wstring fileName;
 
-	const wchar_t* fileName = path.c_str();
-
-#else
-
-	std::wstring convertedFileName;
-
-	if (!WindowsString::ToWideString(path, convertedFileName))
+	if (!WindowsString::ToWideString(path, fileName))
 	{
 		return false;
 	}
 
-	const wchar_t* fileName = convertedFileName.c_str();
-
-#endif
-
 	HANDLE fileHandle = ::CreateFileW(
-		fileName,
+		fileName.c_str(),
 		GENERIC_WRITE,
 		0,
 		nullptr,
@@ -218,4 +193,124 @@ bool PlatformFile::WriteAllBytes(
 	::CloseHandle(fileHandle);
 
 	return bResult;
+}
+
+bool PlatformFile::FileExists(const CString& path)
+{
+	if (path.empty())
+	{
+		return false;
+	}
+
+	std::wstring fileName;
+
+	if (!WindowsString::ToWideString(path, fileName))
+	{
+		return false;
+	}
+
+	const DWORD attributes = ::GetFileAttributesW(fileName.c_str());
+
+	if (attributes == INVALID_FILE_ATTRIBUTES)
+	{
+		return false;
+	}
+
+	return (attributes & FILE_ATTRIBUTE_DIRECTORY) == 0;
+}
+
+bool PlatformFile::DirectoryExists(const CString& path)
+{
+	if (path.empty())
+	{
+		return false;
+	}
+
+	std::wstring fileName;
+
+	if (!WindowsString::ToWideString(path, fileName))
+	{
+		return false;
+	}
+
+	const DWORD attributes = ::GetFileAttributesW(fileName.c_str());
+
+	if (attributes == INVALID_FILE_ATTRIBUTES)
+	{
+		return false;
+	}
+
+	return (attributes & FILE_ATTRIBUTE_DIRECTORY) != 0;
+}
+
+bool PlatformFile::RemoveFile(const CString& path)
+{
+	if (path.empty())
+	{
+		return false;
+	}
+
+	std::wstring fileName;
+
+	if (!WindowsString::ToWideString(path, fileName))
+	{
+		return false;
+	}
+
+	return ::DeleteFileW(fileName.c_str()) != FALSE;
+}
+
+bool PlatformFile::MakeDirectory(const CString& path)
+{
+	if (path.empty())
+	{
+		return false;
+	}
+
+	std::wstring fileName;
+
+	if (!WindowsString::ToWideString(path, fileName))
+	{
+		return false;
+	}
+
+	if (::CreateDirectoryW(fileName.c_str(), nullptr) != FALSE)
+	{
+		return true;
+	}
+
+	if (::GetLastError() != ERROR_ALREADY_EXISTS)
+	{
+		return false;
+	}
+
+	// 이미 존재하면 디렉터리일 때만 성공으로 취급합니다.
+	// 같은 이름의 파일이 있으면 실패입니다.
+	const DWORD attributes = ::GetFileAttributesW(fileName.c_str());
+
+	if (attributes == INVALID_FILE_ATTRIBUTES)
+	{
+		return false;
+	}
+
+	return (attributes & FILE_ATTRIBUTE_DIRECTORY) != 0;
+}
+
+bool PlatformFile::DeleteDirectory(const CString& path)
+{
+	if (path.empty())
+	{
+		return false;
+	}
+
+	std::wstring fileName;
+
+	if (!WindowsString::ToWideString(path, fileName))
+	{
+		return false;
+	}
+
+	// RemoveDirectoryW는 빈 디렉터리만 삭제합니다.
+	// 비어있지 않으면 실패합니다.
+	return ::RemoveDirectoryW(fileName.c_str()) != FALSE;
 }

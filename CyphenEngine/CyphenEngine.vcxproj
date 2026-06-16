@@ -94,6 +94,7 @@
     <ClInclude Include="Source\Core\Public\CPrimitiveTypes.h" />
     <ClInclude Include="Source\Core\Public\CString.h" />
     <ClInclude Include="Source\Core\Public\File.h" />
+    <ClInclude Include="Source\Core\Public\FileSystem.h" />
     <ClInclude Include="Source\Core\Public\FileTypes.h" />
     <ClInclude Include="Source\Core\Public\Logger.h" />
     <ClInclude Include="Source\Core\Public\Path.h" />
@@ -118,6 +119,7 @@
   <ItemGroup>
     <!-- pch : Create -->
     <ClCompile Include="Source\Core\Private\File.cpp" />
+    <ClCompile Include="Source\Core\Private\FileSystem.cpp" />
     <ClCompile Include="Source\Core\Private\Path.cpp" />
     <ClCompile Include="Source\Core\Private\TextCodec.cpp" />
     <ClCompile Include="Source\Core\Private\Time.cpp" />
