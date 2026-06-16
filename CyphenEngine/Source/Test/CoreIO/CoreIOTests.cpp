@@ -8,6 +8,7 @@
 #include "Core/Public/File.h"
 #include "Core/Public/Path.h"
 #include "Core/Public/TextCodec.h"
+#include "Core/Public/FileSystem.h"
 
 namespace
 {
@@ -224,6 +225,83 @@ namespace
 				"File WriteAllText/ReadAllText roundtrip preserves text");
 		}
 	}
+
+	void CleanupFileSystemTestArtifacts()
+	{
+		FileSystem::RemoveFile(CTEXT("CoreIo_FileSystem_TempDir/inner.txt"));
+		FileSystem::DeleteDirectory(CTEXT("CoreIo_FileSystem_TempDir"));
+		FileSystem::RemoveFile(CTEXT("CoreIo_FileSystem_TempFile.txt"));
+		FileSystem::RemoveFile(CTEXT("CoreIo_WriteAllText_RoundTrip.tmp"));
+	}
+
+	void RunFileSystemTests(TestContext& context)
+	{
+		const CString tempDirectory =
+			CTEXT("CoreIo_FileSystem_TempDir");
+
+		const CString tempFile =
+			CTEXT("CoreIo_FileSystem_TempFile.txt");
+
+		const CString innerFile =
+			CTEXT("CoreIo_FileSystem_TempDir/inner.txt");
+
+		const std::vector<uint8> bytes =
+		{
+			0x41
+		};
+
+		CleanupFileSystemTestArtifacts();
+
+		Expect(context, FileSystem::MakeDirectory(tempDirectory),
+			"FileSystem.MakeDirectory creates directory");
+
+		Expect(context, FileSystem::DirectoryExists(tempDirectory),
+			"FileSystem.DirectoryExists true after create");
+
+		Expect(context, FileSystem::MakeDirectory(tempDirectory),
+			"FileSystem.MakeDirectory is idempotent");
+
+		Expect(context, FileSystem::DeleteDirectory(tempDirectory),
+			"FileSystem.DeleteDirectory removes empty directory");
+
+		Expect(context, !FileSystem::DirectoryExists(tempDirectory),
+			"FileSystem.DirectoryExists false after delete");
+
+		Expect(context, !FileSystem::RemoveFile(tempFile),
+			"FileSystem.RemoveFile fails for missing file");
+
+		Expect(context, File::WriteAllBytes(tempFile, bytes),
+			"FileSystem temp file setup write");
+
+		Expect(context, FileSystem::FileExists(tempFile),
+			"FileSystem.FileExists true for file");
+
+		Expect(context, !FileSystem::DirectoryExists(tempFile),
+			"FileSystem.DirectoryExists false for file");
+
+		Expect(context, FileSystem::RemoveFile(tempFile),
+			"FileSystem.RemoveFile deletes file");
+
+		Expect(context, !FileSystem::FileExists(tempFile),
+			"FileSystem.FileExists false after delete");
+
+		Expect(context, FileSystem::MakeDirectory(tempDirectory),
+			"FileSystem non-empty directory setup");
+
+		Expect(context, File::WriteAllBytes(innerFile, bytes),
+			"FileSystem inner file setup write");
+
+		Expect(context, !FileSystem::DeleteDirectory(tempDirectory),
+			"FileSystem.DeleteDirectory fails on non-empty directory");
+
+		Expect(context, FileSystem::RemoveFile(innerFile),
+			"FileSystem cleanup inner file");
+
+		Expect(context, FileSystem::DeleteDirectory(tempDirectory),
+			"FileSystem cleanup directory");
+
+		CleanupFileSystemTestArtifacts();
+	}
 }
 
 void RunCoreIoTests()
@@ -235,6 +313,7 @@ void RunCoreIoTests()
 	RunPathTests(context);
 	RunTextCodecTests(context);
 	RunFileTests(context);
+	RunFileSystemTests(context);
 
 	char summary[128] = {};
 	std::snprintf(
