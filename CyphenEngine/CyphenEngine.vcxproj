@@ -104,10 +104,12 @@
     <ClInclude Include="Source\Core\Public\types.h" />
     <!-- Engine -->
     <ClInclude Include="Source\Engine\Public\CyphenEngine.h" />
+    <ClInclude Include="Source\Engine\Public\EngineContext.h" />
     <!-- HAL -->
     <ClInclude Include="Source\HAL\Private\PlatformFile.h" />
     <ClInclude Include="Source\HAL\Private\PlatformTime.h" />
     <ClInclude Include="Source\HAL\Public\Launch.h" />
+    <ClInclude Include="Source\Modules\Renderer\Public\RendererTypes.h" />
     <!-- Platform -->
     <ClInclude Include="Source\Platform\Windows\Private\WindowsString.h" />
     <ClInclude Include="Source\Platform\Windows\Public\targetver.h" />
