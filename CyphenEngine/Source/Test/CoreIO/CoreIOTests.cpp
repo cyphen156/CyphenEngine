@@ -6,9 +6,10 @@
 #include "Core/Public/CPrimitiveTypes.h"
 #include "Core/Public/CString.h"
 #include "Core/Public/File.h"
-#include "Core/Public/Path.h"
-#include "Core/Public/TextCodec.h"
 #include "Core/Public/FileSystem.h"
+#include "Core/Public/Path.h"
+#include "Core/Public/Separator.h"
+#include "Core/Public/TextCodec.h"
 
 namespace
 {
@@ -51,9 +52,7 @@ namespace
 		WriteTestLine(name);
 	}
 
-	bool BytesEqual(
-		const std::vector<uint8>& actual,
-		const std::vector<uint8>& expected)
+	bool BytesEqual(const std::vector<uint8>& actual, const std::vector<uint8>& expected)
 	{
 		return actual == expected;
 	}
@@ -86,73 +85,79 @@ namespace
 
 		Expect(context, Path::GetFileName(CTEXT("folder/")).empty(),
 			"Path.GetFileName returns empty for trailing separator");
+
+		Expect(context, Separators::Convert(CTEXT("A/B/C"), Separators::Engine, Separators::Windows) == CTEXT("A\\B\\C"),
+			"Separators.Convert changes engine separators to Windows separators");
 	}
 
 	void RunTextCodecTests(TestContext& context)
 	{
 		std::vector<uint8> bytes;
 
-		bool bResult = TextCodec::Encode(
+		bool result = TextCodec::Encode(
 			CTEXT("A\nB"),
 			bytes,
 			TextEncoding::Utf8,
 			LineEnding::LF);
 
-		Expect(context, bResult && BytesEqual(bytes, { 0x41, 0x0A, 0x42 }),
+		Expect(context, result && BytesEqual(bytes, { 0x41, 0x0A, 0x42 }),
 			"TextCodec.Encode UTF-8 LF emits expected bytes");
 
-		bResult = TextCodec::Encode(
+		result = TextCodec::Encode(
 			CTEXT("A\nB"),
 			bytes,
 			TextEncoding::Utf8,
 			LineEnding::CRLF);
 
-		Expect(context, bResult && BytesEqual(bytes, { 0x41, 0x0D, 0x0A, 0x42 }),
+		Expect(context, result && BytesEqual(bytes, { 0x41, 0x0D, 0x0A, 0x42 }),
 			"TextCodec.Encode UTF-8 CRLF emits expected bytes");
+
+		result = TextCodec::Encode(
+			CTEXT("A\r\nB\nC"),
+			bytes,
+			TextEncoding::Utf8,
+			LineEnding::Preserve);
+
+		Expect(context, result && BytesEqual(bytes, { 0x41, 0x0D, 0x0A, 0x42, 0x0A, 0x43 }),
+			"TextCodec.Encode Preserve keeps source line endings");
 
 		CString decodedText;
 
-		bResult = TextCodec::Decode(
-			bytes,
-			decodedText,
-			TextEncoding::Utf8);
+		result = TextCodec::Decode(bytes, decodedText, TextEncoding::Utf8);
 
-		Expect(context, bResult && decodedText == CTEXT("A\r\nB"),
-			"TextCodec.Decode preserves CRLF without normalization");
+		Expect(context, result && decodedText == CTEXT("A\r\nB\nC"),
+			"TextCodec.Decode preserves line endings without normalization");
 
-		bResult = TextCodec::Encode(
+		result = TextCodec::Encode(
 			CTEXT("A"),
 			bytes,
 			TextEncoding::Utf8WithBom,
 			LineEnding::LF);
 
-		Expect(context, bResult && BytesEqual(bytes, { 0xEF, 0xBB, 0xBF, 0x41 }),
+		Expect(context, result && BytesEqual(bytes, { 0xEF, 0xBB, 0xBF, 0x41 }),
 			"TextCodec.Encode UTF-8 BOM emits BOM prefix");
 
-		bResult = TextCodec::Decode(
-			bytes,
-			decodedText,
-			TextEncoding::Utf8WithBom);
+		result = TextCodec::Decode(bytes, decodedText, TextEncoding::Utf8WithBom);
 
-		Expect(context, bResult && decodedText == CTEXT("A"),
+		Expect(context, result && decodedText == CTEXT("A"),
 			"TextCodec.Decode UTF-8 BOM skips BOM prefix");
 
-		bResult = TextCodec::Encode(
+		result = TextCodec::Encode(
 			CTEXT("Ascii"),
 			bytes,
 			TextEncoding::Ansi,
 			LineEnding::LF);
 
-		Expect(context, bResult && BytesEqual(bytes, { 0x41, 0x73, 0x63, 0x69, 0x69 }),
+		Expect(context, result && BytesEqual(bytes, { 0x41, 0x73, 0x63, 0x69, 0x69 }),
 			"TextCodec.Encode Ansi accepts 7-bit ASCII");
 
-		bResult = TextCodec::Encode(
+		result = TextCodec::Encode(
 			CTEXT("한글"),
 			bytes,
 			TextEncoding::Ansi,
 			LineEnding::LF);
 
-		Expect(context, !bResult && bytes.empty(),
+		Expect(context, !result && bytes.empty(),
 			"TextCodec.Encode Ansi rejects code points above 0x7F");
 
 		const std::vector<uint8> invalidAnsiBytes =
@@ -160,12 +165,9 @@ namespace
 			0x80
 		};
 
-		bResult = TextCodec::Decode(
-			invalidAnsiBytes,
-			decodedText,
-			TextEncoding::Ansi);
+		result = TextCodec::Decode(invalidAnsiBytes, decodedText, TextEncoding::Ansi);
 
-		Expect(context, !bResult && decodedText.empty(),
+		Expect(context, !result && decodedText.empty(),
 			"TextCodec.Decode Ansi rejects bytes above 0x7F");
 	}
 
@@ -176,14 +178,12 @@ namespace
 
 		CString fixtureText;
 
-		const bool bFixtureRead = File::ReadAllText(
-			fixturePath,
-			fixtureText);
+		const bool fixtureRead = File::ReadAllText(fixturePath, fixtureText);
 
-		Expect(context, bFixtureRead,
+		Expect(context, fixtureRead,
 			"File.ReadAllText reads UTF-8 LF fixture");
 
-		if (bFixtureRead)
+		if (fixtureRead)
 		{
 			const CString expectedFixtureText =
 				CTEXT("ReadAllText_UTF8_LFCyphenEngine Core I/O Input\n")
@@ -200,30 +200,79 @@ namespace
 			CTEXT("Core I/O roundtrip\n")
 			CTEXT("한글 라운드트립\n");
 
-		const bool bWriteResult = File::WriteAllText(
+		const bool writeResult = File::WriteAllText(
 			tempPath,
 			roundTripText,
 			TextEncoding::Utf8,
 			LineEnding::LF);
 
-		Expect(context, bWriteResult,
+		Expect(context, writeResult,
 			"File.WriteAllText writes UTF-8 LF temp file");
 
 		CString readBackText;
 
-		const bool bReadBackResult = File::ReadAllText(
-			tempPath,
-			readBackText,
-			TextEncoding::Utf8);
+		const bool readBackResult = File::ReadAllText(tempPath, readBackText, TextEncoding::Utf8);
 
-		Expect(context, bReadBackResult,
+		Expect(context, readBackResult,
 			"File.ReadAllText reads temp file");
 
-		if (bWriteResult && bReadBackResult)
+		if (writeResult && readBackResult)
 		{
 			Expect(context, readBackText == roundTripText,
 				"File WriteAllText/ReadAllText roundtrip preserves text");
 		}
+
+		const CString appendBytesPath =
+			CTEXT("CoreIo_AppendAllBytes.tmp");
+
+		FileSystem::RemoveFile(appendBytesPath);
+
+		Expect(context, File::WriteAllBytes(appendBytesPath, { 0x41 }),
+			"File.AppendAllBytes setup writes initial byte");
+
+		Expect(context, File::AppendAllBytes(appendBytesPath, { 0x42, 0x43 }),
+			"File.AppendAllBytes appends bytes");
+
+		std::vector<uint8> appendedBytes;
+
+		Expect(context, File::ReadAllBytes(appendBytesPath, appendedBytes) &&
+			BytesEqual(appendedBytes, { 0x41, 0x42, 0x43 }),
+			"File.AppendAllBytes preserves existing bytes and appends new bytes");
+
+		const CString appendTextPath =
+			CTEXT("CoreIo_AppendAllText.tmp");
+
+		FileSystem::RemoveFile(appendTextPath);
+
+		Expect(context, File::WriteAllText(
+			appendTextPath,
+			CTEXT("A\r\n"),
+			TextEncoding::Utf8,
+			LineEnding::Preserve),
+			"File.AppendAllText setup writes preserved CRLF");
+
+		Expect(context, File::AppendAllText(appendTextPath, CTEXT("B\nC")),
+			"File.AppendAllText appends text");
+
+		std::vector<uint8> appendTextBytes;
+
+		Expect(context, File::ReadAllBytes(appendTextPath, appendTextBytes) &&
+			BytesEqual(appendTextBytes, { 0x41, 0x0D, 0x0A, 0x42, 0x0A, 0x43 }),
+			"File.AppendAllText preserves appended source line endings");
+
+		const CString appendNewTextPath =
+			CTEXT("CoreIo_AppendAllText_New.tmp");
+
+		FileSystem::RemoveFile(appendNewTextPath);
+
+		Expect(context, File::AppendAllText(appendNewTextPath, CTEXT("X\nY")),
+			"File.AppendAllText creates absent file");
+
+		std::vector<uint8> appendNewTextBytes;
+
+		Expect(context, File::ReadAllBytes(appendNewTextPath, appendNewTextBytes) &&
+			BytesEqual(appendNewTextBytes, { 0x58, 0x0A, 0x59 }),
+			"File.AppendAllText absent file writes UTF-8 without BOM");
 	}
 
 	void CleanupFileSystemTestArtifacts()
@@ -232,6 +281,14 @@ namespace
 		FileSystem::DeleteDirectory(CTEXT("CoreIo_FileSystem_TempDir"));
 		FileSystem::RemoveFile(CTEXT("CoreIo_FileSystem_TempFile.txt"));
 		FileSystem::RemoveFile(CTEXT("CoreIo_WriteAllText_RoundTrip.tmp"));
+		FileSystem::RemoveFile(CTEXT("CoreIo_AppendAllBytes.tmp"));
+		FileSystem::RemoveFile(CTEXT("CoreIo_AppendAllText.tmp"));
+		FileSystem::RemoveFile(CTEXT("CoreIo_AppendAllText_New.tmp"));
+		FileSystem::RemoveFile(CTEXT("CoreIo_FileSystem_CopySource.txt"));
+		FileSystem::RemoveFile(CTEXT("CoreIo_FileSystem_CopyTarget.txt"));
+		FileSystem::RemoveFile(CTEXT("CoreIo_FileSystem_MoveSource.txt"));
+		FileSystem::RemoveFile(CTEXT("CoreIo_FileSystem_MoveTarget.txt"));
+		FileSystem::DeleteDirectoryRecursively(CTEXT("CoreIo_FileSystem_Tree"));
 	}
 
 	void RunFileSystemTests(TestContext& context)
@@ -299,6 +356,96 @@ namespace
 
 		Expect(context, FileSystem::DeleteDirectory(tempDirectory),
 			"FileSystem cleanup directory");
+
+		Expect(context, FileSystem::Create(tempFile),
+			"FileSystem.Create creates a new empty file");
+
+		Expect(context, !FileSystem::Create(tempFile),
+			"FileSystem.Create fails when file already exists");
+
+		uint64 fileSize = 1;
+
+		Expect(context, FileSystem::GetSize(tempFile, fileSize) && fileSize == 0,
+			"FileSystem.GetSize reports empty file size");
+
+		uint64 missingFileSize = 1;
+
+		Expect(context, !FileSystem::GetSize(CTEXT("CoreIo_FileSystem_Missing.txt"), missingFileSize),
+			"FileSystem.GetSize fails for missing file");
+
+		Expect(context, FileSystem::RemoveFile(tempFile),
+			"FileSystem.RemoveFile deletes created empty file");
+
+		const CString copySource =
+			CTEXT("CoreIo_FileSystem_CopySource.txt");
+
+		const CString copyTarget =
+			CTEXT("CoreIo_FileSystem_CopyTarget.txt");
+
+		Expect(context, File::WriteAllBytes(copySource, { 0x41 }),
+			"FileSystem.Copy setup writes source");
+
+		Expect(context, FileSystem::Copy(copySource, copyTarget),
+			"FileSystem.Copy copies source to missing target");
+
+		Expect(context, !FileSystem::Copy(copySource, copyTarget),
+			"FileSystem.Copy without canReplace fails for existing target");
+
+		Expect(context, File::WriteAllBytes(copySource, { 0x42 }) &&
+			FileSystem::Copy(copySource, copyTarget, true),
+			"FileSystem.Copy with canReplace replaces existing target");
+
+		std::vector<uint8> copiedBytes;
+
+		Expect(context, File::ReadAllBytes(copyTarget, copiedBytes) &&
+			BytesEqual(copiedBytes, { 0x42 }),
+			"FileSystem.Copy replacement writes source bytes to target");
+
+		Expect(context, FileSystem::FileExists(copySource),
+			"FileSystem.Copy preserves source file");
+
+		const CString moveSource =
+			CTEXT("CoreIo_FileSystem_MoveSource.txt");
+
+		const CString moveTarget =
+			CTEXT("CoreIo_FileSystem_MoveTarget.txt");
+
+		Expect(context, File::WriteAllBytes(moveSource, { 0x43 }),
+			"FileSystem.Move setup writes source");
+
+		Expect(context, FileSystem::Move(moveSource, moveTarget),
+			"FileSystem.Move moves source to missing target");
+
+		Expect(context, !FileSystem::FileExists(moveSource) &&
+			FileSystem::FileExists(moveTarget),
+			"FileSystem.Move removes source and creates target");
+
+		const CString treeLeafDirectory =
+			CTEXT("CoreIo_FileSystem_Tree/A/B");
+
+		const CString treeLeafFile =
+			CTEXT("CoreIo_FileSystem_Tree/A/B/leaf.txt");
+
+		Expect(context, FileSystem::MakeDirectoryTree(treeLeafDirectory),
+			"FileSystem.MakeDirectoryTree creates nested directories");
+
+		Expect(context, FileSystem::MakeDirectoryTree(treeLeafDirectory),
+			"FileSystem.MakeDirectoryTree is idempotent");
+
+		Expect(context, !FileSystem::GetSize(CTEXT("CoreIo_FileSystem_Tree"), fileSize),
+			"FileSystem.GetSize fails for directory");
+
+		Expect(context, File::WriteAllBytes(treeLeafFile, { 0x44 }),
+			"FileSystem recursive delete setup writes leaf file");
+
+		Expect(context, !FileSystem::DeleteDirectory(CTEXT("CoreIo_FileSystem_Tree")),
+			"FileSystem.DeleteDirectory fails for non-empty tree");
+
+		Expect(context, FileSystem::DeleteDirectoryRecursively(CTEXT("CoreIo_FileSystem_Tree")),
+			"FileSystem.DeleteDirectoryRecursively deletes non-empty tree");
+
+		Expect(context, !FileSystem::DirectoryExists(CTEXT("CoreIo_FileSystem_Tree")),
+			"FileSystem.DeleteDirectoryRecursively removes root directory");
 
 		CleanupFileSystemTestArtifacts();
 	}

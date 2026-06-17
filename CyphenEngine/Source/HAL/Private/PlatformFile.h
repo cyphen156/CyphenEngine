@@ -10,10 +10,37 @@
 // ----------------------------------------------------------------------------
 // File / FileSystem 공개 API 뒤에 숨겨지는 플랫폼 파일 시스템 HAL.
 //
-// 이름은 File이지만, 파일 내용 byte I/O와 파일 시스템 네임스페이스 관리
-// (존재 확인·삭제·디렉터리 생성/삭제)를 함께 담당합니다.
+// PlatformFile은 File / FileSystem의 플랫폼별 구현 상세입니다.
+// 상위 엔진 계층과 모듈은 PlatformFile을 직접 호출하지 않고,
+// File / FileSystem 공개 API를 통해 파일 시스템에 접근합니다.
+//
+// 책임:
+//     파일 하나의 raw byte I/O.
+//     파일 하나의 생성 / 삭제 / 크기 조회.
+//     디렉터리 하나의 존재 확인 / 생성 / 삭제(empty-only).
+//     명시적 디렉터리 트리 삭제.
+//     파일시스템 네임스페이스의 복사 / 이동.
+//
+// 비책임:
+//     텍스트 인코딩.
+//     줄바꿈 정책.
+//     엔진 기본 경로 정책.
+//     ResourceManager / Logger / Diagnostics.
+//     공개 FileHandle / 스트림 API.
+//     휴지통 이동 / undo-redo 트랜잭션.
+//
+// PlatformFile의 기본 대상은 파일입니다.
+// 따라서 파일 단위 연산은 Create / Exists / Remove / GetSize처럼 짧게 쓰고,
+// 디렉터리 연산만 Directory 이름을 명시합니다.
+//
+// PlatformFile은 핸들 구조체를 헤더에 노출하지 않습니다.
+// open / close와 native handle 관리는 각 플랫폼 구현 파일 내부에서 처리합니다.
+// whole-file I/O는 native I/O로 파일을 읽거나 쓴 뒤,
+// File 공개 API가 std::vector<uint8> 메모리 버퍼로 전달합니다.
+//
 // 인터페이스(virtual)가 아니라, 플랫폼별 동일 시그니처 구현을 빌드가 선택하는
 // concrete HAL입니다.
+// 호출 권한은 File / FileSystem으로 한정합니다(friend, 전부 private).
 //
 // 반환 정책:
 //     성공 / 실패만 반환합니다.
@@ -21,26 +48,37 @@
 //     계층에서 기록합니다.
 // ============================================================================
 
+class File;
+class FileSystem;
+
 class PlatformFile final
 {
-public:
-	static bool ReadAllBytes(
-		const CString& path,
-		std::vector<uint8>& outBytes);
+private:
+	friend class File;
+	friend class FileSystem;
 
-	static bool WriteAllBytes(
-		const CString& path,
-		const std::vector<uint8>& bytes);
+	static bool ReadAllBytes(const CString& path, std::vector<uint8>& outBytes);
+	static bool ReadHead(const CString& path, uint64 maxSize, std::vector<uint8>& outBytes);
+	static bool WriteAllBytes(const CString& path, const std::vector<uint8>& bytes);
+	static bool AppendAllBytes(const CString& path, const std::vector<uint8>& bytes);
 
-	static bool FileExists(const CString& path);
+	static bool Create(const CString& path);
+	static bool GetSize(const CString& path, uint64& outSize);
+
+	static bool Exists(const CString& path);
+	static bool Remove(const CString& path);
+
 	static bool DirectoryExists(const CString& path);
-
-	static bool RemoveFile(const CString& path);
-
 	static bool MakeDirectory(const CString& path);
 	static bool DeleteDirectory(const CString& path);
+	static bool DeleteDirectoryRecursively(const CString& path);
 
-private:
+	static bool Copy(const CString& sourcePath, const CString& targetPath,
+		bool canReplace);
+
+	static bool Move(const CString& sourcePath, const CString& targetPath,
+		bool canReplace);
+
 	PlatformFile() = delete;
 	~PlatformFile() = delete;
 

@@ -18,8 +18,10 @@
 // 책임:
 //     단일 파일에서 raw byte를 읽습니다.
 //     단일 파일에 raw byte를 씁니다.
+//     단일 파일에 raw byte를 이어 씁니다.
 //     단일 파일에서 text를 읽습니다.
 //     단일 파일에 text를 씁니다.
+//     단일 파일에 text를 이어 씁니다.
 //
 // 반환 정책:
 //     File 공개 API는 성공 / 실패만 반환합니다.
@@ -33,42 +35,35 @@
 //     TextEncoding을 받지 않는 오버로드는 CyphenEngine 기본 외부 텍스트
 //     인코딩인 UTF-8을 사용합니다.
 //     LineEnding을 받지 않는 WriteAllText 오버로드는 항상 LineEnding::LF를 사용합니다.
+//     AppendAllText는 BOM을 기록하지 않습니다.
+//     AppendAllText는 대상 파일에 명확한 BOM이 있으면 해당 인코딩을 존중하고,
+//     BOM이 없거나 파일이 비어 있으면 CyphenEngine 기본 인코딩을 사용합니다.
+//     AppendAllText는 줄바꿈을 변환하지 않고 LineEnding::Preserve로 기록합니다.
 // ============================================================================
 
 class File final
 {
 public:
-	static bool ReadAllBytes(
-		const CString& path,
-		std::vector<uint8>& outBytes);
+	static bool ReadAllBytes(const CString& path, std::vector<uint8>& outBytes);
 
-	static bool WriteAllBytes(
-		const CString& path,
-		const std::vector<uint8>& bytes);
+	static bool WriteAllBytes(const CString& path, const std::vector<uint8>& bytes);
 
-	static bool ReadAllText(
-		const CString& path,
-		CString& outText);
+	static bool AppendAllBytes(const CString& path, const std::vector<uint8>& bytes);
 
-	static bool ReadAllText(
-		const CString& path,
-		CString& outText,
+	static bool ReadAllText(const CString& path, CString& outText);
+
+	static bool ReadAllText(const CString& path, CString& outText,
 		TextEncoding encoding);
 
-	static bool WriteAllText(
-		const CString& path,
-		const CString& text);
+	static bool WriteAllText(const CString& path, const CString& text);
 
-	static bool WriteAllText(
-		const CString& path,
-		const CString& text,
+	static bool WriteAllText(const CString& path, const CString& text,
 		TextEncoding encoding);
 
-	static bool WriteAllText(
-		const CString& path,
-		const CString& text,
-		TextEncoding encoding,
-		LineEnding lineEnding);
+	static bool WriteAllText(const CString& path, const CString& text,
+		TextEncoding encoding, LineEnding lineEnding);
+
+	static bool AppendAllText(const CString& path, const CString& text);
 
 private:
 	File() = delete;

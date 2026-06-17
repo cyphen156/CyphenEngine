@@ -1,27 +1,23 @@
 #include "pch.h"
+
 #include "Core/Public/Path.h"
+#include "Core/Public/Separator.h"
 
 namespace
 {
-	constexpr CChar ENGINE_PATH_SEPARATOR = CTEXT("/")[0];
-	constexpr CChar COMPATIBLE_PATH_SEPARATOR = CTEXT("\\")[0];
 	constexpr CChar EXTENSION_SEPARATOR = CTEXT(".")[0];
-
-	bool IsAcceptedPathSeparator(CChar ch)
-	{
-		return ch == ENGINE_PATH_SEPARATOR ||
-			ch == COMPATIBLE_PATH_SEPARATOR;
-	}
 
 	CString::size_type FindLastEnginePathSeparator(const CString& path)
 	{
+		const CChar engineSeparator = Separators::Resolve(Separators::Engine);
+
 		CString::size_type index = path.length();
 
 		while (index > 0)
 		{
 			--index;
 
-			if (path[index] == ENGINE_PATH_SEPARATOR)
+			if (path[index] == engineSeparator)
 			{
 				return index;
 			}
@@ -60,6 +56,8 @@ namespace
 
 CString Path::Normalize(const CString& path)
 {
+	const CChar engineSeparator = Separators::Resolve(Separators::Engine);
+
 	CString result;
 	result.reserve(path.length());
 
@@ -69,11 +67,11 @@ CString Path::Normalize(const CString& path)
 	{
 		const CChar ch = path[i];
 
-		if (IsAcceptedPathSeparator(ch))
+		if (Separators::IsRegistered(ch))
 		{
 			if (!wasPreviousPathSeparator)
 			{
-				result.push_back(ENGINE_PATH_SEPARATOR);
+				result.push_back(engineSeparator);
 			}
 
 			wasPreviousPathSeparator = true;
@@ -89,6 +87,8 @@ CString Path::Normalize(const CString& path)
 
 CString Path::Combine(const CString& left, const CString& right)
 {
+	const CChar engineSeparator = Separators::Resolve(Separators::Engine);
+
 	if (left.empty())
 	{
 		return right;
@@ -101,7 +101,7 @@ CString Path::Combine(const CString& left, const CString& right)
 
 	CString::size_type leftEnd = left.length();
 
-	while (leftEnd > 0 && left[leftEnd - 1] == ENGINE_PATH_SEPARATOR)
+	while (leftEnd > 0 && left[leftEnd - 1] == engineSeparator)
 	{
 		--leftEnd;
 	}
@@ -109,15 +109,14 @@ CString Path::Combine(const CString& left, const CString& right)
 	CString::size_type rightStart = 0;
 
 	while (rightStart < right.length() &&
-		right[rightStart] == ENGINE_PATH_SEPARATOR)
+		right[rightStart] == engineSeparator)
 	{
 		++rightStart;
 	}
 
 	if (leftEnd == 0)
 	{
-		return CString(1, ENGINE_PATH_SEPARATOR) +
-			right.substr(rightStart);
+		return CString(1, engineSeparator) + right.substr(rightStart);
 	}
 
 	if (rightStart >= right.length())
@@ -125,13 +124,12 @@ CString Path::Combine(const CString& left, const CString& right)
 		return left.substr(0, leftEnd);
 	}
 
-	return left.substr(0, leftEnd) +
-		ENGINE_PATH_SEPARATOR +
-		right.substr(rightStart);
+	return left.substr(0, leftEnd) + engineSeparator + right.substr(rightStart);
 }
 
 CString Path::GetDirectoryName(const CString& path)
 {
+	const CChar engineSeparator = Separators::Resolve(Separators::Engine);
 	const CString::size_type separatorIndex = FindLastEnginePathSeparator(path);
 
 	if (separatorIndex == CString::npos)
@@ -141,7 +139,7 @@ CString Path::GetDirectoryName(const CString& path)
 
 	if (separatorIndex == 0)
 	{
-		return CString(1, ENGINE_PATH_SEPARATOR);
+		return CString(1, engineSeparator);
 	}
 
 	return path.substr(0, separatorIndex);

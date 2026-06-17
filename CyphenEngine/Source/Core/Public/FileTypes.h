@@ -41,5 +41,6 @@ enum class TextEncoding
 enum class LineEnding
 {
 	LF,
-	CRLF
+	CRLF,
+	Preserve   // 줄바꿈을 변환하지 않고 원본 그대로 둔다(Append 등 verbatim 경로).
 };

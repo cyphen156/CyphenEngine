@@ -98,6 +98,7 @@
     <ClInclude Include="Source\Core\Public\FileTypes.h" />
     <ClInclude Include="Source\Core\Public\Logger.h" />
     <ClInclude Include="Source\Core\Public\Path.h" />
+    <ClInclude Include="Source\Core\Public\Separator.h" />
     <ClInclude Include="Source\Core\Public\TextCodec.h" />
     <ClInclude Include="Source\Core\Public\Time.h" />
     <ClInclude Include="Source\Core\Public\types.h" />
@@ -121,6 +122,7 @@
     <ClCompile Include="Source\Core\Private\File.cpp" />
     <ClCompile Include="Source\Core\Private\FileSystem.cpp" />
     <ClCompile Include="Source\Core\Private\Path.cpp" />
+    <ClCompile Include="Source\Core\Private\Separator.cpp" />
     <ClCompile Include="Source\Core\Private\TextCodec.cpp" />
     <ClCompile Include="Source\Core\Private\Time.cpp" />
     <ClCompile Include="Source\pch.cpp">
@@ -182,6 +184,7 @@
     <Text Include="DevLog\2026\26.06.09.txt" />
     <Text Include="DevLog\2026\26.06.10.txt" />
     <Text Include="DevLog\2026\26.06.15.txt" />
+    <Text Include="DevLog\2026\26.06.16.txt" />
     <Text Include="DevLog\Todos.txt" />
     <Text Include="DevLog\폴더 기능 정리.txt" />
     <Text Include="Resources\Test\CoreIo\ReadAllText_UTF8_LF.txt" />

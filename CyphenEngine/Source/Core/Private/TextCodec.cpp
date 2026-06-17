@@ -637,6 +637,17 @@ bool TextCodec::Encode(
 			return false;
 		}
 
+		if (lineEnding == LineEnding::Preserve)
+		{
+			if (!AppendCodePointAsEncodedBytes(codePoint, outBytes, encoding))
+			{
+				outBytes.clear();
+				return false;
+			}
+
+			continue;
+		}
+
 		if (codePoint == U'\r')
 		{
 			const std::size_t nextIndex = index;
