@@ -9,9 +9,9 @@
 #include "HAL/Public/Launch.h"
 #include "Platform/Windows/Resource/Resource.h"
 #include "Engine/Public/CyphenEngine.h"
+#include "Engine/Public/EngineContext.h"
 
 #define MAX_LOADSTRING 100
-
 
 // 전역 변수
 HINSTANCE hInst = nullptr;                      // 현재 인스턴스입니다.
@@ -43,8 +43,10 @@ private:
 		_In_ LPWSTR lpCmdLine,
 		_In_ int nCmdShow);
 
+	static LaunchContext CreateLaunchContext(HWND windowHandle);
+
 	static HANDLE GetEngineThreadHandle();
-	static bool StartEngineThread();
+	static bool StartEngineThread(const LaunchContext& launchContext);
 	static void RequestEngineShutdown();
 	static void JoinEngineThread();
 
@@ -63,17 +65,36 @@ const CyphenEngine& Launch::GetEngine()
 	return engineInstance;
 }
 
+LaunchContext Launch::CreateLaunchContext(HWND windowHandle)
+{
+	LaunchContext launchContext;
+	launchContext.nativeWindowHandle = windowHandle;
+
+	RECT clientRect = {};
+
+	if (::GetClientRect(windowHandle, &clientRect) != FALSE)
+	{
+		launchContext.windowWidth =
+			static_cast<uint32>(clientRect.right - clientRect.left);
+
+		launchContext.windowHeight =
+			static_cast<uint32>(clientRect.bottom - clientRect.top);
+	}
+
+	return launchContext;
+}
 HANDLE Launch::GetEngineThreadHandle()
 {
 	return engineThread.native_handle();
 }
 
-bool Launch::StartEngineThread()
+bool Launch::StartEngineThread(const LaunchContext& launchContext)
 {
-	if (engineInstance.InitEngine() == false)
+	if (engineInstance.InitEngine(launchContext) == false)
 	{
 		return false;
 	}
+
 	engineThread = std::thread(&CyphenEngine::Run, &engineInstance);
 
 	return true;
@@ -125,7 +146,9 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 #endif 
 
 	// 엔진의 메인 루프를 별도의 스레드로 실행합니다.
-	bool isEngineStarted = Launch::StartEngineThread();
+	const LaunchContext launchContext = Launch::CreateLaunchContext(g_hMainWindow);
+
+	bool isEngineStarted = Launch::StartEngineThread(launchContext);
 
 	if (!isEngineStarted)
 	{

@@ -3,6 +3,7 @@
 #include <atomic>
 
 #include "Core/Public/types.h"
+#include "Engine/Public/EngineContext.h"
 
 /**
  * 플랫폼 독립 애플리케이션 호스트입니다.
@@ -34,7 +35,7 @@ private:
 	CyphenEngine(CyphenEngine&& other) = delete;
 	CyphenEngine& operator=(CyphenEngine&& other) = delete;
 
-	bool InitEngine();
+	bool InitEngine(const LaunchContext& launchContext);
 	void Run();
 	void ShutdownEngine();
 
@@ -43,6 +44,7 @@ private:
 
 private:
 	std::atomic<EngineStatus> engineStatus;
+	EngineContext engineContext;
 };
 
 extern const CyphenEngine* const GEngine;

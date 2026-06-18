@@ -109,7 +109,6 @@
     <ClInclude Include="Source\HAL\Private\PlatformFile.h" />
     <ClInclude Include="Source\HAL\Private\PlatformTime.h" />
     <ClInclude Include="Source\HAL\Public\Launch.h" />
-    <ClInclude Include="Source\Modules\Renderer\Public\RendererTypes.h" />
     <!-- Platform -->
     <ClInclude Include="Source\Platform\Windows\Private\WindowsString.h" />
     <ClInclude Include="Source\Platform\Windows\Public\targetver.h" />
@@ -187,6 +186,7 @@
     <Text Include="DevLog\2026\26.06.10.txt" />
     <Text Include="DevLog\2026\26.06.15.txt" />
     <Text Include="DevLog\2026\26.06.16.txt" />
+    <Text Include="DevLog\2026\26.06.17.txt" />
     <Text Include="DevLog\Todos.txt" />
     <Text Include="DevLog\폴더 기능 정리.txt" />
     <Text Include="Resources\Test\CoreIo\ReadAllText_UTF8_LF.txt" />

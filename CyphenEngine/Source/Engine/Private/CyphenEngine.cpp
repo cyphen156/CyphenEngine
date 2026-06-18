@@ -19,12 +19,17 @@ EngineStatus CyphenEngine::GetEngineStatus() const
 	return engineStatus.load();
 }
 
-bool CyphenEngine::InitEngine()
+bool CyphenEngine::InitEngine(const LaunchContext& launchContext)
 {
 	if (engineStatus.load() != Initializing)
 	{
 		return false;
 	}
+	
+	/// Injection Launch Dependancy 
+	engineContext.nativeWindowHandle = launchContext.nativeWindowHandle;
+	engineContext.windowWidth = launchContext.windowWidth;
+	engineContext.windowHeight = launchContext.windowHeight;
 
 	if (Time::Init() == false)
 	{
