@@ -1,100 +1,58 @@
 #pragma once
 
-#define NOMINMAX
-
-class Logger;
-
-// Global Macro
 // ============================================================================
-// Logging Macro
+// Define
 // ----------------------------------------------------------------------------
-// ·Î±× ¸Ş½ÃÁö¸¦ Ãâ·ÂÇÒ ¶§ »ç¿ëÇÏ´Â ¸ÅÅ©·ÎÀÔ´Ï´Ù.
-// ÀÚµ¿À¸·Î ÆÄÀÏ¸í, ¶óÀÎ ¹øÈ£, ÇÔ¼ö¸íÀ» ÇÔ²² Ãâ·ÂÇÕ´Ï´Ù.
+// CyphenEngine ê³µí†µ ë¹Œë“œ ì •ì±….
 //
-// »ç¿ë ¿¹½Ã:
-//   LOG_INTERNAL(LogLevel::Info, "¿£Áø ÃÊ±âÈ­ ¿Ï·á");
-//   LOG_INTERNAL_T(LogLevel::Error, TTEXT("¿À·ù ¹ß»ı: ") + ¿À·ù¸Ş½ÃÁö);
+// PlatformDefine.h:
+//     TARGET_PLATFORM_* -> PLATFORM_* í™•ì •
 //
-// - LOG_INTERNAL(level, msg)
-//   : ASCII ¹®ÀÚ¿­(¸®ÅÍ·²)À» ·Î±×·Î Ãâ·ÂÇÒ ¶§ »ç¿ë
+// framework.h:
+//     í”Œë«í¼ ì‹œìŠ¤í…œ í—¤ë” ë° OS íƒ€ì… ì¤€ë¹„
 //
-// - LOG_INTERNAL_T(level, tstr)
-//   : TSTRING ¶Ç´Â TTEXT(str) ±â¹İ À¯´ÏÄÚµå ¹®ÀÚ¿­ Ãâ·Â ½Ã »ç¿ë
+// define.h:
+//     í”Œë«í¼ê³¼ ë¬´ê´€í•œ ì—”ì§„ ê³µí†µ ë¹Œë“œ ì •ì±… í™•ì •
 //
-// ÁÖÀÇ:
-//   LOG_INTERNAL_T´Â ¹®ÀÚ¿­ °áÇÕ ½Ã ¹İµå½Ã TSTRINGÀ¸·Î Ä³½ºÆÃÇØ¾ß ÇÕ´Ï´Ù.
+// CChar ì •ì±…:
+//     CChar ì •ì±…ì€ Coreê°€ ê²°ì •í•˜ì§€ ì•ŠìŠµë‹ˆë‹¤.
+//     ë¹Œë“œ ì„¤ì • ë˜ëŠ” define.hì—ì„œ ê²°ì •í•©ë‹ˆë‹¤.
+//     ëª…ì‹œì ì¸ CCHAR ì •ì±…ì´ ì—†ìœ¼ë©´ UTF-8ì„ ê¸°ë³¸ê°’ìœ¼ë¡œ ì‚¬ìš©í•©ë‹ˆë‹¤.
 //
+// ì£¼ì˜:
+//     CChar ì •ì±…ì€ ëŸ°íƒ€ì„ ì˜µì…˜ì´ ì•„ë‹™ë‹ˆë‹¤.
+//     ë¹Œë“œ ì‚°ì¶œë¬¼ì˜ ë¬¸ìì—´ ABIì…ë‹ˆë‹¤.
+//     ê°™ì€ ì‹¤í–‰íŒŒì¼ / ê°™ì€ ëª¨ë“ˆ ë¬¶ìŒì€ ë°˜ë“œì‹œ ê°™ì€ ì •ì±…ìœ¼ë¡œ ë¹Œë“œí•´ì•¼ í•©ë‹ˆë‹¤.
 // ============================================================================
-#define LOG_INTERNAL(level, msg)	Logger::InternalLog(level, TTEXT(msg), __FILE__, __LINE__, __func__)
-#define LOG_INTERNAL_T(level, tstr)	Logger::InternalLog(level, tstr, __FILE__, __LINE__, __func__)
 
-// Define the platform
-#if defined(_WIN32) || defined(_WIN64)
-	#define PLATFORM_WINDOWS 1
-	
-// Path
-	/**
-	* PlatForm == WINDOWS
-	* DO NOT USE	"/"
-	* Just Use		"\\"
-	* TSTRING		wstirng,
-	* TCHAR			char
-	* TTEXT(str)	L##str
-	* TSLASH		L'\\'
-	* TSLASH_STR	L"\\"
-	*/
-	#define TSTRING					wstring
-	#define TCHAR					wchar_t
-	#define TTEXT(str)				L##str
-	#define TSLASH					L'\\'
-	#define TSLASH_STR				L"\\"
-	#define TO_TSTRING(str)			to_wstring(str)
+// ============================================================================
+// CChar Policy
+// ============================================================================
 
-	// Time
-	#define LARGEINTEGER	LARGE_INTEGER
+#if !defined(CCHAR_IS_UTF8) && !defined(CCHAR_IS_UTF16) && !defined(CCHAR_IS_WCHAR)
 
-#elif defined(__linux__)
-	#define PLATFORM_LINUX 1
-/**
-* PlatForm == LINUX
-* DO NOT USE	"\\"
-* Just Use		"/" 
-* TSTRING		string
-* TCHAR			char
-* TTEXT(str)	str
-* TSLASH		'/'
-* TSLASH_STR	"/"
-*/
-	#define TSTRING			string
-	#define TCHAR			char
-	#define TTEXT(str)		str
-	#define TSLASH			'/'
-	#define TSLASH_STR		"/"
+#define CCHAR_IS_UTF8 1
+#define CCHAR_IS_UTF16 0
+#define CCHAR_IS_WCHAR 0
 
-	#define LARGEINTEGER	int64_t
-
-#elif defined(__ANDROID__)	// ºôµåÈ¯°æ¿¡¼­ ANDROID Å¸°ÙÀ» Áö¿øÇØ¾ßÇÔ
-	#define PLATFORM_ANDROID 1
-
-#elif defined(__APPLE__) && defined(__MACH__)	
-	#define PLATFORM_MAC 1
-
-#else
-	#define PLATFORM_INDEPENDENT 1
 #endif
 
-// Define Macro for Singletons
-#define SINGLE(type)	public:\
-							static type* GetInstance()\
-							{\
-								static type typeInstance;\
-								return &typeInstance;\
-							}\
-						private:\
-							type();\
-							~type();\
-							static type typeInstance; \
-							type(const type&) = delete; \
-							type& operator=(const type&) = delete; \
-							type(type&&) = delete; \
-							type& operator=(type&&) = delete;
+#ifndef CCHAR_IS_UTF8
+#define CCHAR_IS_UTF8 0
+#endif
+
+#ifndef CCHAR_IS_UTF16
+#define CCHAR_IS_UTF16 0
+#endif
+
+#ifndef CCHAR_IS_WCHAR
+#define CCHAR_IS_WCHAR 0
+#endif
+
+#if (CCHAR_IS_UTF8 + CCHAR_IS_UTF16 + CCHAR_IS_WCHAR) != 1
+#error "Exactly one CCHAR_IS_* policy must be selected."
+#endif
+
+#if CCHAR_IS_WCHAR && !PLATFORM_WINDOWS
+#error "CCHAR_IS_WCHAR is currently supported only for Windows targets."
+#endif

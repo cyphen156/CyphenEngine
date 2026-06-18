@@ -3,27 +3,14 @@
 #define PCH_H
 
 #ifdef _DEBUG
-#define _CRTDBG_MAP_ALLOC
-#include <crtdbg.h>
-#define new new(_NORMAL_BLOCK, __FILE__, __LINE__)
+	#define _CRTDBG_MAP_ALLOC
+	#include <crtdbg.h>
+	#define new new(_NORMAL_BLOCK, __FILE__, __LINE__)
 #endif
 
-// C Ç¥ÁØ Çì´õ ÆÄÀÏÀÔ´Ï´Ù.
-#include <stdio.h>
-#include <stdlib.h>
-#include <malloc.h>
-#include <memory.h>
-#include <tchar.h>
-
-// C++ Ç¥ÁØ Çì´õ ÆÄÀÏ ÀÔ´Ï´Ù.
-#include <iostream>
-#include <string>
-
-
-// Ä¿½ºÅÒ ÇÊ¼ö Çì´õ ÆÄÀÏ ÀÔ´Ï´Ù.
-#include "Build/Public/define.h"
+// ì»¤ìŠ¤í…€ í•„ìˆ˜ í—¤ë”
+#include "Build/Public/PlatformDefine.h"
 #include "Build/Public/framework.h"
-#include "Common/Public/types.h"
+#include "Build/Public/define.h"
 
-using namespace std;
 #endif // PCH_H

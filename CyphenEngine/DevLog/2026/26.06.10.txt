@@ -1,0 +1,121 @@
+Date: 2026-06-10
+Branch: #1-프로젝트-리팩토링
+
+작업 요약
+	Path와 File 계층의 Core / Platform 책임 경계를 재정리했습니다.
+
+	Path 작업에서는 Path를 프로젝트 루트나 Content / Saved / Logs 같은 엔진 정책 경로를 보관하는 시스템이 아니라,
+	외부에서 전달받은 경로 문자열을 조작하고 판별하는 무상태 정적 경로 유틸리티라는 기준으로 확정했습니다.
+
+	File 작업에서는 File을 단일 파일 동기 I/O API로 정리하고,
+	실제 플랫폼 파일 접근 구현을 PlatformFile HAL 내부 구현으로 분리했습니다.
+
+	또한 CString / CChar 정책을 재검토하여,
+	기본 외부 텍스트 인코딩은 UTF-8로 유지하되,
+	내부 문자열 코드 유닛 정책은 빌드 타겟이 결정할 수 있도록 정리했습니다.
+
+
+진행한 커밋
+	#1_12 [Refactor] Path 경로 유틸리티 구현 및 책임 범위 재정리
+	#1_13 [Refactor] File I/O 계층 및 CChar 빌드 정책 정리
+
+
+주요 정리 내용
+	1. Path 구현 및 책임 범위 확정
+		Path.cpp를 구현하고,
+		Normalize, Combine, GetDirectoryName, GetFileName,
+		GetFileNameWithoutExtension, GetExtension을 정리했습니다.
+
+		Path는 프로젝트 루트, Content, Saved, Logs 같은 엔진 정책 경로를 보관하지 않습니다.
+
+		Path는 외부에서 전달받은 경로 문자열을 조작하는 순수 문자열 유틸리티로 유지합니다.
+
+	2. Path API 범위 조정
+		ToAbsolute / ToRelative / IsAbsolute / IsRelative는 제외했습니다.
+
+		해당 기능들은 단순 문자열 조작을 넘어 기준 경로와 플랫폼 경로 규칙이 연관되므로,
+		현재 Path 구현 및 API 범위에서 제외했습니다.
+
+	3. Normalize 계약 확정
+		Normalize에서만 '\'를 호환 입력 구분자로 해석하여
+		엔진 표준 구분자 '/'로 통일합니다.
+
+		연속된 경로 구분자는 '/' 하나로 축약합니다.
+
+		Combine과 Get 계열은 입력 문자열을 암묵적으로 Normalize하지 않습니다.
+
+	4. File 공개 API 정리
+		File 시스템을 단일 파일 동기 I/O API로 재정리했습니다.
+
+		ReadAllBytes / WriteAllBytes / ReadAllText / WriteAllText를
+		단일 파일 동기 I/O API로 정리했습니다.
+
+		File 공개 API는 UE의 FFileHelper 방식에 맞춰
+		bool 반환과 out 파라미터 구조를 사용하도록 정리했습니다.
+
+		FileResult / FileSystem / Directory / Exists / Delete / Copy / Move 계열 책임은
+		이번 범위에서 제외했습니다.
+
+	5. PlatformFile HAL 분리
+		PlatformFile을 File.cpp 뒤에 숨겨지는 내부 HAL로 정리했습니다.
+
+		PlatformFile 선언은 HAL/Private에 배치하고,
+		Windows 구현은 Platform/Windows/Private/PlatformFile.cpp에서 처리하도록 분리했습니다.
+
+	6. WindowsString 추가
+		Windows API 경계에서 CString을 Windows API용 std::wstring으로 변환하는
+		WindowsString 유닛을 추가했습니다.
+
+		CCHAR_IS_WCHAR 정책에서는 wchar_t CString을 Windows W API에 직접 연결할 수 있도록 하고,
+		CCHAR_IS_UTF8 / CCHAR_IS_UTF16 정책에서는 필요한 변환 또는 코드 유닛 복사를 수행하도록 했습니다.
+
+	7. CChar 정책 정리
+		CCHAR_IS_UTF8 / CCHAR_IS_UTF16 / CCHAR_IS_WCHAR 정책을 정리했습니다.
+
+		CChar 정책은 Core가 결정하지 않고,
+		Build / define 계층 또는 빌드 타겟 설정이 결정하도록 했습니다.
+
+		Core의 CChar / CString은 주입된 정책을 소비하여
+		타입과 CTEXT 매크로만 확정합니다.
+
+	8. TextEncoding / TextCodec 책임 정리
+		텍스트 파일의 외부 저장 인코딩은 TextEncoding으로 분리했습니다.
+
+		File byte I/O는 인코딩을 알지 않고,
+		CString과 raw byte 사이의 변환은 TextCodec 책임으로 정리했습니다.
+
+		TextEncoding을 받지 않는 Text API는
+		기본 외부 텍스트 인코딩으로 UTF-8을 사용합니다.
+
+	9. CPrimitiveTypes 추가
+		uint8 등 엔진 공개 API용 고정 폭 primitive 타입을 정리했습니다.
+
+		File byte buffer는 CChar 정책과 독립적인 uint8 기반으로 사용합니다.
+
+	10. vcxproj 정리
+		PlatformFile 헤더를 HAL/Private 기준으로 정리했습니다.
+
+		PlatformPath 관련 항목은 이번 File 리팩토링 범위에서 제외했습니다.
+
+		WindowsString / PlatformFile / TextCodec 관련 파일 구성을 반영했습니다.
+
+
+정리된 설계 기준
+	- Path는 무상태 경로 문자열 유틸리티다.
+	- Path는 파일 존재 여부, OS current directory, native path 변환을 처리하지 않는다.
+	- 프로젝트 루트와 엔진 정책 경로는 Path가 아니라 Application / ProjectContext / ProjectPath 계층에서 다룬다.
+	- File은 단일 파일 동기 I/O API다.
+	- File은 TaskSystem / ResourceManager / FileSystem을 알지 않는다.
+	- PlatformFile은 실제 플랫폼 byte I/O만 담당한다.
+	- WindowsString은 Windows API 문자열 경계만 담당한다.
+	- TextCodec은 파일 내용 인코딩 변환만 담당한다.
+	- CChar 정책은 빌드 타겟 단위 문자열 ABI이며, 런타임 옵션이 아니다.
+	- File / FileSystem은 Path를 사용할 수 있지만, Path는 File을 알면 안 된다.
+
+
+다음 작업
+	- ResourceManager / TaskSystem / FileSystem 계층의 책임 분리 검토
+	- File 비동기 로딩 구조 검토
+	- Logger Diagnostics / Queue / Platform 출력 분리 검토
+	- Runtime 경로 정책 계층 검토
+	- Renderer 모듈 구조 재검토

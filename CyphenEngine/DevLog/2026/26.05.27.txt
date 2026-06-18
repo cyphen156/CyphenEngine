@@ -1,0 +1,120 @@
+Branch #1-프로젝트-리팩토링
+
+작업 요약
+	CyphenEngine의 Build / Platform / Runtime / Core 계층 구조를 재정립하고,
+	플랫폼 추상화 및 문자열 규약 체계를 전면 재설계했습니다.
+
+	기존에는 define.h 내부에서 플랫폼 분기와 문자열 타입(TSTRING / TCHAR / TTEXT)을 직접 관리하고 있었으나,
+	Build 레이어를 기준으로 PlatformDefine → framework → define 계층을 분리하여
+	플랫폼 타겟 확정 / 플랫폼 환경 준비 / 공통 매크로 정의 책임을 명확히 구분했습니다.
+
+	또한 PCH 의존성을 최소화하고,
+	각 구현 파일이 필요한 표준 라이브러리를 직접 include하는 방향으로 원칙을 변경했습니다.
+
+	이번 리팩토링을 통해:
+		- 플랫폼 타겟 주입 구조 정립
+		- Build 레이어 역할 확정
+		- Runtime / Platform 의존 방향 정리
+		- 문자열 및 타입 규약 확정
+		- Windows / Linux 플랫폼 분리 기반 구축
+	을 완료했습니다.
+
+Commit	#1_1 [Refactor] 프로젝트 구조 변경 및 인코딩 규칙 변경 및 일부 적용
+
+변경사항 요약
+	1. 프로젝트 구조 재정렬
+	2. 문자열 인코딩 규칙 변경
+	  2_1. EUC-KR(CP-949) → UTF-8(65001)
+	  2_2. CR/LF → LF
+	3. DevLog 구조 변경
+	  DevLog/yy.mm.dd -> DevLog/yyyy/yy.mm.dd
+
+
+Commit	#1_2 [Config] Disable git core.autocrlf
+
+	깃허브가 윈도우 환경에서 커밋시 자동으로 LF 형식을 CRLF로 변경하던 기능을 OFF하여 발생한 문서규약 픽스
+
+
+Commit	#1_3 [fix] DevLog 인코딩 규칙 재적용
+
+	DevLog 인코딩 규칙 재적용
+
+
+Commit	#1_4 [Refactor] 폴더 구조 재정립 및 빌드 설정 정비
+
+변경사항 요약
+	1. 폴더 구조 재정립
+		Common + Utility → Core 통합
+		File / Path / Time 공통 헤더 → Core/Public 이동
+		File / Path / Time Windows 구현체 → Platform/Windows/Private 이동
+		CyphenEngine → Runtime 이동
+		Launch → Platform 하위로 흡수
+		LaunchWindows / LaunchLinux → Platform별 Launch.cpp로 통일
+
+	2. 빌드 설정 정비
+		vcxproj 경로 갱신
+		Windows 빌드 기준 Platform/Windows 구현체만 포함
+		Linux Launch.cpp는 Windows 빌드 대상에서 제외
+		PCH 설정 수정
+			전체 x64 구성은 Use
+			pch.cpp만 Create
+
+	3. 플랫폼 타겟 정의 준비
+		TARGET_PLATFORM_WINDOWS 기반 빌드 타겟 주입 구조 준비
+
+
+Commit	#1_5 [Refactor] 플랫폼 정의 계층 분리 및 Framework 구조 재정립
+
+변경 요약
+	빌드 시스템이 주입한 TARGET_PLATFORM_*을 엔진 내부 PLATFORM_*으로 변환하는 계층을 추가했습니다.
+	framework.h의 책임을 플랫폼 컴파일 환경 구성으로 재정의하고,
+	CString / CChar / LARGEINTEGER / CTEXT 기준의 플랫폼 문자열 및 타입 규약을 정리했습니다.
+	define.h는 플랫폼 분기를 제거하고 로깅 매크로만 담당하도록 축소했습니다.
+
+상세 변경 내용
+
+	1. framework.h — 플랫폼 환경 준비 헤더로 역할 확정
+
+		플랫폼별 시스템 헤더 포함 담당
+
+		TSTRING / TCHAR 매크로 체계를 using 기반 타입 규약으로 전환
+
+			using CString = std::wstring  (Windows)
+
+			using CString = std::string   (Linux)
+
+			using CChar   = wchar_t       (Windows)
+
+			using CChar   = char          (Linux)
+
+			using LARGEINTEGER = LARGE_INTEGER / int64_t
+
+		CTEXT(str) 매크로 유지
+
+			컴파일 타임 문자열 리터럴 변환 목적
+
+	2. define.h — 순수 공통 매크로 헤더로 역할 확정
+
+		플랫폼 분기 전부 제거
+
+		잔존 매크로
+
+			LOG_INTERNAL      : ASCII 리터럴 로그 출력
+
+			LOG_INTERNAL_C    : CString 기반 로그 출력
+
+	3. pch.h — 빌드 환경 전처리 헤더로 축소
+
+		표준 라이브러리 전부 제거
+
+			각 구현 파일이 직접 포함하는 것을 원칙으로 확정
+
+		include 순서 확정
+
+			PlatformDefine.h → framework.h → define.h
+
+	4. 폴더 기능 정리.txt 업데이트
+
+		Build 역할에 플랫폼 문자열 정책 / 시스템 헤더 설정 추가
+
+		pch 역할에 표준 라이브러리 직접 포함 원칙 명시

@@ -1,0 +1,106 @@
+Date: 2026-06-01
+Branch: #1-프로젝트-리팩토링
+
+작업 요약
+	CyphenEngine의 문자열 정책과 애플리케이션 호스트 구조를 정리했습니다.
+
+	오전 작업에서는 기존 TSTRING / TCHAR / TTEXT 기반 문자열 체계를 제거하고,
+	CChar / CString / CTEXT 기준의 Core 문자열 정책으로 재정의했습니다.
+
+	오후 작업에서는 CyphenEngine의 역할을 Runtime 내부 객체가 아니라,
+	Runtime / Editor / Modules를 구성하고 실행할 플랫폼 독립 애플리케이션 호스트로 정리했습니다.
+
+	이번 작업을 통해 Build / Core / Runtime / Engine 계층의 책임이 더 명확해졌고,
+	이후 Runtime / Editor / Module 구조를 붙이기 위한 기준점을 정리했습니다.
+
+
+진행한 커밋
+	#1_6 [Refactor] CChar/CString 문자열 정책 분리
+	#1_7 [Refactor] CyphenEngine 애플리케이션 호스트 정리 및 정적 인스턴스 구조 전환
+
+
+주요 정리 내용
+	1. 문자열 정책 정리
+		Build 계층에 있던 문자열 타입 규약을 Core 계층으로 분리했습니다.
+
+		기존 TSTRING / TCHAR / TTEXT 기반 구조를 제거하고,
+		CChar / CString / CTEXT 기준의 엔진 문자열 정책을 새로 정의했습니다.
+
+		CString은 class wrapper가 아니라 std::basic_string<CChar> 별칭으로 유지하기로 했습니다.
+
+		CChar 정책에 따라 UTF-8 또는 UTF-16 코드 유닛 기반 문자열로
+		빌드 단위 전환이 가능하도록 정리했습니다.
+
+	2. Core / Build 책임 재정리
+		Build 계층은 플랫폼 타겟, 빌드 규약, 플랫폼 시스템 헤더 설정 등
+		빌드 시점에 확정되는 환경 구성을 담당하도록 정리했습니다.
+
+		Core 계층은 OS 비종속 공통 타입, 문자열 규약, Logger, Utility 등을 담당하도록 정리했습니다.
+
+		CString / CChar / CTEXT는 Build 계층이 아니라 Core 계층의 문자열 정책으로 확정했습니다.
+
+	3. CyphenEngine 역할 재정의
+		CyphenEngine을 Runtime 내부 객체가 아니라,
+		프로세스 단위 플랫폼 독립 애플리케이션 호스트로 재정의했습니다.
+
+		CyphenEngine은 GameRuntime 자체가 아니라,
+		실행 모드에 따라 Runtime / Editor / Modules를 구성하고 실행할 최상위 객체로 정리했습니다.
+
+		현재 단계에서는 GameRuntime / EditorRuntime / PIE Runtime을 코드로 추가하지 않고,
+		추후 CyphenEngine 내부에서 구성될 실행 컨텍스트로 남겨두었습니다.
+
+	4. 엔진 인스턴스 생명주기 방향 정리
+		기존 new/delete 기반 GEngine 생성 구조를 제거하는 방향으로 정리했습니다.
+
+		CyphenEngine은 프로세스 단위 정적 인스턴스로 유지하고,
+		앱 종료 시점까지 살아있는 고정 호스트로 취급하기로 했습니다.
+
+		GEngine은 전역 엔진 접근점으로 유지하되,
+		const CyphenEngine* const 형태의 읽기 전용 관찰 포인터로 제한하는 방향으로 정리했습니다.
+
+	5. 엔진 상태 접근 방식 정리
+		engineStatus는 public 필드로 직접 노출하지 않고,
+		GetEngineStatus()를 통해 조회하도록 정리했습니다.
+
+		public 필드 방식도 검토했지만,
+		const_cast 또는 비-const 포인터 유출 가능성을 고려하여 getter 기반 조회로 정리했습니다.
+
+	6. 상태머신 확장 방향 정리
+		현재는 InitEngine / Run / ShutdownEngine으로 생명주기 단계를 구분하지만,
+		추후 상태 전이가 복잡해질 경우 RequestEngineState 또는 ChangeEngineState 기반 상태머신으로 통합할 수 있다고 정리했습니다.
+
+		Run은 상태 전이 함수라기보다 프레임 실행 함수이므로,
+		장기적으로는 Tick 또는 Update 계열 함수로 분리될 가능성이 높다고 판단했습니다.
+
+
+정리된 설계 기준
+	1 Process
+		1 CyphenEngine
+			0 or 1 EditorRuntime
+			0 ~ Many GameRuntime
+
+	CyphenEngine은 Runtime 내부 객체가 아니라,
+	프로세스 단위 플랫폼 독립 애플리케이션 호스트입니다.
+
+	CString은 엔진 내부 문자열 표현이며,
+	사용자 표시 텍스트, 한글 글자 단위 검색, UI 하이라이트, 현지화 처리는
+	이후 CText 계층에서 분리해 처리합니다.
+
+	Runtime / Editor는 아직 구현하지 않습니다.
+
+	Platform Launch는 OS 메시지 루프와 앱 실행 흐름을 소유하고,
+	CyphenEngine은 플랫폼 공통 초기화 / 실행 / 종료 로직의 기준점이 됩니다.
+
+
+다음 작업
+	Platform/Windows/Launch.cpp에서 기존 new/delete 기반 GEngine 흐름 제거
+
+	CyphenEngine 정적 인스턴스 연결 방식 확정
+
+	CyphenEngine의 실제 파일 위치를 Runtime에서 Engine 계층으로 이동
+
+	.vcxproj의 Runtime/CyphenEngine 항목 제거 및 Engine/CyphenEngine 항목 추가
+
+	Platform Launch 내부 Launch 경계 도입 여부 최종 확정
+
+	상태머신 전이 함수 구조 검토
