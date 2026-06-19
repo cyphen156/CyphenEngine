@@ -1,19 +1,24 @@
 #pragma once
 
+#include <vector>
+
 #include "Core/Public/CPrimitiveTypes.h"
+#include "Core/Public/ModuleDescriptor.h"
 
 /// <summary>
-/// Launch가 수집하여 엔진 초기화에 전달하는 실행 컨텍스트입니다.
+/// 엔진에게 전달하기 전의 시작 정보입니다.
 /// </summary>
 struct LaunchContext
 {
 	void* nativeWindowHandle = nullptr;
 	uint32 windowWidth = 0;
 	uint32 windowHeight = 0;
+
+	std::vector<ModuleDescriptor> moduleDescriptors;
 };
 
 /// <summary>
-/// 엔진이 초기화 후 보관하는 실행 컨텍스트입니다.
+/// 런타임이 소유하는 실행 환경입니다.
 /// </summary>
 struct EngineContext
 {

@@ -10,6 +10,7 @@
 #include "Platform/Windows/Resource/Resource.h"
 #include "Engine/Public/CyphenEngine.h"
 #include "Engine/Public/EngineContext.h"
+#include "Core/Public/ModuleManager.h"
 
 #define MAX_LOADSTRING 100
 
@@ -74,15 +75,19 @@ LaunchContext Launch::CreateLaunchContext(HWND windowHandle)
 
 	if (::GetClientRect(windowHandle, &clientRect) != FALSE)
 	{
-		launchContext.windowWidth =
-			static_cast<uint32>(clientRect.right - clientRect.left);
-
-		launchContext.windowHeight =
-			static_cast<uint32>(clientRect.bottom - clientRect.top);
+		launchContext.windowWidth = static_cast<uint32>(clientRect.right - clientRect.left);
+		launchContext.windowHeight = static_cast<uint32>(clientRect.bottom - clientRect.top);
 	}
+
+	ModuleDescriptor dx11RendererModule;
+	dx11RendererModule.moduleName = CTEXT("CyphenRendererDx11");
+	dx11RendererModule.isEnabled = true;
+
+	launchContext.moduleDescriptors.push_back(dx11RendererModule);
 
 	return launchContext;
 }
+
 HANDLE Launch::GetEngineThreadHandle()
 {
 	return engineThread.native_handle();
@@ -95,11 +100,12 @@ bool Launch::StartEngineThread(const LaunchContext& launchContext)
 		return false;
 	}
 
+	ModuleManager::Refresh(launchContext.moduleDescriptors);
+
 	engineThread = std::thread(&CyphenEngine::Run, &engineInstance);
 
 	return true;
 }
-
 
 void Launch::RequestEngineShutdown()
 {
@@ -112,6 +118,8 @@ void Launch::JoinEngineThread()
 	{
 		engineThread.join();
 	}
+
+	ModuleManager::Shutdown();
 }
 
 int APIENTRY wWinMain(_In_ HINSTANCE hInstance,

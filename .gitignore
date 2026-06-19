@@ -33,5 +33,15 @@
 
 **/.vs/
 
-**/CyphenEngine.vcxproj.user
+**.vcxproj.filters
+**.vcxproj.user
 CyphenEngine/CyphenEngine/
+
+BuildArtifacts/
+.vs/
+
+x64/
+Debug/
+Release/
+Binaries/
+Intermediate/

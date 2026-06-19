@@ -1,67 +1,102 @@
 #include "pch.h"
-//#include "Modules/Renderer/Public/Renderer.h"
-//#include "Common/Public/Logger.h"
-//
-//namespace Renderer
-//{
-//	// Initialize the renderer type based on the defined renderer
-//	static RendererType rendererType = RendererType::NONE;
-//	static bool initialized = false;
-//	static TSTRING rendererName = RendererNames[static_cast<size_t>(rendererType)];
-//
-//	void Initialize()
-//	{
-//		if (initialized)
-//		{
-//			LOG_INTERNAL(LogLevel::Error, "Renderer is already initialized.");
-//			return;
-//		}
-//
-//		#if defined(RENDERER_DX11)
-//			rendererType = RendererType::Dx11;
-//
-//		#elif defined(RENDERER_DX12)
-//			rendererType = RendererType::Dx12;
-//
-//		#elif defined(RENDERER_VULKAN)
-//			rendererType = RendererType::Vulkan;
-//
-//		#elif defined(RENDERER_OPENGL)
-//			rendererType = RendererType::OpenGL;
-//
-//		#elif defined(RENDERER_METAL)
-//			rendererType = RendererType::Metal;
-//
-//		#elif defined(RENDERER_GDI_PLUS)
-//			rendererType = RendererType::GDI_Plus;
-//		#else
-//			LOG_INTERNAL(LogLevel::Error, TTEXT("No Renderer defined. Please define a renderer."));
-//			rendererType = RendererType::NONE;
-//		#endif
-//			rendererName = RendererNames[static_cast<size_t>(rendererType)];
-//			initialized = true;
-//			LOG_INTERNAL_T(LogLevel::Info, TTEXT("Renderer initialized: ") + rendererName);
-//	}
-//
-//	void Shutdown() 
-//	{
-//		initialized = false;
-//		rendererType = RendererType::NONE;
-//		rendererName = TTEXT("UNKNOWN");
-//	}
-//
-//	RendererType GetRendererType()
-//	{
-//		return rendererType;
-//	}
-//
-//	const TSTRING& GetRendererName()
-//	{
-//		return rendererName;
-//	}
-//
-//	bool IsInitialized()
-//	{
-//		return initialized;
-//	}
-//}
+
+#include <vector>
+
+#include "Core/Public/ModuleManager.h"
+#include "Modules/Renderer/Public/Renderer.h"
+#include "Modules/Renderer/Public/RendererModule.h"
+
+static CString gRendererModuleName;
+static RendererModuleApi gRendererModuleApi = {};
+static bool gIsRendererInitialized = false;
+
+bool Renderer::Initialize()
+{
+	if (gIsRendererInitialized == true)
+	{
+		return false;
+	}
+
+	std::vector<CString> moduleNames;
+	ModuleManager::GetLoadedModuleNames(moduleNames);
+
+	CString selectedModuleName;
+	RendererModuleApi selectedModuleApi = {};
+
+	for (const CString& moduleName : moduleNames)
+	{
+		ModuleSymbol moduleSymbol =
+			ModuleManager::FindSymbol(moduleName, GET_RENDERER_MODULE_API_NAME);
+
+		if (moduleSymbol == nullptr)
+		{
+			continue;
+		}
+
+		GetRendererModuleApiFunction getRendererModuleApi =
+			reinterpret_cast<GetRendererModuleApiFunction>(moduleSymbol);
+
+		RendererModuleApi rendererModuleApi = {};
+
+		if (getRendererModuleApi(&rendererModuleApi) != RendererModuleResult::Success)
+		{
+			continue;
+		}
+
+		if (rendererModuleApi.apiVersion != RENDERER_MODULE_API_VERSION)
+		{
+			continue;
+		}
+
+		if (rendererModuleApi.rendererType == RendererType::None)
+		{
+			continue;
+		}
+
+		if (selectedModuleName.empty() == false)
+		{
+			return false;
+		}
+
+		selectedModuleName = moduleName;
+		selectedModuleApi = rendererModuleApi;
+	}
+
+	if (selectedModuleName.empty())
+	{
+		return false;
+	}
+
+	gRendererModuleName = selectedModuleName;
+	gRendererModuleApi = selectedModuleApi;
+	gIsRendererInitialized = true;
+
+	return true;
+}
+
+void Renderer::Shutdown()
+{
+	if (gIsRendererInitialized == false)
+	{
+		return;
+	}
+
+	// 이후 RendererModuleApi에 실행 계약이 추가되면:
+	// Renderer Thread 종료 신호
+	// Renderer Thread Join
+	// RendererModuleApi::Shutdown 호출
+
+	gRendererModuleApi = {};
+	gRendererModuleName.clear();
+	gIsRendererInitialized = false;
+}
+
+bool Renderer::IsInitialized()
+{
+	return gIsRendererInitialized;
+}
+
+RendererType Renderer::GetRendererType()
+{
+	return gRendererModuleApi.rendererType;
+}

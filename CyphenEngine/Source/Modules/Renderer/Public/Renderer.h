@@ -1,59 +1,33 @@
 #pragma once
 
-// Define the Renderer
-//#if defined(PLATFORM_WINDOWS)
-//	#define RENDERER_DX11 2
-//	//#define RENDERER_DX12 2
-//	//#define RENDERER_VULKAN 2
-//	//#define RENDERER_OPENGL 2
-//	//#define RENDERER_GDI_PLUS 2
-//	#if defined(RENDERER_DX11)
-//		#include "Modules/Renderer/Public/Dx11Renderer.h"
+#include "Modules/Renderer/Public/RendererTypes.h"
+
+// ============================================================================
+// Renderer
+// ----------------------------------------------------------------------------
+// 엔진의 고수준 Renderer 접근 API입니다.
 //
-//	#elif defined(RENDERER_DX12)
-//		#include "Modules/Renderer/Public/Dx12Renderer.h"
+// Renderer는 ModuleManager에 이미 로드된 모듈 중 Renderer 계약을 구현한
+// 모듈을 찾아 연결합니다.
 //
-//	#elif defined(RENDERER_VULKAN)
-//		#include "Modules/Renderer/Public/VulkanRenderer.h"
+// 책임:
+//   - Renderer 모듈 API 조회
+//   - Renderer API 버전 및 타입 검증
+//   - 활성 Renderer 상태 관리
 //
-//	#elif defined(RENDERER_OPENGL)
-//		#include "Modules/Renderer/Public/OpenGLRenderer.h"
+// 비책임:
+//   - 동적 라이브러리 로드 / 언로드
+//   - 모듈 Enabled 상태 관리
+//   - 플랫폼 그래픽 API 직접 호출
 //
-//	#elif defined(RENDERER_GDI_PLUS)
-//		#include "Modules/Renderer/Public/GdiPlusRenderer.h"
-//
-//	#else
-//		#error "No Renderer defined. Please define a renderer."
-//	#endif
-//
-//#elif defined(PLATFORM_LINUX) || defined(PLATFORM_ANDROID) || defined(PLATFORM_INDEPENDENT)
-//	#define RENDERER_VULKAN 2
-//	//#define RENDERER_OPENGL 2
-//	#if defined(RENDERER_VULKAN)
-//		#include "Modules/Renderer/Public/VulkanRenderer.h"
-//
-//	#elif defined(RENDERER_OPENGL)
-//		#include "Modules/Renderer/Public/OpenGLRenderer.h"
-//
-//	#else
-//		#error "No Renderer defined. Please define a renderer."
-//	#endif
-//
-//#elif defined(PLATFORM_MAC)
-//	#define RENDERER_METAL 2
-//	#include "Modules/Renderer/Public/MetalRenderer.h"
-//
-//#else
-//	#define RENDERER_OPENGL 2
-//	#include "Modules/Renderer/Public/OpenGLRenderer.h"
-//#endif
-//
-//namespace Renderer
-//{
-//	void Initialize();
-//	void Shutdown();
-//
-//	/*RendererType GetRendererType();
-//	const TSTRING& GetRendererName();*/
-//	bool IsInitialized();
-//};
+// Renderer Module의 로드와 수명은 ModuleManager가 담당합니다.
+// ============================================================================
+
+namespace Renderer
+{
+	bool Initialize();
+	void Shutdown();
+
+	bool IsInitialized();
+	RendererType GetRendererType();
+}
