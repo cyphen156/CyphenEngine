@@ -3,7 +3,13 @@
 #include "Core/Public/CPrimitiveTypes.h"
 #include "Modules/Renderer/Public/RendererTypes.h"
 
+#ifdef _DEBUG
+constexpr uint32 RENDERER_MODULE_DEVELOPMENT_VERSION = 2;
+constexpr uint32 RENDERER_MODULE_API_VERSION = RENDERER_MODULE_DEVELOPMENT_VERSION;
+#else
 constexpr uint32 RENDERER_MODULE_API_VERSION = 1;
+#endif
+
 constexpr const char GET_RENDERER_MODULE_API_NAME[] = "GetRendererModuleApi";
 
 enum class RendererModuleResult : uint32
@@ -19,4 +25,4 @@ struct RendererModuleApi
 };
 
 using GetRendererModuleApiFunction =
-	RendererModuleResult(*)(RendererModuleApi* outRendererModuleApi);
+RendererModuleResult(*)(RendererModuleApi* outRendererModuleApi);

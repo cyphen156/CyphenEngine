@@ -79,11 +79,13 @@ LaunchContext Launch::CreateLaunchContext(HWND windowHandle)
 		launchContext.windowHeight = static_cast<uint32>(clientRect.bottom - clientRect.top);
 	}
 
-	ModuleDescriptor dx11RendererModule;
-	dx11RendererModule.moduleName = CTEXT("CyphenRendererDx11");
-	dx11RendererModule.isEnabled = true;
+	ModuleDescriptor rendererModule;
+	rendererModule.moduleName = CTEXT("Renderer");
+	rendererModule.implementationName = CTEXT("Dx11");
+	rendererModule.binaryName = CTEXT("CyphenRendererDx11");
+	rendererModule.isEnabled = true;
 
-	launchContext.moduleDescriptors.push_back(dx11RendererModule);
+	launchContext.moduleDescriptors.push_back(rendererModule);
 
 	return launchContext;
 }
@@ -95,12 +97,12 @@ HANDLE Launch::GetEngineThreadHandle()
 
 bool Launch::StartEngineThread(const LaunchContext& launchContext)
 {
+	ModuleManager::Refresh(launchContext.moduleDescriptors);
+
 	if (engineInstance.InitEngine(launchContext) == false)
 	{
 		return false;
 	}
-
-	ModuleManager::Refresh(launchContext.moduleDescriptors);
 
 	engineThread = std::thread(&CyphenEngine::Run, &engineInstance);
 
@@ -119,7 +121,13 @@ void Launch::JoinEngineThread()
 		engineThread.join();
 	}
 
-	ModuleManager::Shutdown();
+	const bool isModuleShutdownSuccessful = ModuleManager::Shutdown();
+
+#ifdef _DEBUG
+	_ASSERT(isModuleShutdownSuccessful);
+#endif
+
+	(void)isModuleShutdownSuccessful;
 }
 
 int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
@@ -160,6 +168,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 
 	if (!isEngineStarted)
 	{
+		ModuleManager::Shutdown();
 		return FALSE;
 	}
 

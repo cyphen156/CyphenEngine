@@ -10,25 +10,40 @@ using ModuleSymbol = void*;
 // ============================================================================
 // ModuleManager
 // ----------------------------------------------------------------------------
-// 프로세스 단위 엔진 모듈 관리자입니다.
+// 프로세스 단위 논리 Module Runtime Manager입니다.
 //
-// ModuleManager는 설치된 모듈 Descriptor와 로드된 모듈의 네이티브
-// 핸들을 관리합니다.
+// Refresh:
+//   - 외부에서 주입된 Desired ModuleDescriptor 목록을 갱신합니다.
+//   - Descriptor를 검증하고 유효한 항목을 보관합니다.
+//   - Binary Load/Unload는 수행하지 않습니다.
+//   - 일부 Descriptor가 잘못되어도 나머지 유효 항목은 반영합니다.
+//
+// Acquire:
+//   - 논리 moduleName에 선택된 구현 Binary를 획득합니다.
+//   - 첫 참조에서만 ModuleLoader::Load를 호출합니다.
+//   - 이미 같은 구현이 로드된 경우 참조 횟수만 증가시킵니다.
+//   - 로드된 구현과 Desired 구현이 다르면 교체하지 않고 실패합니다.
+//
+// Release:
+//   - 해당 논리 Module의 참조 횟수를 감소시킵니다.
+//   - 마지막 참조에서만 ModuleLoader::Unload를 호출합니다.
+//
+// Shutdown:
+//   - 남아 있는 Binary를 역순으로 강제 Unload하는 종료 안전망입니다.
 //
 // 책임:
-//   - ModuleDescriptor 상태 동기화
-//   - Enabled 모듈 로드
-//   - Disabled / 제거 모듈 언로드
-//   - 로드된 모듈의 심볼 조회
-//   - 모듈 로드 순서 및 수명 관리
+//   - Desired Descriptor 상태
+//   - 선택 구현 Binary의 native handle
+//   - 참조 횟수와 Load 순서
+//   - export symbol 조회
 //
 // 비책임:
 //   - 사용자 Preference 조회
-//   - 플랫폼 동적 라이브러리 API 호출
-//   - 모듈별 도메인 및 API 버전 검증
-//   - 엔진 상태 관리
+//   - Renderer/Audio 등 도메인 API 검증
+//   - Engine 시스템의 시작·종료 순서
 //
-// 플랫폼별 물리적 모듈 입출력은 ModuleLoader가 담당합니다.
+// 모든 공개 함수는 논리 moduleName을 받습니다.
+// 실제 binaryName은 ModuleLoader에만 전달합니다.
 // ============================================================================
 
 class ModuleManager final
@@ -37,8 +52,8 @@ public:
 	static bool Refresh(const std::vector<ModuleDescriptor>& moduleDescriptors);
 	static bool Shutdown();
 
-	static bool Load(const CString& moduleName);
-	static bool Unload(const CString& moduleName);
+	static bool Acquire(const CString& moduleName);
+	static bool Release(const CString& moduleName);
 
 	static ModuleSymbol FindSymbol(const CString& moduleName, const char* symbolName);
 
@@ -55,5 +70,6 @@ private:
 	ModuleManager(ModuleManager&& other) = delete;
 	ModuleManager& operator=(ModuleManager&& other) = delete;
 
+	static bool RemoveModuleRecord(const CString& moduleName);
 	static bool UnloadAll();
 };

@@ -5,22 +5,30 @@
 // ============================================================================
 // Renderer
 // ----------------------------------------------------------------------------
-// 엔진의 고수준 Renderer 접근 API입니다.
+// Engine이 사용하는 논리 Renderer Module의 공개 Facade입니다.
 //
-// Renderer는 ModuleManager에 이미 로드된 모듈 중 Renderer 계약을 구현한
-// 모듈을 찾아 연결합니다.
+// Renderer는 자신의 논리 Module 정체성으로 선택 구현을 획득하고,
+// RendererModuleApi를 조회·검증한 뒤 연결 상태를 보관합니다.
 //
 // 책임:
-//   - Renderer 모듈 API 조회
-//   - Renderer API 버전 및 타입 검증
-//   - 활성 Renderer 상태 관리
+//   - 선택 Renderer 구현 Binding
+//   - RendererModuleApi 조회 및 버전·타입 검증
+//   - Renderer 시스템의 연결 상태
 //
 // 비책임:
-//   - 동적 라이브러리 로드 / 언로드
-//   - 모듈 Enabled 상태 관리
-//   - 플랫폼 그래픽 API 직접 호출
+//   - Descriptor 및 Preference 생성
+//   - Native Binary 직접 Load/Unload
+//   - DX11/Vulkan API 직접 호출
 //
-// Renderer Module의 로드와 수명은 ModuleManager가 담당합니다.
+// #2_3 범위:
+//   - 선택 구현 Binary 획득
+//   - RendererModuleApi 바인딩
+//   - 역순 참조 해제
+//
+// 이월:
+//   - Render Thread / Command Queue
+//   - GPU Device / SwapChain
+//   - ExecuteCommandList / Capability
 // ============================================================================
 
 namespace Renderer

@@ -1,9 +1,8 @@
 #include "pch.h"
 
-#include "Engine/Public/CyphenEngine.h"
 #include "Core/Public/Time.h"
-#include "Core/Public/Path.h"
-#include "Core/Public/File.h"
+#include "Engine/Public/CyphenEngine.h"
+#include "Modules/Renderer/Public/Renderer.h"
 
 CyphenEngine::CyphenEngine()
 	: engineStatus(Initializing)
@@ -25,8 +24,8 @@ bool CyphenEngine::InitEngine(const LaunchContext& launchContext)
 	{
 		return false;
 	}
-	
-	/// Injection Launch Dependancy 
+
+	// Launch가 수집한 실행 환경 중 Engine이 소유할 값을 주입합니다.
 	engineContext.nativeWindowHandle = launchContext.nativeWindowHandle;
 	engineContext.windowWidth = launchContext.windowWidth;
 	engineContext.windowHeight = launchContext.windowHeight;
@@ -36,12 +35,19 @@ bool CyphenEngine::InitEngine(const LaunchContext& launchContext)
 		return false;
 	}
 
+	// Core 시스템의 초기화 순서는 Engine이 명시적으로 소유합니다.
+	if (Renderer::Initialize() == false)
+	{
+		return false;
+	}
+
 	engineStatus.store(Ready);
 
 	return true;
 }
 
-// 엔진의 메인 루프입니다. Run()이 호출되면 엔진은 Running 상태가 될 때까지 대기한 후, Running 상태가 유지되는 동안 계속해서 루프를 실행합니다.
+// Engine의 논리 실행 루프입니다.
+// Renderer의 독립 실행 루프는 #2_4에서 별도 Render Thread로 추가합니다.
 void CyphenEngine::Run()
 {
 	if (ChangeEngineStatus(Ready, Running) == false)
@@ -72,6 +78,9 @@ void CyphenEngine::ShutdownEngine()
 		return;
 	}
 
+	// 초기화의 역순으로 Core 시스템을 종료합니다.
+	Renderer::Shutdown();
+
 	engineStatus.store(Terminated);
 }
 
@@ -79,9 +88,12 @@ bool CyphenEngine::RequestShutdown()
 {
 	EngineStatus currentStatus = engineStatus.load();
 
-	while (currentStatus != Terminating && currentStatus != Terminated)
+	while (currentStatus != Terminating &&
+		currentStatus != Terminated)
 	{
-		if (engineStatus.compare_exchange_strong(currentStatus, Terminating))
+		if (engineStatus.compare_exchange_strong(
+			currentStatus,
+			Terminating))
 		{
 			return true;
 		}
@@ -94,5 +106,3 @@ bool CyphenEngine::ChangeEngineStatus(EngineStatus expected, EngineStatus desire
 {
 	return engineStatus.compare_exchange_strong(expected, desired);
 }
-
-
