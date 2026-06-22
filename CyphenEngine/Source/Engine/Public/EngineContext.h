@@ -2,27 +2,33 @@
 
 #include <vector>
 
-#include "Core/Public/CPrimitiveTypes.h"
 #include "Core/Public/ModuleDescriptor.h"
+#include "HAL/Public/NativeWindowInfo.h"
 
-/// <summary>
-/// 엔진에게 전달하기 전의 시작 정보입니다.
-/// </summary>
+// ============================================================================
+// LaunchContext
+// ----------------------------------------------------------------------------
+// Platform Launch가 Engine 초기화 전에 수집한 실행 정보입니다.
+//
+// Native Window 정보와 외부에서 결정된 Module 구성을 Engine에 전달합니다.
+// ============================================================================
+
 struct LaunchContext
 {
-	void* nativeWindowHandle = nullptr;
-	uint32 windowWidth = 0;
-	uint32 windowHeight = 0;
-
+	NativeWindowInfo windowInfo;
 	std::vector<ModuleDescriptor> moduleDescriptors;
 };
 
-/// <summary>
-/// 런타임이 소유하는 실행 환경입니다.
-/// </summary>
+// ============================================================================
+// EngineContext
+// ----------------------------------------------------------------------------
+// CyphenEngine이 실행 중 보관하는 환경 정보입니다.
+//
+// LaunchContext 전체를 보관하지 않고 Engine 실행에 필요한 정보만
+// 책임별 공통 타입으로 보관합니다.
+// ============================================================================
+
 struct EngineContext
 {
-	void* nativeWindowHandle = nullptr;
-	uint32 windowWidth = 0;
-	uint32 windowHeight = 0;
+	NativeWindowInfo windowInfo;
 };

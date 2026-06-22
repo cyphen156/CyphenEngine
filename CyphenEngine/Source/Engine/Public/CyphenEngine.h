@@ -4,6 +4,7 @@
 
 #include "Core/Public/types.h"
 #include "Engine/Public/EngineContext.h"
+#include "Modules/Renderer/Public/Renderer.h"
 
 /**
  * 플랫폼 독립 애플리케이션 호스트입니다.
@@ -45,6 +46,7 @@ private:
 private:
 	std::atomic<EngineStatus> engineStatus;
 	EngineContext engineContext;
+	Renderer renderer;
 };
 
 extern const CyphenEngine* const GEngine;

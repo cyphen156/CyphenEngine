@@ -1,223 +1,271 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <ItemGroup Label="ProjectConfigurations">
-    <ProjectConfiguration Include="Debug|x64">
-      <Configuration>Debug</Configuration>
-      <Platform>x64</Platform>
-    </ProjectConfiguration>
-    <ProjectConfiguration Include="Release|x64">
-      <Configuration>Release</Configuration>
-      <Platform>x64</Platform>
-    </ProjectConfiguration>
-  </ItemGroup>
-  <PropertyGroup Label="Globals">
-    <VCProjectVersion>17.0</VCProjectVersion>
-    <Keyword>Win32Proj</Keyword>
-    <ProjectGuid>{25519c91-15a4-4d25-8ac7-534e79b88dca}</ProjectGuid>
-    <RootNamespace>CyphenEngine</RootNamespace>
-    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
-  </PropertyGroup>
-  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
-    <ConfigurationType>Application</ConfigurationType>
-    <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v143</PlatformToolset>
-    <CharacterSet>Unicode</CharacterSet>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
-    <ConfigurationType>Application</ConfigurationType>
-    <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v143</PlatformToolset>
-    <WholeProgramOptimization>true</WholeProgramOptimization>
-    <CharacterSet>Unicode</CharacterSet>
-  </PropertyGroup>
-  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
-  <ImportGroup Label="ExtensionSettings">
-  </ImportGroup>
-  <ImportGroup Label="Shared">
-  </ImportGroup>
-  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-    <Import Project="..\CyphenBuild.props" />
-  </ImportGroup>
-  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-    <Import Project="..\CyphenBuild.props" />
-  </ImportGroup>
-  <PropertyGroup Label="UserMacros" />
-  <!-- Debug x64 -->
-  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <ClCompile>
-      <WarningLevel>Level3</WarningLevel>
-      <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>_DEBUG;_WINDOWS;BUILD_TARGET_EDITOR;TARGET_PLATFORM_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <ConformanceMode>true</ConformanceMode>
-      <PrecompiledHeader>Use</PrecompiledHeader>
-      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
-      <AdditionalIncludeDirectories>$(ProjectDir)Source;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
-    </ClCompile>
-    <Link>
-      <SubSystem>Windows</SubSystem>
-      <GenerateDebugInformation>true</GenerateDebugInformation>
-    </Link>
-  </ItemDefinitionGroup>
-  <!-- Release x64 -->
-  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <ClCompile>
-      <WarningLevel>Level3</WarningLevel>
-      <FunctionLevelLinking>true</FunctionLevelLinking>
-      <IntrinsicFunctions>true</IntrinsicFunctions>
-      <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>NDEBUG;_WINDOWS;BUILD_TARGET_EDITOR;TARGET_PLATFORM_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <ConformanceMode>true</ConformanceMode>
-      <PrecompiledHeader>Use</PrecompiledHeader>
-      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
-      <AdditionalIncludeDirectories>$(ProjectDir)Source;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
-    </ClCompile>
-    <Link>
-      <SubSystem>Windows</SubSystem>
-      <EnableCOMDATFolding>true</EnableCOMDATFolding>
-      <OptimizeReferences>true</OptimizeReferences>
-      <GenerateDebugInformation>true</GenerateDebugInformation>
-    </Link>
-  </ItemDefinitionGroup>
-  <!-- 헤더 파일 -->
-  <ItemGroup>
-    <!-- Build -->
-    <ClInclude Include="Source\Build\Public\BuildInfo.h" />
-    <ClInclude Include="Source\Build\Public\define.h" />
-    <ClInclude Include="Source\Build\Public\framework.h" />
-    <ClInclude Include="Source\Build\Public\PlatformDefine.h" />
-    <!-- Core -->
-    <ClInclude Include="Source\Core\Public\CChar.h" />
-    <ClInclude Include="Source\Core\Public\CDateTime.h" />
-    <ClInclude Include="Source\Core\Public\CPrimitiveTypes.h" />
-    <ClInclude Include="Source\Core\Public\CString.h" />
-    <ClInclude Include="Source\Core\Public\File.h" />
-    <ClInclude Include="Source\Core\Public\FileSystem.h" />
-    <ClInclude Include="Source\Core\Public\FileTypes.h" />
-    <ClInclude Include="Source\Core\Public\Logger.h" />
-    <ClInclude Include="Source\Core\Public\ModuleBinding.h" />
-    <ClInclude Include="Source\Core\Public\ModuleDescriptor.h" />
-    <ClInclude Include="Source\Core\Public\ModuleManager.h" />
-    <ClInclude Include="Source\Core\Public\Path.h" />
-    <ClInclude Include="Source\Core\Public\Separator.h" />
-    <ClInclude Include="Source\Core\Public\TextCodec.h" />
-    <ClInclude Include="Source\Core\Public\Time.h" />
-    <ClInclude Include="Source\Core\Public\types.h" />
-    <!-- Engine -->
-    <ClInclude Include="Source\Engine\Public\CyphenEngine.h" />
-    <ClInclude Include="Source\Engine\Public\EngineContext.h" />
-    <!-- HAL -->
-    <ClInclude Include="Source\HAL\Private\PlatformFile.h" />
-    <ClInclude Include="Source\HAL\Private\PlatformTime.h" />
-    <ClInclude Include="Source\HAL\Public\Launch.h" />
-    <ClInclude Include="Source\HAL\Private\ModuleLoader.h" />
-    <ClInclude Include="Source\Modules\Renderer\Public\Renderer.h" />
-    <ClInclude Include="Source\Modules\Renderer\Public\RendererModule.h" />
-    <ClInclude Include="Source\Modules\Renderer\Public\RendererTypes.h" />
-    <!-- Platform -->
-    <ClInclude Include="Source\Platform\Windows\Private\WindowsString.h" />
-    <ClInclude Include="Source\Platform\Windows\Public\targetver.h" />
-    <ClInclude Include="Source\Platform\Windows\Resource\Resource.h" />
-    <!-- pch -->
-    <ClInclude Include="Source\pch.h" />
-    <ClInclude Include="Source\Test\CoreIO\CoreIOTests.h" />
-  </ItemGroup>
-  <!-- 소스 파일 -->
-  <ItemGroup>
-    <!-- pch : Create -->
-    <ClCompile Include="Source\Core\Private\File.cpp" />
-    <ClCompile Include="Source\Core\Private\FileSystem.cpp" />
-    <ClCompile Include="Source\Core\Private\ModuleBinding.cpp" />
-    <ClCompile Include="Source\Core\Private\ModuleManager.cpp" />
-    <ClCompile Include="Source\Core\Private\Path.cpp" />
-    <ClCompile Include="Source\Core\Private\Separator.cpp" />
-    <ClCompile Include="Source\Core\Private\TextCodec.cpp" />
-    <ClCompile Include="Source\Core\Private\Time.cpp" />
-    <ClCompile Include="Source\Modules\Renderer\Private\Renderer.cpp" />
-    <ClCompile Include="Source\pch.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
-    </ClCompile>
-    <!-- Core -->
-    <ClCompile Include="Source\Core\Private\Logger.cpp" />
-    <!-- Engine -->
-    <ClCompile Include="Source\Engine\Private\CyphenEngine.cpp" />
-    <!-- Platform - Windows -->
-    <ClCompile Include="Source\Platform\Windows\Private\Launch.cpp" />
-    <!-- Platform - Linux (현재 전체 제외) -->
-    <ClCompile Include="Source\Platform\Linux\Private\Launch.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
-    </ClCompile>
-    <ClCompile Include="Source\Platform\Linux\Private\File.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
-    </ClCompile>
-    <ClCompile Include="Source\Platform\Linux\Private\Path.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
-    </ClCompile>
-    <ClCompile Include="Source\Platform\Linux\Private\Time.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
-    </ClCompile>
-    <ClCompile Include="Source\Platform\Windows\Private\ModuleLoader.cpp" />
-    <ClCompile Include="Source\Platform\Windows\Private\PlatformFile.cpp" />
-    <ClCompile Include="Source\Platform\Windows\Private\PlatformTime.cpp" />
-    <ClCompile Include="Source\Platform\Windows\Private\WindowsString.cpp" />
-    <ClCompile Include="Source\Test\CoreIO\CoreIOTests.cpp" />
-  </ItemGroup>
-  <!-- 리소스 -->
-  <ItemGroup>
-    <ResourceCompile Include="Source\Platform\Windows\Resource\CyphenEngine.rc" />
-  </ItemGroup>
-  <ItemGroup>
-    <Image Include="Source\Platform\Windows\Resource\CyphenEngine.ico" />
-    <Image Include="Source\Platform\Windows\Resource\small.ico" />
-  </ItemGroup>
-  <!-- DevLog -->
-  <ItemGroup>
-    <Text Include="DevLog\2025\25.02.11.txt" />
-    <Text Include="DevLog\2025\25.02.17.txt" />
-    <Text Include="DevLog\2025\25.03.06.txt" />
-    <Text Include="DevLog\2025\25.04.07.txt" />
-    <Text Include="DevLog\2025\25.06.04.txt" />
-    <Text Include="DevLog\2025\25.07.02.txt" />
-    <Text Include="DevLog\2025\25.07.03.txt" />
-    <Text Include="DevLog\2025\25.07.04.txt" />
-    <Text Include="DevLog\2025\25.07.09.txt" />
-    <Text Include="DevLog\2025\25.07.17.txt" />
-    <Text Include="DevLog\2025\25.07.24.txt" />
-    <Text Include="DevLog\2026\26.05.27.txt" />
-    <Text Include="DevLog\2026\26.06.01.txt" />
-    <Text Include="DevLog\2026\26.06.08.txt" />
-    <Text Include="DevLog\2026\26.06.09.txt" />
-    <Text Include="DevLog\2026\26.06.10.txt" />
-    <Text Include="DevLog\2026\26.06.15.txt" />
-    <Text Include="DevLog\2026\26.06.16.txt" />
-    <Text Include="DevLog\2026\26.06.17.txt" />
-    <Text Include="DevLog\Todos.txt" />
-    <Text Include="DevLog\폴더 기능 정리.txt" />
-    <Text Include="Resources\Test\CoreIo\ReadAllText_UTF8_LF.txt" />
-  </ItemGroup>
-  <!-- 기타 -->
-  <ItemGroup>
-    <None Include=".vs\ProjectSettings.json" />
-    <None Include=".vs\slnx.sqlite" />
-    <None Include=".vs\VSWorkspaceState.json" />
-    <None Include="Source\Build\Public\cpp.hint" />
-  </ItemGroup>
-  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
-  <ImportGroup Label="ExtensionTargets">
-  </ImportGroup>
-  <Target Name="CopyCoreIoTestResources" AfterTargets="Build" Condition="'$(Configuration)'=='Debug'">
-    <ItemGroup>
-      <CoreIoTestResource Include="$(ProjectDir)Resources\Test\CoreIo\**\*" />
-    </ItemGroup>
-    <Copy SourceFiles="@(CoreIoTestResource)" DestinationFiles="@(CoreIoTestResource->'$(OutDir)Resources\Test\CoreIo\%(RecursiveDir)%(Filename)%(Extension)')" SkipUnchangedFiles="true" />
-  </Target>
+	<ItemGroup Label="ProjectConfigurations">
+		<ProjectConfiguration Include="Debug|x64">
+			<Configuration>Debug</Configuration>
+			<Platform>x64</Platform>
+		</ProjectConfiguration>
+		<ProjectConfiguration Include="Release|x64">
+			<Configuration>Release</Configuration>
+			<Platform>x64</Platform>
+		</ProjectConfiguration>
+	</ItemGroup>
+
+	<PropertyGroup Label="Globals">
+		<VCProjectVersion>17.0</VCProjectVersion>
+		<Keyword>Win32Proj</Keyword>
+		<ProjectGuid>{25519c91-15a4-4d25-8ac7-534e79b88dca}</ProjectGuid>
+		<RootNamespace>CyphenEngine</RootNamespace>
+		<WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+	</PropertyGroup>
+
+	<Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+		<ConfigurationType>Application</ConfigurationType>
+		<UseDebugLibraries>true</UseDebugLibraries>
+		<PlatformToolset>v143</PlatformToolset>
+		<CharacterSet>Unicode</CharacterSet>
+	</PropertyGroup>
+
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+		<ConfigurationType>Application</ConfigurationType>
+		<UseDebugLibraries>false</UseDebugLibraries>
+		<PlatformToolset>v143</PlatformToolset>
+		<WholeProgramOptimization>true</WholeProgramOptimization>
+		<CharacterSet>Unicode</CharacterSet>
+	</PropertyGroup>
+
+	<Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+
+	<ImportGroup Label="ExtensionSettings">
+	</ImportGroup>
+
+	<ImportGroup Label="Shared">
+	</ImportGroup>
+
+	<ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+		<Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props"
+				Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')"
+				Label="LocalAppDataPlatform" />
+		<Import Project="..\CyphenBuild.props" />
+	</ImportGroup>
+
+	<ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+		<Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props"
+				Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')"
+				Label="LocalAppDataPlatform" />
+		<Import Project="..\CyphenBuild.props" />
+	</ImportGroup>
+
+	<PropertyGroup Label="UserMacros" />
+
+	<ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+		<ClCompile>
+			<WarningLevel>Level3</WarningLevel>
+			<SDLCheck>true</SDLCheck>
+			<PreprocessorDefinitions>_DEBUG;_WINDOWS;BUILD_TARGET_EDITOR;TARGET_PLATFORM_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+			<ConformanceMode>true</ConformanceMode>
+			<PrecompiledHeader>Use</PrecompiledHeader>
+			<PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+			<AdditionalIncludeDirectories>$(ProjectDir)Source;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+			<AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
+		</ClCompile>
+		<Link>
+			<SubSystem>Windows</SubSystem>
+			<GenerateDebugInformation>true</GenerateDebugInformation>
+		</Link>
+	</ItemDefinitionGroup>
+
+	<ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+		<ClCompile>
+			<WarningLevel>Level3</WarningLevel>
+			<FunctionLevelLinking>true</FunctionLevelLinking>
+			<IntrinsicFunctions>true</IntrinsicFunctions>
+			<SDLCheck>true</SDLCheck>
+			<PreprocessorDefinitions>NDEBUG;_WINDOWS;BUILD_TARGET_EDITOR;TARGET_PLATFORM_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+			<ConformanceMode>true</ConformanceMode>
+			<PrecompiledHeader>Use</PrecompiledHeader>
+			<PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+			<AdditionalIncludeDirectories>$(ProjectDir)Source;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+			<AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
+		</ClCompile>
+		<Link>
+			<SubSystem>Windows</SubSystem>
+			<EnableCOMDATFolding>true</EnableCOMDATFolding>
+			<OptimizeReferences>true</OptimizeReferences>
+			<GenerateDebugInformation>true</GenerateDebugInformation>
+		</Link>
+	</ItemDefinitionGroup>
+
+	<!-- Header Files -->
+	<ItemGroup>
+		<!-- Build -->
+		<ClInclude Include="Source\Build\Public\BuildInfo.h" />
+		<ClInclude Include="Source\Build\Public\define.h" />
+		<ClInclude Include="Source\Build\Public\framework.h" />
+		<ClInclude Include="Source\Build\Public\PlatformDefine.h" />
+
+		<!-- Core -->
+		<ClInclude Include="Source\Core\Public\CChar.h" />
+		<ClInclude Include="Source\Core\Public\CDateTime.h" />
+		<ClInclude Include="Source\Core\Public\CPrimitiveTypes.h" />
+		<ClInclude Include="Source\Core\Public\CString.h" />
+		<ClInclude Include="Source\Core\Public\File.h" />
+		<ClInclude Include="Source\Core\Public\FileSystem.h" />
+		<ClInclude Include="Source\Core\Public\FileTypes.h" />
+		<ClInclude Include="Source\Core\Public\Logger.h" />
+		<ClInclude Include="Source\Core\Public\ModuleBinding.h" />
+		<ClInclude Include="Source\Core\Public\ModuleDescriptor.h" />
+		<ClInclude Include="Source\Core\Public\ModuleManager.h" />
+		<ClInclude Include="Source\Core\Public\Path.h" />
+		<ClInclude Include="Source\Core\Public\Separator.h" />
+		<ClInclude Include="Source\Core\Public\TextCodec.h" />
+		<ClInclude Include="Source\Core\Public\Thread.h" />
+		<ClInclude Include="Source\Core\Public\Time.h" />
+		<ClInclude Include="Source\Core\Public\types.h" />
+
+		<!-- Engine -->
+		<ClInclude Include="Source\Engine\Public\CyphenEngine.h" />
+		<ClInclude Include="Source\Engine\Public\EngineContext.h" />
+
+		<!-- HAL -->
+		<ClInclude Include="Source\HAL\Private\ModuleLoader.h" />
+		<ClInclude Include="Source\HAL\Private\PlatformFile.h" />
+		<ClInclude Include="Source\HAL\Private\PlatformTime.h" />
+		<ClInclude Include="Source\HAL\Public\Launch.h" />
+		<ClInclude Include="Source\HAL\Public\NativeWindowInfo.h" />
+
+		<!-- Modules -->
+		<ClInclude Include="Source\Modules\Renderer\Public\Renderer.h" />
+		<ClInclude Include="Source\Modules\Renderer\Public\RendererModule.h" />
+		<ClInclude Include="Source\Modules\Renderer\Public\RendererTypes.h" />
+
+		<!-- Platform -->
+		<ClInclude Include="Source\Platform\Windows\Private\WindowsString.h" />
+		<ClInclude Include="Source\Platform\Windows\Public\targetver.h" />
+		<ClInclude Include="Source\Platform\Windows\Resource\Resource.h" />
+
+		<!-- Test -->
+		<ClInclude Include="Source\Test\CoreIO\CoreIOTests.h" />
+
+		<!-- PCH -->
+		<ClInclude Include="Source\pch.h" />
+	</ItemGroup>
+
+	<!-- Source Files -->
+	<ItemGroup>
+		<!-- Core -->
+		<ClCompile Include="Source\Core\Private\File.cpp" />
+		<ClCompile Include="Source\Core\Private\FileSystem.cpp" />
+		<ClCompile Include="Source\Core\Private\Logger.cpp" />
+		<ClCompile Include="Source\Core\Private\ModuleBinding.cpp" />
+		<ClCompile Include="Source\Core\Private\ModuleManager.cpp" />
+		<ClCompile Include="Source\Core\Private\Path.cpp" />
+		<ClCompile Include="Source\Core\Private\Separator.cpp" />
+		<ClCompile Include="Source\Core\Private\TextCodec.cpp" />
+		<ClCompile Include="Source\Core\Private\Thread.cpp" />
+		<ClCompile Include="Source\Core\Private\Time.cpp" />
+
+		<!-- Engine -->
+		<ClCompile Include="Source\Engine\Private\CyphenEngine.cpp" />
+
+		<!-- Modules -->
+		<ClCompile Include="Source\Modules\Renderer\Private\Renderer.cpp" />
+
+		<!-- Platform - Windows -->
+		<ClCompile Include="Source\Platform\Windows\Private\Launch.cpp" />
+		<ClCompile Include="Source\Platform\Windows\Private\ModuleLoader.cpp" />
+		<ClCompile Include="Source\Platform\Windows\Private\PlatformFile.cpp" />
+		<ClCompile Include="Source\Platform\Windows\Private\PlatformTime.cpp" />
+		<ClCompile Include="Source\Platform\Windows\Private\WindowsString.cpp" />
+
+		<!-- Platform - Linux -->
+		<ClCompile Include="Source\Platform\Linux\Private\Launch.cpp">
+			<ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+			<ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+		</ClCompile>
+		<ClCompile Include="Source\Platform\Linux\Private\File.cpp">
+			<ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+			<ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+		</ClCompile>
+		<ClCompile Include="Source\Platform\Linux\Private\Path.cpp">
+			<ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+			<ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+		</ClCompile>
+		<ClCompile Include="Source\Platform\Linux\Private\Time.cpp">
+			<ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+			<ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+		</ClCompile>
+
+		<!-- Test -->
+		<ClCompile Include="Source\Test\CoreIO\CoreIOTests.cpp" />
+
+		<!-- PCH -->
+		<ClCompile Include="Source\pch.cpp">
+			<PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
+			<PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
+		</ClCompile>
+	</ItemGroup>
+
+	<!-- Resources -->
+	<ItemGroup>
+		<ResourceCompile Include="Source\Platform\Windows\Resource\CyphenEngine.rc" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<Image Include="Source\Platform\Windows\Resource\CyphenEngine.ico" />
+		<Image Include="Source\Platform\Windows\Resource\small.ico" />
+	</ItemGroup>
+
+	<!-- DevLog -->
+	<ItemGroup>
+		<Text Include="DevLog\2025\25.02.11.txt" />
+		<Text Include="DevLog\2025\25.02.17.txt" />
+		<Text Include="DevLog\2025\25.03.06.txt" />
+		<Text Include="DevLog\2025\25.04.07.txt" />
+		<Text Include="DevLog\2025\25.06.04.txt" />
+		<Text Include="DevLog\2025\25.07.02.txt" />
+		<Text Include="DevLog\2025\25.07.03.txt" />
+		<Text Include="DevLog\2025\25.07.04.txt" />
+		<Text Include="DevLog\2025\25.07.09.txt" />
+		<Text Include="DevLog\2025\25.07.17.txt" />
+		<Text Include="DevLog\2025\25.07.24.txt" />
+		<Text Include="DevLog\2026\26.05.27.txt" />
+		<Text Include="DevLog\2026\26.06.01.txt" />
+		<Text Include="DevLog\2026\26.06.08.txt" />
+		<Text Include="DevLog\2026\26.06.09.txt" />
+		<Text Include="DevLog\2026\26.06.10.txt" />
+		<Text Include="DevLog\2026\26.06.15.txt" />
+		<Text Include="DevLog\2026\26.06.16.txt" />
+		<Text Include="DevLog\2026\26.06.17.txt" />
+		<Text Include="DevLog\Todos.txt" />
+		<Text Include="DevLog\폴더 기능 정리.txt" />
+		<Text Include="Resources\Test\CoreIo\ReadAllText_UTF8_LF.txt" />
+	</ItemGroup>
+
+	<!-- Other -->
+	<ItemGroup>
+		<None Include=".vs\ProjectSettings.json" />
+		<None Include=".vs\slnx.sqlite" />
+		<None Include=".vs\VSWorkspaceState.json" />
+		<None Include="Source\Build\Public\cpp.hint" />
+	</ItemGroup>
+
+	<Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+
+	<ImportGroup Label="ExtensionTargets">
+	</ImportGroup>
+
+	<Target Name="CopyCoreIoTestResources"
+			AfterTargets="Build"
+			Condition="'$(Configuration)'=='Debug'">
+		<ItemGroup>
+			<CoreIoTestResource Include="$(ProjectDir)Resources\Test\CoreIo\**\*" />
+		</ItemGroup>
+
+		<Copy SourceFiles="@(CoreIoTestResource)"
+			  DestinationFiles="@(CoreIoTestResource->'$(OutDir)Resources\Test\CoreIo\%(RecursiveDir)%(Filename)%(Extension)')"
+			  SkipUnchangedFiles="true" />
+	</Target>
 </Project>

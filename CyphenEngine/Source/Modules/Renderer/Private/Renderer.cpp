@@ -1,141 +1,212 @@
 #include "pch.h"
 
 #include "Core/Public/CChar.h"
-#include "Core/Public/ModuleBinding.h"
 #include "Modules/Renderer/Public/Renderer.h"
-#include "Modules/Renderer/Public/RendererModule.h"
 
 namespace
 {
 	constexpr CChar RendererModuleName[] = CTEXT("Renderer");
-
-	// ========================================================================
-	// RendererModule
-	// ------------------------------------------------------------------------
-	// Renderer Facade의 실제 상태를 소유하는 단일 시스템 객체입니다.
-	//
-	// ModuleBinding과 RendererModuleApi는 이 객체만 소유합니다.
-	// 별도 초기화 bool을 두지 않고 Binding과 API 상태에서 연결 상태를
-	// 판정합니다.
-	// ========================================================================
-
-	class RendererModule final
-	{
-	public:
-		bool Initialize()
-		{
-			if (IsInitialized())
-			{
-				return false;
-			}
-
-			if (moduleBinding.Bind(RendererModuleName) == false)
-			{
-				return false;
-			}
-
-			ModuleSymbol moduleSymbol =
-				moduleBinding.FindSymbol(GET_RENDERER_MODULE_API_NAME);
-
-			if (moduleSymbol == nullptr)
-			{
-				RollbackBinding();
-				return false;
-			}
-
-			GetRendererModuleApiFunction getRendererModuleApi =
-				reinterpret_cast<GetRendererModuleApiFunction>(moduleSymbol);
-
-			RendererModuleApi resolvedModuleApi = {};
-
-			if (getRendererModuleApi(&resolvedModuleApi) !=
-				RendererModuleResult::Success)
-			{
-				RollbackBinding();
-				return false;
-			}
-
-			if (resolvedModuleApi.apiVersion != RENDERER_MODULE_API_VERSION)
-			{
-				RollbackBinding();
-				return false;
-			}
-
-			if (resolvedModuleApi.rendererType == RendererType::None)
-			{
-				RollbackBinding();
-				return false;
-			}
-
-			// 모든 검증이 끝난 뒤에만 활성 API를 확정합니다.
-			moduleApi = resolvedModuleApi;
-
-			return true;
-		}
-
-		void Shutdown()
-		{
-			// DLL symbol 참조를 먼저 제거한 뒤 Binary 참조를 해제합니다.
-			moduleApi = {};
-
-			const bool isReleased = moduleBinding.Release();
-
-#ifdef _DEBUG
-			_ASSERT(isReleased);
-#endif
-
-			(void)isReleased;
-		}
-
-		bool IsInitialized() const
-		{
-			return moduleBinding.IsBound() &&
-				moduleApi.rendererType != RendererType::None;
-		}
-
-		RendererType GetRendererType() const
-		{
-			return moduleApi.rendererType;
-		}
-
-	private:
-		void RollbackBinding()
-		{
-			moduleApi = {};
-
-			const bool isReleased = moduleBinding.Release();
-
-#ifdef _DEBUG
-			_ASSERT(isReleased);
-#endif
-
-			(void)isReleased;
-		}
-
-	private:
-		ModuleBinding moduleBinding;
-		RendererModuleApi moduleApi = {};
-	};
-
-	RendererModule gRendererModule;
 }
 
-bool Renderer::Initialize()
+Renderer::Renderer()
+	: threadState(RendererThreadState::Stopped)
 {
-	return gRendererModule.Initialize();
+}
+
+Renderer::~Renderer()
+{
+#ifdef _DEBUG
+	_ASSERT(renderThread.IsJoinable() == false);
+	_ASSERT(threadState.load() == RendererThreadState::Stopped);
+#endif
+}
+
+bool Renderer::Initialize(const NativeWindowInfo& windowInfo)
+{
+	if (IsInitialized())
+	{
+		return false;
+	}
+
+	if (windowInfo.nativeWindowHandle == nullptr ||
+		windowInfo.windowWidth == 0 ||
+		windowInfo.windowHeight == 0)
+	{
+		return false;
+	}
+
+	if (moduleBinding.Bind(RendererModuleName) == false)
+	{
+		return false;
+	}
+
+	ModuleSymbol moduleSymbol =
+		moduleBinding.FindSymbol(GET_RENDERER_MODULE_API_NAME);
+
+	if (moduleSymbol == nullptr)
+	{
+		RollbackInitialization();
+		return false;
+	}
+
+	GetRendererModuleApiFunction getRendererModuleApi =
+		reinterpret_cast<GetRendererModuleApiFunction>(moduleSymbol);
+
+	RendererModuleApi resolvedModuleApi = {};
+
+	if (getRendererModuleApi(&resolvedModuleApi) !=
+		RendererModuleResult::Success)
+	{
+		RollbackInitialization();
+		return false;
+	}
+
+	if (resolvedModuleApi.apiVersion != RENDERER_MODULE_API_VERSION)
+	{
+		RollbackInitialization();
+		return false;
+	}
+
+	if (resolvedModuleApi.rendererType == RendererType::None ||
+		resolvedModuleApi.createRenderer == nullptr ||
+		resolvedModuleApi.destroyRenderer == nullptr)
+	{
+		RollbackInitialization();
+		return false;
+	}
+
+	// 모든 ABI 검증이 끝난 뒤 활성 API를 확정합니다.
+	moduleApi = resolvedModuleApi;
+
+	SetThreadState(RendererThreadState::Starting);
+
+	if (renderThread.Start(&Renderer::Run, this, windowInfo) == false)
+	{
+		SetThreadState(RendererThreadState::Stopped);
+		RollbackInitialization();
+
+		return false;
+	}
+
+	RendererThreadState startupState;
+
+	{
+		std::unique_lock<std::mutex> lock(threadMutex);
+
+		threadCondition.wait(lock, [this]()
+			{
+				const RendererThreadState state = threadState.load();
+
+				return state == RendererThreadState::Running ||
+					state == RendererThreadState::Failed;
+			});
+
+		startupState = threadState.load();
+	}
+
+	if (startupState == RendererThreadState::Failed)
+	{
+		renderThread.Join();
+
+		SetThreadState(RendererThreadState::Stopped);
+		RollbackInitialization();
+
+		return false;
+	}
+
+	return true;
 }
 
 void Renderer::Shutdown()
 {
-	gRendererModule.Shutdown();
+	{
+		std::lock_guard<std::mutex> lock(threadMutex);
+
+		if (threadState.load() == RendererThreadState::Running)
+		{
+			threadState.store(RendererThreadState::Stopping);
+		}
+	}
+
+	threadCondition.notify_all();
+
+	// Thread가 완전히 종료된 뒤 함수 포인터와 Binary 참조를 해제합니다.
+	renderThread.Join();
+
+	moduleApi = {};
+
+	const bool isReleased = moduleBinding.Release();
+
+#ifdef _DEBUG
+	_ASSERT(isReleased);
+#endif
+
+	(void)isReleased;
 }
 
-bool Renderer::IsInitialized()
+bool Renderer::IsInitialized() const
 {
-	return gRendererModule.IsInitialized();
+	return moduleBinding.IsBound() &&
+		moduleApi.rendererType != RendererType::None &&
+		threadState.load() == RendererThreadState::Running;
 }
 
-RendererType Renderer::GetRendererType()
+RendererType Renderer::GetRendererType() const
 {
-	return gRendererModule.GetRendererType();
+	return moduleApi.rendererType;
+}
+
+void Renderer::Run(NativeWindowInfo windowInfo)
+{
+	RendererHandle rendererHandle = nullptr;
+
+	RendererModuleResult createResult =
+		moduleApi.createRenderer(&windowInfo, &rendererHandle);
+
+	if (createResult != RendererModuleResult::Success ||
+		rendererHandle == nullptr)
+	{
+		SetThreadState(RendererThreadState::Failed);
+		threadCondition.notify_all();
+
+		return;
+	}
+
+	SetThreadState(RendererThreadState::Running);
+	threadCondition.notify_all();
+
+	{
+		std::unique_lock<std::mutex> lock(threadMutex);
+
+		threadCondition.wait(lock, [this]()
+			{
+				return threadState.load() ==
+					RendererThreadState::Stopping;
+			});
+	}
+
+	moduleApi.destroyRenderer(rendererHandle);
+
+	SetThreadState(RendererThreadState::Stopped);
+	threadCondition.notify_all();
+}
+
+void Renderer::RollbackInitialization()
+{
+	moduleApi = {};
+
+	const bool isReleased = moduleBinding.Release();
+
+#ifdef _DEBUG
+	_ASSERT(isReleased);
+#endif
+
+	(void)isReleased;
+}
+
+void Renderer::SetThreadState(RendererThreadState state)
+{
+	// condition_variable의 predicate와 같은 mutex로 상태를 변경합니다.
+	std::lock_guard<std::mutex> lock(threadMutex);
+	threadState.store(state);
 }
