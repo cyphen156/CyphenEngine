@@ -2,8 +2,8 @@
 
 #include <vector>
 
-#include "Core/Public/ModuleDescriptor.h"
 #include "HAL/Public/NativeWindowInfo.h"
+#include "Modules/Public/ModuleDescriptor.h"
 
 // ============================================================================
 // LaunchContext

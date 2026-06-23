@@ -1,8 +1,8 @@
 #include "pch.h"
 
-#include "Core/Public/ModuleBinding.h"
+#include "Modules/Public/ModuleBinder.h"
 
-bool ModuleBinding::Bind(const CString& moduleName)
+bool ModuleBinder::Bind(const CString& moduleName)
 {
 	if (moduleName.empty())
 	{
@@ -24,7 +24,7 @@ bool ModuleBinding::Bind(const CString& moduleName)
 	return true;
 }
 
-bool ModuleBinding::Release()
+bool ModuleBinder::Release()
 {
 	if (IsBound() == false)
 	{
@@ -41,7 +41,7 @@ bool ModuleBinding::Release()
 	return true;
 }
 
-ModuleSymbol ModuleBinding::FindSymbol(const char* symbolName) const
+ModuleSymbol ModuleBinder::FindSymbol(const char* symbolName) const
 {
 	if (IsBound() == false)
 	{
@@ -51,7 +51,7 @@ ModuleSymbol ModuleBinding::FindSymbol(const char* symbolName) const
 	return ModuleManager::FindSymbol(boundModuleName, symbolName);
 }
 
-bool ModuleBinding::IsBound() const
+bool ModuleBinder::IsBound() const
 {
 	return boundModuleName.empty() == false;
 }

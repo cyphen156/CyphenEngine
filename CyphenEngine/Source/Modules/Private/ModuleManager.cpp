@@ -5,19 +5,18 @@
 #include <vector>
 
 #include "Core/Public/CPrimitiveTypes.h"
-#include "Core/Public/ModuleManager.h"
 #include "HAL/Private/ModuleLoader.h"
+#include "Modules/Public/ModuleManager.h"
 
 // ============================================================================
 // ModuleRecord
 // ----------------------------------------------------------------------------
 // 현재 프로세스에 실제로 적재된 Module 구현 Binary의 상태입니다.
 //
-// Descriptor가 갱신되어도 이미 적재된 구현의 이름과 Binary는 Record에
-// 유지됩니다. 기존 참조가 모두 해제된 뒤 다음 Acquire에서 새 Descriptor의
-// 구현이 적재됩니다.
+// Descriptor가 갱신되어도 이미 적재된 구현 이름과 Binary는 Record에
+// 유지됩니다. 기존 참조가 모두 해제된 다음 Acquire에서 새 Descriptor의
+// 구현을 적재합니다.
 // ============================================================================
-
 struct ModuleRecord
 {
 	CString implementationName;
@@ -84,7 +83,7 @@ bool ModuleManager::Refresh(const std::vector<ModuleDescriptor>& moduleDescripto
 	}
 
 	// Refresh는 Desired 상태만 교체합니다.
-	// 실제 Load/Unload와 실행 중 구현 교체는 수행하지 않습니다.
+	// 실제 Load / Unload는 실행 중 구현 교체를 수행하지 않습니다.
 	gModuleDescriptors = refreshedDescriptors;
 
 	return isRefreshSuccessful;
@@ -131,8 +130,8 @@ bool ModuleManager::Acquire(const CString& moduleName)
 	{
 		ModuleRecord& moduleRecord = moduleIterator->second;
 
-		// 실행 중 구현을 Refresh가 암묵적으로 교체하지 않습니다.
-		// 기존 참조가 모두 해제된 뒤 다음 Acquire에서 새 구현을 적재합니다.
+		// 실행 중 구현은 Refresh가 암묵적으로 교체하지 않습니다.
+		// 기존 참조가 모두 해제된 다음 Acquire에서 새 구현을 적재합니다.
 		if (moduleRecord.implementationName != moduleDescriptor.implementationName ||
 			moduleRecord.binaryName != moduleDescriptor.binaryName)
 		{
@@ -277,7 +276,7 @@ bool ModuleManager::UnloadAll()
 	std::vector<CString> loadedModuleNames = gModuleLoadOrder;
 	bool isAllUnloaded = true;
 
-	// Module 간 적재 순서의 역순으로 종료합니다.
+	// Module이 적재된 순서의 역순으로 종료합니다.
 	for (auto moduleIterator = loadedModuleNames.rbegin();
 		moduleIterator != loadedModuleNames.rend();
 		++moduleIterator)

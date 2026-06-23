@@ -97,9 +97,11 @@
     <ClInclude Include="Source\Core\Public\FileSystem.h" />
     <ClInclude Include="Source\Core\Public\FileTypes.h" />
     <ClInclude Include="Source\Core\Public\Logger.h" />
-    <ClInclude Include="Source\Core\Public\ModuleBinding.h" />
-    <ClInclude Include="Source\Core\Public\ModuleDescriptor.h" />
-    <ClInclude Include="Source\Core\Public\ModuleManager.h" />
+    <ClInclude Include="Source\Modules\Public\ModuleBinder.h" />
+    <ClInclude Include="Source\Modules\Public\ModuleCommand.h" />
+    <ClInclude Include="Source\Modules\Public\ModuleCommandBuffer.h" />
+    <ClInclude Include="Source\Modules\Public\ModuleDescriptor.h" />
+    <ClInclude Include="Source\Modules\Public\ModuleManager.h" />
     <ClInclude Include="Source\Core\Public\Path.h" />
     <ClInclude Include="Source\Core\Public\Separator.h" />
     <ClInclude Include="Source\Core\Public\TextCodec.h" />
@@ -115,6 +117,9 @@
     <ClInclude Include="Source\HAL\Private\PlatformTime.h" />
     <ClInclude Include="Source\HAL\Public\Launch.h" />
     <ClInclude Include="Source\HAL\Public\NativeWindowInfo.h" />
+    <ClInclude Include="Source\Modules\Renderer\Public\Frame.h" />
+    <ClInclude Include="Source\Modules\Renderer\Public\RenderCommand.h" />
+    <ClInclude Include="Source\Modules\Renderer\Private\RenderCommandBuffer.h" />
     <!-- Modules -->
     <ClInclude Include="Source\Modules\Renderer\Public\Renderer.h" />
     <ClInclude Include="Source\Modules\Renderer\Public\RendererModule.h" />
@@ -127,6 +132,7 @@
     <ClInclude Include="Source\Test\CoreIO\CoreIOTests.h" />
     <!-- PCH -->
     <ClInclude Include="Source\pch.h" />
+    <ClInclude Include="Source\Test\Module\ModuleTest.h" />
   </ItemGroup>
   <!-- Source Files -->
   <ItemGroup>
@@ -134,8 +140,9 @@
     <ClCompile Include="Source\Core\Private\File.cpp" />
     <ClCompile Include="Source\Core\Private\FileSystem.cpp" />
     <ClCompile Include="Source\Core\Private\Logger.cpp" />
-    <ClCompile Include="Source\Core\Private\ModuleBinding.cpp" />
-    <ClCompile Include="Source\Core\Private\ModuleManager.cpp" />
+    <ClCompile Include="Source\Modules\Private\ModuleBinder.cpp" />
+    <ClCompile Include="Source\Modules\Private\ModuleCommandBuffer.cpp" />
+    <ClCompile Include="Source\Modules\Private\ModuleManager.cpp" />
     <ClCompile Include="Source\Core\Private\Path.cpp" />
     <ClCompile Include="Source\Core\Private\Separator.cpp" />
     <ClCompile Include="Source\Core\Private\TextCodec.cpp" />
@@ -143,6 +150,7 @@
     <ClCompile Include="Source\Core\Private\Time.cpp" />
     <!-- Engine -->
     <ClCompile Include="Source\Engine\Private\CyphenEngine.cpp" />
+    <ClCompile Include="Source\Modules\Renderer\Private\RenderCommandBuffer.cpp" />
     <!-- Modules -->
     <ClCompile Include="Source\Modules\Renderer\Private\Renderer.cpp" />
     <!-- Platform - Windows -->
@@ -175,6 +183,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="Source\Test\Module\ModuleTest.cpp" />
   </ItemGroup>
   <!-- Resources -->
   <ItemGroup>

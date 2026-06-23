@@ -35,17 +35,16 @@ bool Renderer::Initialize(const NativeWindowInfo& windowInfo)
 		return false;
 	}
 
-	if (moduleBinding.Bind(RendererModuleName) == false)
+	if (moduleBinder.Bind(RendererModuleName) == false)
 	{
 		return false;
 	}
 
-	ModuleSymbol moduleSymbol =
-		moduleBinding.FindSymbol(GET_RENDERER_MODULE_API_NAME);
+	ModuleSymbol moduleSymbol = moduleBinder.FindSymbol(GET_RENDERER_MODULE_API_NAME);
 
 	if (moduleSymbol == nullptr)
 	{
-		RollbackInitialization();
+		ReleaseModule();
 		return false;
 	}
 
@@ -54,52 +53,50 @@ bool Renderer::Initialize(const NativeWindowInfo& windowInfo)
 
 	RendererModuleApi resolvedModuleApi = {};
 
-	if (getRendererModuleApi(&resolvedModuleApi) !=
-		RendererModuleResult::Success)
+	if (getRendererModuleApi(&resolvedModuleApi) != RendererModuleResult::Success)
 	{
-		RollbackInitialization();
+		ReleaseModule();
 		return false;
 	}
 
 	if (resolvedModuleApi.apiVersion != RENDERER_MODULE_API_VERSION)
 	{
-		RollbackInitialization();
+		ReleaseModule();
 		return false;
 	}
 
 	if (resolvedModuleApi.rendererType == RendererType::None ||
 		resolvedModuleApi.createRenderer == nullptr ||
-		resolvedModuleApi.destroyRenderer == nullptr)
+		resolvedModuleApi.destroyRenderer == nullptr ||
+		resolvedModuleApi.executeCommandList == nullptr)
 	{
-		RollbackInitialization();
+		ReleaseModule();
 		return false;
 	}
 
-	// 모든 ABI 검증이 끝난 뒤 활성 API를 확정합니다.
 	moduleApi = resolvedModuleApi;
 
+	StartFrameInput();
 	SetThreadState(RendererThreadState::Starting);
 
 	if (renderThread.Start(&Renderer::Run, this, windowInfo) == false)
 	{
+		StopFrameInput();
 		SetThreadState(RendererThreadState::Stopped);
-		RollbackInitialization();
-
+		ReleaseModule();
 		return false;
 	}
 
-	RendererThreadState startupState;
+	RendererThreadState startupState = RendererThreadState::Starting;
 
 	{
 		std::unique_lock<std::mutex> lock(threadMutex);
 
-		threadCondition.wait(lock, [this]()
-			{
-				const RendererThreadState state = threadState.load();
-
-				return state == RendererThreadState::Running ||
-					state == RendererThreadState::Failed;
-			});
+		while (threadState.load() != RendererThreadState::Running &&
+			threadState.load() != RendererThreadState::Failed)
+		{
+			threadCondition.wait(lock);
+		}
 
 		startupState = threadState.load();
 	}
@@ -108,8 +105,9 @@ bool Renderer::Initialize(const NativeWindowInfo& windowInfo)
 	{
 		renderThread.Join();
 
+		StopFrameInput();
 		SetThreadState(RendererThreadState::Stopped);
-		RollbackInitialization();
+		ReleaseModule();
 
 		return false;
 	}
@@ -119,6 +117,8 @@ bool Renderer::Initialize(const NativeWindowInfo& windowInfo)
 
 void Renderer::Shutdown()
 {
+	StopFrameInput();
+
 	{
 		std::lock_guard<std::mutex> lock(threadMutex);
 
@@ -130,23 +130,25 @@ void Renderer::Shutdown()
 
 	threadCondition.notify_all();
 
-	// Thread가 완전히 종료된 뒤 함수 포인터와 Binary 참조를 해제합니다.
 	renderThread.Join();
 
-	moduleApi = {};
+	SetThreadState(RendererThreadState::Stopped);
+	ReleaseModule();
+}
 
-	const bool isReleased = moduleBinding.Release();
+bool Renderer::BeginRenderingFrame(const Frame& frame)
+{
+	if (IsInitialized() == false)
+	{
+		return false;
+	}
 
-#ifdef _DEBUG
-	_ASSERT(isReleased);
-#endif
-
-	(void)isReleased;
+	return EnqueueFrame(frame);
 }
 
 bool Renderer::IsInitialized() const
 {
-	return moduleBinding.IsBound() &&
+	return moduleBinder.IsBound() &&
 		moduleApi.rendererType != RendererType::None &&
 		threadState.load() == RendererThreadState::Running;
 }
@@ -175,14 +177,29 @@ void Renderer::Run(NativeWindowInfo windowInfo)
 	SetThreadState(RendererThreadState::Running);
 	threadCondition.notify_all();
 
-	{
-		std::unique_lock<std::mutex> lock(threadMutex);
+	Frame currentFrame = {};
 
-		threadCondition.wait(lock, [this]()
-			{
-				return threadState.load() ==
-					RendererThreadState::Stopping;
-			});
+	// Render Thread 전용 scratch buffer입니다.
+	// 매 프레임 새 vector capacity를 만들지 않고 Reset 후 재사용합니다.
+	RenderCommandBuffer commandBuffer;
+
+	while (AcquireFrame(currentFrame))
+	{
+		if (BuildRenderCommandList(currentFrame, commandBuffer) == false)
+		{
+			StopFrameInput();
+			SetThreadState(RendererThreadState::Failed);
+			threadCondition.notify_all();
+			break;
+		}
+
+		if (ExecuteRenderCommandList(rendererHandle, commandBuffer) == false)
+		{
+			StopFrameInput();
+			SetThreadState(RendererThreadState::Failed);
+			threadCondition.notify_all();
+			break;
+		}
 	}
 
 	moduleApi.destroyRenderer(rendererHandle);
@@ -191,11 +208,124 @@ void Renderer::Run(NativeWindowInfo windowInfo)
 	threadCondition.notify_all();
 }
 
-void Renderer::RollbackInitialization()
+bool Renderer::EnqueueFrame(const Frame& frame)
 {
+	{
+		std::unique_lock<std::mutex> lock(frameMutex);
+
+		while (isAcceptingFrames && hasPendingFrame)
+		{
+			frameCondition.wait(lock);
+		}
+
+		if (isAcceptingFrames == false)
+		{
+			return false;
+		}
+
+		pendingFrame = frame;
+		hasPendingFrame = true;
+	}
+
+	frameCondition.notify_all();
+
+	return true;
+}
+
+bool Renderer::AcquireFrame(Frame& outFrame)
+{
+	{
+		std::unique_lock<std::mutex> lock(frameMutex);
+
+		while (isAcceptingFrames && hasPendingFrame == false)
+		{
+			frameCondition.wait(lock);
+		}
+
+		if (hasPendingFrame == false)
+		{
+			return false;
+		}
+
+		outFrame = pendingFrame;
+		pendingFrame = {};
+		hasPendingFrame = false;
+	}
+
+	frameCondition.notify_all();
+
+	return true;
+}
+
+bool Renderer::BuildRenderCommandList(
+	const Frame& currentFrame,
+	RenderCommandBuffer& outCommandBuffer)
+{
+	(void)currentFrame;
+
+	// command buffer의 저장 공간은 유지하고,
+	// 이번 프레임의 command stream 내용만 비웁니다.
+	outCommandBuffer.Reset();
+
+	if (outCommandBuffer.AppendClearRenderTarget(0.05f, 0.08f, 0.12f, 1.0f) == false)
+	{
+		return false;
+	}
+
+	if (outCommandBuffer.AppendPresent() == false)
+	{
+		return false;
+	}
+
+	return true;
+}
+
+bool Renderer::ExecuteRenderCommandList(
+	RendererHandle rendererHandle,
+	const RenderCommandBuffer& commandBuffer)
+{
+	const RenderCommandList commandList = commandBuffer.GetCommandList();
+
+	if (commandList.words == nullptr ||
+		commandList.wordCount == 0 ||
+		commandList.commandCount == 0)
+	{
+		return false;
+	}
+
+	return moduleApi.executeCommandList(rendererHandle, &commandList) ==
+		RendererModuleResult::Success;
+}
+
+void Renderer::StartFrameInput()
+{
+	std::lock_guard<std::mutex> lock(frameMutex);
+
+	pendingFrame = {};
+	hasPendingFrame = false;
+	isAcceptingFrames = true;
+}
+
+void Renderer::StopFrameInput()
+{
+	{
+		std::lock_guard<std::mutex> lock(frameMutex);
+
+		pendingFrame = {};
+		hasPendingFrame = false;
+		isAcceptingFrames = false;
+	}
+
+	frameCondition.notify_all();
+}
+
+void Renderer::ReleaseModule()
+{
+	// ModuleBinder.Release() 이후에는 구현 DLL이 Unload될 수 있습니다.
+	// DLL에서 얻은 함수 포인터가 Renderer에 남지 않도록 먼저 API 테이블을 비웁니다.
 	moduleApi = {};
 
-	const bool isReleased = moduleBinding.Release();
+	const bool isReleased = moduleBinder.Release();
 
 #ifdef _DEBUG
 	_ASSERT(isReleased);
@@ -206,7 +336,6 @@ void Renderer::RollbackInitialization()
 
 void Renderer::SetThreadState(RendererThreadState state)
 {
-	// condition_variable의 predicate와 같은 mutex로 상태를 변경합니다.
 	std::lock_guard<std::mutex> lock(threadMutex);
 	threadState.store(state);
 }

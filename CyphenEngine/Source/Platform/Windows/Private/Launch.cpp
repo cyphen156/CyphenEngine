@@ -2,6 +2,7 @@
 
 #ifdef _DEBUG
 #include "Test/CoreIo/CoreIoTests.h" 
+#include "Test/Module/ModuleTest.h"
 #endif
 
 #include "HAL/Public/Launch.h"
@@ -9,7 +10,8 @@
 #include "Core/Public/Thread.h"
 #include "Engine/Public/CyphenEngine.h"
 #include "Engine/Public/EngineContext.h"
-#include "Core/Public/ModuleManager.h"
+#include "Modules/Public/ModuleDescriptor.h"
+#include "Modules/Public/ModuleManager.h"
 
 #define MAX_LOADSTRING 100
 
@@ -182,6 +184,10 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 		ModuleManager::Shutdown();
 		return FALSE;
 	}
+
+#ifdef _DEBUG
+	RunModuleTests();
+#endif // _DEBUG
 
 	HANDLE engineThreadHandle = Launch::GetEngineThreadHandle();
 

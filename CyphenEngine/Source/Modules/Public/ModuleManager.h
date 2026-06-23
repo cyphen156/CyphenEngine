@@ -3,7 +3,7 @@
 #include <vector>
 
 #include "Core/Public/CString.h"
-#include "Core/Public/ModuleDescriptor.h"
+#include "Modules/Public/ModuleDescriptor.h"
 
 using ModuleSymbol = void*;
 
@@ -14,9 +14,8 @@ using ModuleSymbol = void*;
 //
 // Refresh:
 //   - 외부에서 주입된 Desired ModuleDescriptor 목록을 갱신합니다.
-//   - Descriptor를 검증하고 유효한 항목을 보관합니다.
-//   - Binary Load/Unload는 수행하지 않습니다.
-//   - 일부 Descriptor가 잘못되어도 나머지 유효 항목은 반영합니다.
+//   - Descriptor를 검증하고 유효한 항목만 보관합니다.
+//   - Binary Load / Unload는 수행하지 않습니다.
 //
 // Acquire:
 //   - 논리 moduleName에 선택된 구현 Binary를 획득합니다.
@@ -39,13 +38,9 @@ using ModuleSymbol = void*;
 //
 // 비책임:
 //   - 사용자 Preference 조회
-//   - Renderer/Audio 등 도메인 API 검증
-//   - Engine 시스템의 시작·종료 순서
-//
-// 모든 공개 함수는 논리 moduleName을 받습니다.
-// 실제 binaryName은 ModuleLoader에만 전달합니다.
+//   - Renderer / Audio 등 도메인 API 검증
+//   - Engine 시스템의 시작 / 종료 순서
 // ============================================================================
-
 class ModuleManager final
 {
 public:

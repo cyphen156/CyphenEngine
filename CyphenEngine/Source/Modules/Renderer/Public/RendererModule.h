@@ -3,25 +3,22 @@
 #include "Core/Public/CPrimitiveTypes.h"
 #include "HAL/Public/NativeWindowInfo.h"
 #include "Modules/Renderer/Public/RendererTypes.h"
+#include "Modules/Renderer/Public/RenderCommand.h"
 
 // ============================================================================
 // RendererModuleApi
 // ----------------------------------------------------------------------------
-// Renderer와 선택 구현 DLL 사이의 ABI 계약입니다.
+// Renderer와 선택된 Renderer 구현 DLL 사이의 ABI 계약입니다.
 //
-// #2_4 책임:
-//   - Renderer 실행 인스턴스 생성
-//   - Renderer 실행 인스턴스 파괴
+// #2_5 추가:
+//   - executeCommandList
 //
-// 이월:
-//   - ExecuteCommandList
-//   - RendererCapabilities
-//
-// ABI 구조가 바뀌면 RENDERER_MODULE_ABI_GENERATION을 증가시킵니다.
-// 출시 버전과 ABI 세대 번호는 별개입니다.
+// 주의:
+//   - 함수표는 기능마다 늘리지 않습니다.
+//   - 렌더링 기능은 RenderCommand IR 데이터로 확장합니다.
 // ============================================================================
 
-constexpr uint32 RENDERER_MODULE_ABI_GENERATION = 3;
+constexpr uint32 RENDERER_MODULE_ABI_GENERATION = 4;
 constexpr uint32 RENDERER_MODULE_API_VERSION = RENDERER_MODULE_ABI_GENERATION;
 
 constexpr const char GET_RENDERER_MODULE_API_NAME[] = "GetRendererModuleApi";
@@ -40,6 +37,11 @@ using CreateRendererFunction =
 using DestroyRendererFunction =
 	void(*)(RendererHandle rendererHandle);
 
+using ExecuteCommandListFunction =
+	RendererModuleResult(*)(
+		RendererHandle rendererHandle,
+		const RenderCommandList* commandList);
+
 struct RendererModuleApi
 {
 	uint32 apiVersion = 0;
@@ -47,7 +49,11 @@ struct RendererModuleApi
 
 	CreateRendererFunction createRenderer = nullptr;
 	DestroyRendererFunction destroyRenderer = nullptr;
+	ExecuteCommandListFunction executeCommandList = nullptr;
 };
 
 using GetRendererModuleApiFunction =
 	RendererModuleResult(*)(RendererModuleApi* outRendererModuleApi);
+
+static_assert(sizeof(void*) == 8, "RendererModuleApi currently assumes x64.");
+static_assert(sizeof(RendererModuleApi) == 32, "RendererModuleApi must be 32 bytes on x64.");

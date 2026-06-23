@@ -1,6 +1,6 @@
 #include <new>
 
-#include "../Public/Dx11Renderer.h"
+#include "Dx11Renderer.h"
 #include "Modules/Renderer/Public/RendererModule.h"
 
 namespace
@@ -46,6 +46,26 @@ namespace
 		renderer->Shutdown();
 		delete renderer;
 	}
+
+	RendererModuleResult ExecuteCommandList(
+		RendererHandle rendererHandle,
+		const RenderCommandList* commandList)
+	{
+		Dx11Renderer* renderer = static_cast<Dx11Renderer*>(rendererHandle);
+
+		if (renderer == nullptr ||
+			commandList == nullptr)
+		{
+			return RendererModuleResult::Failure;
+		}
+
+		if (renderer->ExecuteCommandList(*commandList) == false)
+		{
+			return RendererModuleResult::Failure;
+		}
+
+		return RendererModuleResult::Success;
+	}
 }
 
 extern "C" __declspec(dllexport)
@@ -60,6 +80,7 @@ RendererModuleResult GetRendererModuleApi(RendererModuleApi* outRendererModuleAp
 	outRendererModuleApi->rendererType = RendererType::Dx11;
 	outRendererModuleApi->createRenderer = &CreateRenderer;
 	outRendererModuleApi->destroyRenderer = &DestroyRenderer;
+	outRendererModuleApi->executeCommandList = &ExecuteCommandList;
 
 	return RendererModuleResult::Success;
 }

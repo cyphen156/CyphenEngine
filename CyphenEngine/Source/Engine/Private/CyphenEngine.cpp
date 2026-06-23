@@ -53,14 +53,41 @@ void CyphenEngine::Run()
 		return;
 	}
 
+	uint64 frameNumber = 0;
+
 	while (engineStatus.load() == Running)
 	{
 		Time::Tick();
 
 		// TODO:
 		// BUILD_TARGET 기준 Runtime Tick
-	}
 
+		// 렌더링을 위한 프레임 생산
+		Frame frame = {};
+		frame.frameNumber = frameNumber++;
+
+		if (renderer.BeginRenderingFrame(frame) == false)
+		{
+#ifdef _DEBUG
+			OutputDebugStringA("[Renderer] BeginRenderingFrame failed.\n");
+#endif
+			continue;
+		}
+
+#ifdef _DEBUG
+		if ((frame.frameNumber % 1000) == 0)
+		{
+			char message[128] = {};
+			std::snprintf(
+				message,
+				sizeof(message),
+				"[Renderer] Frame submitted: %llu\n[Time] ElapsedTime: %.6f\n",
+				static_cast<unsigned long long>(frame.frameNumber),
+				Time::ElapsedTime());
+			OutputDebugStringA(message);
+		}
+#endif
+	}
 	ShutdownEngine();
 }
 

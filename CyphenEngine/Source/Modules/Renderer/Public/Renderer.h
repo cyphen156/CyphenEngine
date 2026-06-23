@@ -4,39 +4,29 @@
 #include <condition_variable>
 #include <mutex>
 
-#include "Core/Public/ModuleBinding.h"
 #include "Core/Public/Thread.h"
 #include "HAL/Public/NativeWindowInfo.h"
+#include "Modules/Public/ModuleBinder.h"
+#include "Modules/Renderer/Public/Frame.h"
 #include "Modules/Renderer/Public/RendererModule.h"
+#include "Modules/Renderer/Private/RenderCommandBuffer.h"
 
 // ============================================================================
 // Renderer
 // ----------------------------------------------------------------------------
-// CyphenEngine이 소유하는 논리 Renderer 시스템입니다.
+// Engine 측 Renderer 시스템입니다.
 //
 // 책임:
-//   - 선택 Renderer 구현 Binding
-//   - RendererModuleApi 조회 및 검증
-//   - Render Thread 시작·대기·종료
-//   - Render Thread에서 구현 인스턴스 생성·파괴
+//   - 선택된 Renderer 구현 Binding
+//   - RendererModuleApi 검증
+//   - Render Thread 소유
+//   - Frame을 받아 Render Thread로 전달
+//   - Render Thread에서 RenderCommand IR 생성
 //
 // 비책임:
-//   - Descriptor와 Preference 생성
-//   - Native Binary 직접 Load/Unload
-//   - Native Window 생성·소유
-//   - DX11/Vulkan API 직접 호출
-//
-// #2_4 범위:
-//   - Renderer 객체화
-//   - Render Thread
-//   - 구현 GPU 인스턴스 수명
-//
-// 이월:
-//   - Command Queue
-//   - RenderCommandList
-//   - ExecuteCommandList
-//   - Capability
-//   - PipelineDescriptor
+//   - World 상태 소유
+//   - Native Binary 직접 Load / Unload
+//   - DX11 / Vulkan API 직접 호출
 // ============================================================================
 
 enum class RendererThreadState : uint32
@@ -63,16 +53,29 @@ public:
 	bool Initialize(const NativeWindowInfo& windowInfo);
 	void Shutdown();
 
+	bool BeginRenderingFrame(const Frame& frame);
+
 	bool IsInitialized() const;
 	RendererType GetRendererType() const;
 
 private:
 	void Run(NativeWindowInfo windowInfo);
-	void RollbackInitialization();
+
+	bool EnqueueFrame(const Frame& frame);
+	bool AcquireFrame(Frame& outFrame);
+
+	bool BuildRenderCommandList(const Frame& currentFrame, RenderCommandBuffer& outCommandBuffer);
+
+	bool ExecuteRenderCommandList(RendererHandle rendererHandle, const RenderCommandBuffer& commandBuffer);
+
+	void StartFrameInput();
+	void StopFrameInput();
+
+	void ReleaseModule();
 	void SetThreadState(RendererThreadState state);
 
 private:
-	ModuleBinding moduleBinding;
+	ModuleBinder moduleBinder;
 	RendererModuleApi moduleApi = {};
 
 	Thread renderThread;
@@ -80,4 +83,10 @@ private:
 	std::atomic<RendererThreadState> threadState;
 	std::mutex threadMutex;
 	std::condition_variable threadCondition;
+
+	std::mutex frameMutex;
+	std::condition_variable frameCondition;
+	Frame pendingFrame = {};
+	bool hasPendingFrame = false;
+	bool isAcceptingFrames = false;
 };
