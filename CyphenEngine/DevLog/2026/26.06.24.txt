@@ -1,0 +1,175 @@
+Date: 2026-06-24
+Branch: #2-Renderer-모듈-개발
+
+작업 요약
+	#2_6 Texture2D 리소스 업로드와 TexturedQuad 렌더링 경로를 구현했습니다.
+
+	Resources/Thumbnail/Profile.jpg와 Profile2.jpg를
+	FileSystem / File / Codec 경로로 읽어 Texture2D 리소스로 변환하고,
+	DX11 Backend에 업로드한 뒤 ResourceId 기반 TexturedQuad로 렌더링하도록 구성했습니다.
+
+	Frame에는 Texture2D 픽셀 데이터를 싣지 않고,
+	업로드된 GPU 리소스를 가리키는 ResourceId만 전달하도록 정리했습니다.
+
+	Profile.jpg와 Profile2.jpg는 모두 GPU 리소스로 업로드하고,
+	화면에는 1초 단위로 하나의 텍스처만 선택해 교체 표시하도록 구성했습니다.
+
+
+진행한 커밋
+	#2_6 [Renderer] Texture2D 리소스 업로드와 TexturedQuad 렌더링 구현
+
+
+주요 정리 내용
+	1. Content Codec 경로 추가
+		Source/Content 계층을 추가하고,
+		파일 바이트를 엔진 중간 리소스 표현으로 변환하는 Codec 경로를 구성했습니다.
+
+		Codec은 sourcePath의 확장자를 기준으로 파일 포맷을 판별하고,
+		JPEG 파일은 JpegCodec 경로로 위임하도록 정리했습니다.
+
+		TextCodec은 기존 Core text 변환 기능으로 유지하고,
+		이미지 파일 해석은 Content Codec 계층으로 분리했습니다.
+
+	2. JPEG Texture2D 변환 경로 추가
+		JPEG 파일 바이트를 RGBA8 Texture2D 리소스로 변환하도록 구성했습니다.
+
+		Renderer와 DX11 Backend는 JPEG 파일 포맷을 알지 않으며,
+		이미 해석이 끝난 Texture2D 리소스와 ResourceId만 사용하도록 경계를 정리했습니다.
+
+		#2_6 단계에서는 Windows WIC 기반 JPEG decode leaf를 사용했습니다.
+
+	3. Resource / Texture2D 계층 추가
+		Resource 공통 타입과 Texture2D 리소스 타입을 추가했습니다.
+
+		Texture2D는 Resource의 한 갈래로서
+		resourceId, kind, format, width, height, pixels를 보유하도록 구성했습니다.
+
+		resourceId는 리소스 생성 시점에 부여하고,
+		Frame과 RenderCommand는 해당 resourceId만 참조하도록 정리했습니다.
+
+	4. ResourceCommand 경로 추가
+		Texture2D 리소스를 GPU에 업로드하기 위한 ResourceCommand 경로를 추가했습니다.
+
+		UploadResourceCommand는 ResourceId와 ResourceKind를 포함하고,
+		Texture2DUploadPayload는 TextureFormat / width / height만 포함하도록 정리했습니다.
+
+		픽셀 데이터는 UploadResourceCommand payload 뒤에 raw byte로 직렬화하여 전달합니다.
+
+	5. Renderer Debug Bootstrap 업로드 경로 추가
+		#2_6에서는 아직 정식 ResourceManager / RHI Resource Module이 없으므로,
+		Debug Bootstrap에서 Renderer Backend에 ResourceCommand를 직접 전달하는 임시 경로를 두었습니다.
+
+		이 경로는 정식 RenderCommand가 아니라
+		Renderer Backend를 통해 Texture2D 업로드를 검증하기 위한 debug bootstrap bridge입니다.
+
+		Frame에는 업로드 payload를 넣지 않고,
+		업로드는 렌더 루프 진입 전에 1회 수행하도록 정리했습니다.
+
+	6. Frame DrawItem 경로 정리
+		Frame은 불변 렌더 스냅샷으로 유지하고,
+		TexturedQuadDrawItem에는 ResourceId만 담도록 구성했습니다.
+
+		매 프레임 Texture2D 픽셀 데이터를 복사하거나 전달하지 않습니다.
+
+		Profile.jpg와 Profile2.jpg는 모두 업로드하되,
+		Frame에는 현재 표시할 하나의 ResourceId만 선택해 넣도록 구성했습니다.
+
+	7. DX11 Texture2D 업로드 구현
+		Dx11Renderer에 ResourceCommandList 실행 경로를 추가했습니다.
+
+		UploadResourceCommand를 파싱해 Texture2D payload와 pixel byte를 분리하고,
+		D3D11_TEXTURE2D와 ShaderResourceView를 생성하도록 구현했습니다.
+
+		생성된 GPU Texture2D는 ResourceId를 기준으로
+		DX11 Backend 내부 texture table에 저장하도록 구성했습니다.
+
+	8. TexturedQuad 렌더링 파이프라인 추가
+		fullscreen quad vertex / index buffer를 생성하고,
+		Texture2D 샘플링용 vertex shader / pixel shader / sampler를 구성했습니다.
+
+		DrawTexturedQuad RenderCommand는 ResourceId를 받아
+		DX11 Backend 내부 texture table에서 ShaderResourceView를 조회한 뒤 렌더링합니다.
+
+		현재 #2_6 단계에서는 위치 / 크기 / 머티리얼 개념 없이
+		fullscreen quad 1장을 그리는 최소 경로로 구성했습니다.
+
+	9. Profile 텍스처 교체 표시
+		Profile.jpg와 Profile2.jpg를 모두 업로드한 뒤,
+		Time::ElapsedTime 기준 1초마다 표시할 ResourceId를 교체하도록 구성했습니다.
+
+		두 텍스처를 같은 프레임에 모두 DrawTexturedQuad로 넣으면
+		fullscreen quad가 두 번 그려져 뒤의 텍스처가 앞의 텍스처를 덮으므로,
+		프레임에는 매번 하나의 DrawItem만 넣도록 정리했습니다.
+
+	10. Engine / Renderer FPS 로그 정리
+		기존 1000프레임 단위 로그를 제거하고,
+		Engine 제출 프레임과 Renderer 렌더 프레임을 1초 단위로 출력하도록 변경했습니다.
+
+		Engine SubmittedFrames와 Renderer RenderedFrames를 함께 확인해
+		현재 1-slot Frame handoff 구조에서 양쪽이 같은 pace로 동기화되는 것을 확인했습니다.
+
+	11. Present pacing 측정
+		Present(0, 0) 기준으로 창 상태에 따른 FPS 변화를 측정했습니다.
+
+		일반 창 표시 상태에서는 모니터 주사율인 144Hz에 맞춰
+		약 144 FPS로 안정화되는 것을 확인했습니다.
+
+		창 핸들을 잡고 이동하는 동안에는 약 73 FPS 수준으로 하락했고,
+		전체화면 / 최대화 상태에서는 약 377 FPS 수준으로 상승했습니다.
+
+		창을 내려놓거나 가려진 상태에서는 약 2.8K ~ 3.1K FPS 수준의
+		command 제출 처리량을 확인했습니다.
+
+
+정리한 설계 기준
+	- Frame은 렌더링할 월드 상태의 불변 스냅샷입니다.
+	- Frame에는 대용량 픽셀 데이터를 넣지 않습니다.
+	- Texture2D 리소스는 업로드 시점에 GPU 리소스로 전환됩니다.
+	- 매 프레임 DrawItem은 GPU에 올라간 리소스를 ResourceId로 참조합니다.
+	- Renderer는 Frame을 RenderCommand IR로 변환합니다.
+	- DX11 Backend는 RenderCommand / ResourceCommand를 파싱해 실제 D3D11 API 호출로 변환합니다.
+	- #2_6의 ResourceCommand debug bridge는 정식 ResourceManager 도입 전까지의 임시 bootstrap 경로입니다.
+	- 일반 창 상태의 144 FPS 제한은 엔진 병목이 아니라 DWM / Present pacing 영향으로 봅니다.
+
+
+검증
+	CoreIoTests PASS=69 / FAIL=0
+	ModuleTests PASS=34 / FAIL=0
+
+	Debug x64에서 CyphenEngine과 CyphenRendererDx11 빌드 성공을 확인했습니다.
+
+	Debug 실행에서 Profile.jpg와 Profile2.jpg가 1초 단위로 교체 렌더링되는 것을 확인했습니다.
+
+	Engine SubmittedFrames와 Renderer RenderedFrames가 같은 pace로 출력되는 것을 확인했습니다.
+
+	일반 창 표시 상태에서 약 144 FPS,
+	창 이동 중 약 73 FPS,
+	전체화면 / 최대화 상태에서 약 377 FPS,
+	창 최소화 / 가림 상태에서 약 2.8K ~ 3.1K FPS 수준의 처리량을 확인했습니다.
+
+
+다음 작업
+	#2 브랜치의 다음 목표는 Linux 빌드 준비입니다.
+
+	#2 브랜치에서는 화면을 그리고,
+	그린 화면이 실제 렌더 루프에서 갱신되는 것을 확인한 뒤,
+	같은 구조가 다른 플랫폼에서도 빌드될 수 있는지 확인하는 것을 목표로 둡니다.
+
+	#2_5에서 Clear / Present 화면 출력을 확인했고,
+	#2_6에서 Texture2D 리소스를 업로드해 Profile.jpg / Profile2.jpg를
+	1초 단위로 교체 렌더링하는 경로를 확인했습니다.
+
+	따라서 다음 단계에서는 Windows 전용 구현과 공통 구현의 경계를 다시 점검하고,
+	Linux 빌드가 가능한 Source / Platform / HAL / Module 구성을 준비합니다.
+
+	DX11 Renderer Backend와 WIC 기반 JPEG codec leaf는 Windows 전용 구현으로 분리하고,
+	Linux 빌드에서는 제외하거나 Linux용 대체 구현을 준비합니다.
+
+	Linux 초기 표시 경로는 OpenGL ES / EGL 기반 Renderer Backend를 우선 후보로 검토하고,
+	Vulkan은 이후 단계로 이월합니다.
+
+	Core / FileSystem / Thread / Time / Module loading 계층이
+	Linux Platform 구현으로 확장될 수 있는지 확인합니다.
+
+	ResourceManager, FrameQueue, Mesh / Material 확장은
+	Linux 빌드 가능성 확인 이후 단계로 이월합니다.
