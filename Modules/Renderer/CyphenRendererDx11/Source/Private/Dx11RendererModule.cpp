@@ -68,6 +68,28 @@ namespace
 	}
 }
 
+#ifdef _DEBUG
+RendererModuleResult ExecuteDebugResourceCommandList(
+	RendererHandle rendererHandle,
+	const ResourceCommandList* commandList)
+{
+	Dx11Renderer* renderer = static_cast<Dx11Renderer*>(rendererHandle);
+
+	if (renderer == nullptr ||
+		commandList == nullptr)
+	{
+		return RendererModuleResult::Failure;
+	}
+
+	if (renderer->ExecuteResourceCommandList(*commandList) == false)
+	{
+		return RendererModuleResult::Failure;
+	}
+
+	return RendererModuleResult::Success;
+}
+#endif
+
 extern "C" __declspec(dllexport)
 RendererModuleResult GetRendererModuleApi(RendererModuleApi* outRendererModuleApi)
 {
@@ -81,6 +103,8 @@ RendererModuleResult GetRendererModuleApi(RendererModuleApi* outRendererModuleAp
 	outRendererModuleApi->createRenderer = &CreateRenderer;
 	outRendererModuleApi->destroyRenderer = &DestroyRenderer;
 	outRendererModuleApi->executeCommandList = &ExecuteCommandList;
-
+#ifdef _DEBUG
+	outRendererModuleApi->executeDebugResourceCommandList = &ExecuteDebugResourceCommandList;
+#endif
 	return RendererModuleResult::Success;
 }

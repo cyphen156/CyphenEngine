@@ -3,8 +3,8 @@
 #include <cstdio>
 #include <cstring>
 
-#include "Modules/Public/ModuleCommand.h"
-#include "Modules/Public/ModuleCommandBuffer.h"
+#include "Modules/Public/Command.h"
+#include "Modules/Public/CommandBuffer.h"
 #include "Modules/Public/ModuleDescriptor.h"
 #include "Modules/Public/ModuleManager.h"
 
@@ -88,16 +88,16 @@ namespace
 		WriteTestLineWithNewLine(name);
 	}
 
-	ModuleCommandHeader ReadHeader(const ModuleCommandWord* words, uint32 index)
+	CommandHeader ReadHeader(const CommandWord* words, uint32 index)
 	{
-		ModuleCommandHeader header = {};
+		CommandHeader header = {};
 		std::memcpy(&header, &words[index], sizeof(header));
 
 		return header;
 	}
 
 	template<typename PayloadType>
-	PayloadType ReadPayload(const ModuleCommandWord* words, uint32 index)
+	PayloadType ReadPayload(const CommandWord* words, uint32 index)
 	{
 		PayloadType payload = {};
 		std::memcpy(&payload, &words[index], sizeof(payload));
@@ -105,150 +105,150 @@ namespace
 		return payload;
 	}
 
-	void RunModuleCommandLayoutTests(TestContext& context)
+	void RunCommandLayoutTests(TestContext& context)
 	{
-		Expect(context, sizeof(ModuleCommandWord) == 8,
-			"ModuleCommandWord is 8 bytes");
+		Expect(context, sizeof(CommandWord) == 8,
+			"CommandWord is 8 bytes");
 
-		Expect(context, sizeof(ModuleCommandHeader) == 8,
-			"ModuleCommandHeader is 8 bytes");
+		Expect(context, sizeof(CommandHeader) == 8,
+			"CommandHeader is 8 bytes");
 
-		Expect(context, sizeof(ModuleCommandList) == 16,
-			"ModuleCommandList is 16 bytes");
+		Expect(context, sizeof(CommandList) == 16,
+			"CommandList is 16 bytes");
 	}
 
-	void RunModuleCommandBufferEmptyTests(TestContext& context)
+	void RunCommandBufferEmptyTests(TestContext& context)
 	{
-		ModuleCommandBuffer commandBuffer;
+		CommandBuffer<TestCommandType> commandBuffer;
 
-		const ModuleCommandList commandList = commandBuffer.GetCommandList();
+		const CommandList commandList = commandBuffer.GetCommandList();
 
 		Expect(context, commandList.words == nullptr,
-			"ModuleCommandBuffer empty list has null words");
+			"CommandBuffer empty list has null words");
 
 		Expect(context, commandList.wordCount == 0,
-			"ModuleCommandBuffer empty list has zero word count");
+			"CommandBuffer empty list has zero word count");
 
 		Expect(context, commandList.commandCount == 0,
-			"ModuleCommandBuffer empty list has zero command count");
+			"CommandBuffer empty list has zero command count");
 	}
 
-	void RunModuleCommandBufferAppendValidationTests(TestContext& context)
+	void RunCommandBufferAppendValidationTests(TestContext& context)
 	{
-		ModuleCommandBuffer commandBuffer;
+		CommandBuffer<TestCommandType> commandBuffer;
 
 		Expect(context, !commandBuffer.AppendCommand(
-			static_cast<uint32>(TestCommandType::None),
+			(TestCommandType::None),
 			nullptr,
 			0),
-			"ModuleCommandBuffer rejects command type zero");
+			"CommandBuffer rejects command type zero");
 
 		Expect(context, !commandBuffer.AppendCommand(
-			static_cast<uint32>(TestCommandType::OneWordPayload),
+			(TestCommandType::OneWordPayload),
 			nullptr,
 			static_cast<uint32>(sizeof(OneWordPayload))),
-			"ModuleCommandBuffer rejects missing payload pointer");
+			"CommandBuffer rejects missing payload pointer");
 
-		const ModuleCommandList commandList = commandBuffer.GetCommandList();
+		const CommandList commandList = commandBuffer.GetCommandList();
 
 		Expect(context, commandList.wordCount == 0 && commandList.commandCount == 0,
-			"ModuleCommandBuffer validation failures do not append words");
+			"CommandBuffer validation failures do not append words");
 	}
 
-	void RunModuleCommandBufferNoPayloadTests(TestContext& context)
+	void RunCommandBufferNoPayloadTests(TestContext& context)
 	{
-		ModuleCommandBuffer commandBuffer;
+		CommandBuffer<TestCommandType> commandBuffer;
 
 		Expect(context, commandBuffer.AppendCommand(
-			static_cast<uint32>(TestCommandType::NoPayload),
+			(TestCommandType::NoPayload),
 			nullptr,
 			0),
-			"ModuleCommandBuffer appends no-payload command");
+			"CommandBuffer appends no-payload command");
 
-		const ModuleCommandList commandList = commandBuffer.GetCommandList();
+		const CommandList commandList = commandBuffer.GetCommandList();
 
 		Expect(context, commandList.words != nullptr,
-			"ModuleCommandBuffer no-payload list has words");
+			"CommandBuffer no-payload list has words");
 
 		Expect(context, commandList.wordCount == 1,
-			"ModuleCommandBuffer no-payload command uses one word");
+			"CommandBuffer no-payload command uses one word");
 
 		Expect(context, commandList.commandCount == 1,
-			"ModuleCommandBuffer no-payload command count is one");
+			"CommandBuffer no-payload command count is one");
 
-		const ModuleCommandHeader header = ReadHeader(commandList.words, 0);
+		const CommandHeader header = ReadHeader(commandList.words, 0);
 
 		Expect(context, header.commandType == static_cast<uint32>(TestCommandType::NoPayload),
-			"ModuleCommandBuffer no-payload header stores command type");
+			"CommandBuffer no-payload header stores command type");
 
 		Expect(context, header.payloadWordCount == 0,
-			"ModuleCommandBuffer no-payload header stores zero payload word count");
+			"CommandBuffer no-payload header stores zero payload word count");
 	}
 
-	void RunModuleCommandBufferPayloadTests(TestContext& context)
+	void RunCommandBufferPayloadTests(TestContext& context)
 	{
-		ModuleCommandBuffer commandBuffer;
+		CommandBuffer<TestCommandType> commandBuffer;
 
 		OneWordPayload oneWordPayload = {};
 		oneWordPayload.a = 10;
 		oneWordPayload.b = 20;
 
 		Expect(context, commandBuffer.AppendCommand(
-			static_cast<uint32>(TestCommandType::OneWordPayload),
+			(TestCommandType::OneWordPayload),
 			&oneWordPayload,
 			static_cast<uint32>(sizeof(oneWordPayload))),
-			"ModuleCommandBuffer appends one-word payload command");
+			"CommandBuffer appends one-word payload command");
 
 		TwoWordPayload twoWordPayload = {};
 		twoWordPayload.a = 100;
 		twoWordPayload.b = 200;
 
 		Expect(context, commandBuffer.AppendCommand(
-			static_cast<uint32>(TestCommandType::TwoWordPayload),
+			(TestCommandType::TwoWordPayload),
 			&twoWordPayload,
 			static_cast<uint32>(sizeof(twoWordPayload))),
-			"ModuleCommandBuffer appends two-word payload command");
+			"CommandBuffer appends two-word payload command");
 
-		const ModuleCommandList commandList = commandBuffer.GetCommandList();
+		const CommandList commandList = commandBuffer.GetCommandList();
 
 		Expect(context, commandList.wordCount == 5,
-			"ModuleCommandBuffer payload commands produce expected word count");
+			"CommandBuffer payload commands produce expected word count");
 
 		Expect(context, commandList.commandCount == 2,
-			"ModuleCommandBuffer payload commands produce expected command count");
+			"CommandBuffer payload commands produce expected command count");
 
-		const ModuleCommandHeader firstHeader = ReadHeader(commandList.words, 0);
+		const CommandHeader firstHeader = ReadHeader(commandList.words, 0);
 
 		Expect(context, firstHeader.commandType == static_cast<uint32>(TestCommandType::OneWordPayload),
-			"ModuleCommandBuffer first payload header stores command type");
+			"CommandBuffer first payload header stores command type");
 
 		Expect(context, firstHeader.payloadWordCount == 1,
-			"ModuleCommandBuffer first payload header stores one payload word");
+			"CommandBuffer first payload header stores one payload word");
 
 		const OneWordPayload firstPayload =
 			ReadPayload<OneWordPayload>(commandList.words, 1);
 
 		Expect(context, firstPayload.a == 10 && firstPayload.b == 20,
-			"ModuleCommandBuffer first payload roundtrips");
+			"CommandBuffer first payload roundtrips");
 
-		const ModuleCommandHeader secondHeader = ReadHeader(commandList.words, 2);
+		const CommandHeader secondHeader = ReadHeader(commandList.words, 2);
 
 		Expect(context, secondHeader.commandType == static_cast<uint32>(TestCommandType::TwoWordPayload),
-			"ModuleCommandBuffer second payload header stores command type");
+			"CommandBuffer second payload header stores command type");
 
 		Expect(context, secondHeader.payloadWordCount == 2,
-			"ModuleCommandBuffer second payload header stores two payload words");
+			"CommandBuffer second payload header stores two payload words");
 
 		const TwoWordPayload secondPayload =
 			ReadPayload<TwoWordPayload>(commandList.words, 3);
 
 		Expect(context, secondPayload.a == 100 && secondPayload.b == 200,
-			"ModuleCommandBuffer second payload roundtrips");
+			"CommandBuffer second payload roundtrips");
 	}
 
-	void RunModuleCommandBufferPaddingTests(TestContext& context)
+	void RunCommandBufferPaddingTests(TestContext& context)
 	{
-		ModuleCommandBuffer commandBuffer;
+		CommandBuffer<TestCommandType> commandBuffer;
 
 		UnalignedPayload payload = {};
 		payload.a = 1;
@@ -256,23 +256,23 @@ namespace
 		payload.c = 3;
 
 		Expect(context, commandBuffer.AppendCommand(
-			static_cast<uint32>(TestCommandType::UnalignedPayload),
+			(TestCommandType::UnalignedPayload),
 			&payload,
 			static_cast<uint32>(sizeof(payload))),
-			"ModuleCommandBuffer appends unaligned payload command");
+			"CommandBuffer appends unaligned payload command");
 
-		const ModuleCommandList commandList = commandBuffer.GetCommandList();
+		const CommandList commandList = commandBuffer.GetCommandList();
 
 		Expect(context, commandList.wordCount == 2,
-			"ModuleCommandBuffer unaligned payload is padded to one word");
+			"CommandBuffer unaligned payload is padded to one word");
 
 		Expect(context, commandList.commandCount == 1,
-			"ModuleCommandBuffer unaligned payload command count is one");
+			"CommandBuffer unaligned payload command count is one");
 
-		const ModuleCommandHeader header = ReadHeader(commandList.words, 0);
+		const CommandHeader header = ReadHeader(commandList.words, 0);
 
 		Expect(context, header.payloadWordCount == 1,
-			"ModuleCommandBuffer unaligned payload header stores padded word count");
+			"CommandBuffer unaligned payload header stores padded word count");
 
 		const uint8* payloadBytes =
 			reinterpret_cast<const uint8*>(&commandList.words[1]);
@@ -281,7 +281,7 @@ namespace
 			payloadBytes[0] == 1 &&
 			payloadBytes[1] == 2 &&
 			payloadBytes[2] == 3,
-			"ModuleCommandBuffer unaligned payload bytes roundtrip");
+			"CommandBuffer unaligned payload bytes roundtrip");
 
 		Expect(context,
 			payloadBytes[3] == 0 &&
@@ -289,32 +289,32 @@ namespace
 			payloadBytes[5] == 0 &&
 			payloadBytes[6] == 0 &&
 			payloadBytes[7] == 0,
-			"ModuleCommandBuffer unaligned payload padding is zeroed");
+			"CommandBuffer unaligned payload padding is zeroed");
 	}
 
-	void RunModuleCommandBufferResetTests(TestContext& context)
+	void RunCommandBufferResetTests(TestContext& context)
 	{
-		ModuleCommandBuffer commandBuffer;
+		CommandBuffer<TestCommandType> commandBuffer;
 
 		OneWordPayload payload = {};
 		payload.a = 1;
 		payload.b = 2;
 
 		Expect(context, commandBuffer.AppendCommand(
-			static_cast<uint32>(TestCommandType::OneWordPayload),
+			(TestCommandType::OneWordPayload),
 			&payload,
 			static_cast<uint32>(sizeof(payload))),
-			"ModuleCommandBuffer reset setup append");
+			"CommandBuffer reset setup append");
 
 		commandBuffer.Reset();
 
-		const ModuleCommandList commandList = commandBuffer.GetCommandList();
+		const CommandList commandList = commandBuffer.GetCommandList();
 
 		Expect(context, commandList.wordCount == 0,
-			"ModuleCommandBuffer reset clears word count");
+			"CommandBuffer reset clears word count");
 
 		Expect(context, commandList.commandCount == 0,
-			"ModuleCommandBuffer reset clears command count");
+			"CommandBuffer reset clears command count");
 	}
 }
 
@@ -324,13 +324,13 @@ void RunModuleTests()
 
 	WriteTestLineWithNewLine("[ModuleTests] Begin");
 
-	RunModuleCommandLayoutTests(context);
-	RunModuleCommandBufferEmptyTests(context);
-	RunModuleCommandBufferAppendValidationTests(context);
-	RunModuleCommandBufferNoPayloadTests(context);
-	RunModuleCommandBufferPayloadTests(context);
-	RunModuleCommandBufferPaddingTests(context);
-	RunModuleCommandBufferResetTests(context);
+	RunCommandLayoutTests(context);
+	RunCommandBufferEmptyTests(context);
+	RunCommandBufferAppendValidationTests(context);
+	RunCommandBufferNoPayloadTests(context);
+	RunCommandBufferPayloadTests(context);
+	RunCommandBufferPaddingTests(context);
+	RunCommandBufferResetTests(context);
 
 	char summary[128] = {};
 	std::snprintf(

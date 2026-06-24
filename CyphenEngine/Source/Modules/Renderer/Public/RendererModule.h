@@ -5,6 +5,10 @@
 #include "Modules/Renderer/Public/RendererTypes.h"
 #include "Modules/Renderer/Public/RenderCommand.h"
 
+#ifdef _DEBUG
+#include "Modules/Resource/Public/ResourceCommand.h"
+#endif
+
 // ============================================================================
 // RendererModuleApi
 // ----------------------------------------------------------------------------
@@ -13,9 +17,13 @@
 // #2_5 추가:
 //   - executeCommandList
 //
+// #2_6 Debug 추가:
+//   - executeResourceCommandList
+//
 // 주의:
 //   - 함수표는 기능마다 늘리지 않습니다.
 //   - 렌더링 기능은 RenderCommand IR 데이터로 확장합니다.
+//   - executeResourceCommandList는 Debug fixture 전용입니다.
 // ============================================================================
 
 constexpr uint32 RENDERER_MODULE_ABI_GENERATION = 4;
@@ -42,6 +50,13 @@ using ExecuteCommandListFunction =
 		RendererHandle rendererHandle,
 		const RenderCommandList* commandList);
 
+#ifdef _DEBUG
+using ExecuteDebugResourceCommandListFunction =
+	RendererModuleResult(*)(
+		RendererHandle rendererHandle,
+		const ResourceCommandList* commandList);
+#endif
+
 struct RendererModuleApi
 {
 	uint32 apiVersion = 0;
@@ -50,10 +65,22 @@ struct RendererModuleApi
 	CreateRendererFunction createRenderer = nullptr;
 	DestroyRendererFunction destroyRenderer = nullptr;
 	ExecuteCommandListFunction executeCommandList = nullptr;
+
+#ifdef _DEBUG
+	// #2_6 debug resource bridge:
+	// ResourceCommandList is routed through Renderer backend only until
+	// Resource/RHI module owns GPU resource uploads.
+	ExecuteDebugResourceCommandListFunction executeDebugResourceCommandList = nullptr;
+#endif
 };
 
 using GetRendererModuleApiFunction =
 	RendererModuleResult(*)(RendererModuleApi* outRendererModuleApi);
 
 static_assert(sizeof(void*) == 8, "RendererModuleApi currently assumes x64.");
+
+#ifdef _DEBUG
+static_assert(sizeof(RendererModuleApi) == 40, "RendererModuleApi must be 40 bytes on x64 debug.");
+#else
 static_assert(sizeof(RendererModuleApi) == 32, "RendererModuleApi must be 32 bytes on x64.");
+#endif

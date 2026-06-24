@@ -3,6 +3,10 @@
 #include "Core/Public/CChar.h"
 #include "Modules/Renderer/Public/Renderer.h"
 
+#ifdef _DEBUG
+#include "Core/Public/Time.h"
+#endif
+
 namespace
 {
 	constexpr CChar RendererModuleName[] = CTEXT("Renderer");
@@ -146,6 +150,30 @@ bool Renderer::BeginRenderingFrame(const Frame& frame)
 	return EnqueueFrame(frame);
 }
 
+#ifdef _DEBUG
+RendererHandle Renderer::GetDebugRendererHandle() const
+{
+	return debugRendererHandle;
+}
+
+bool Renderer::ExecuteDebugResourceCommandList(const ResourceCommandBuffer& commandBuffer)
+{
+	const ResourceCommandList commandList = commandBuffer.GetCommandList();
+
+	if (debugRendererHandle == nullptr ||
+		commandList.words == nullptr ||
+		commandList.wordCount == 0 ||
+		commandList.commandCount == 0 ||
+		moduleApi.executeDebugResourceCommandList == nullptr)
+	{
+		return false;
+	}
+
+	return moduleApi.executeDebugResourceCommandList(debugRendererHandle, &commandList) ==
+		RendererModuleResult::Success;
+}
+#endif
+
 bool Renderer::IsInitialized() const
 {
 	return moduleBinder.IsBound() &&
@@ -174,6 +202,14 @@ void Renderer::Run(NativeWindowInfo windowInfo)
 		return;
 	}
 
+#ifdef _DEBUG
+	debugRendererHandle = rendererHandle;
+
+	double lastRendererLogTime = Time::ElapsedTime();
+	uint64 renderedFrameCount = 0;
+	uint64 lastRendererLogFrameCount = 0;
+#endif
+
 	SetThreadState(RendererThreadState::Running);
 	threadCondition.notify_all();
 
@@ -200,7 +236,42 @@ void Renderer::Run(NativeWindowInfo windowInfo)
 			threadCondition.notify_all();
 			break;
 		}
+
+#ifdef _DEBUG
+		// Debug Log Per Sec(FPS)
+		++renderedFrameCount;
+
+		const double currentRendererLogTime = Time::ElapsedTime();
+		const double rendererLogDeltaTime = currentRendererLogTime - lastRendererLogTime;
+
+		if (rendererLogDeltaTime >= 1.0)
+		{
+			const uint64 renderedFrameDelta =
+				renderedFrameCount - lastRendererLogFrameCount;
+
+			const double rendererFrameRate =
+				static_cast<double>(renderedFrameDelta) / rendererLogDeltaTime;
+
+			char message[160] = {};
+			std::snprintf(
+				message,
+				sizeof(message),
+				"[Renderer] RenderedFrames=%llu FPS=%.2f ElapsedTime=%.6f\n",
+				static_cast<unsigned long long>(renderedFrameDelta),
+				rendererFrameRate,
+				currentRendererLogTime);
+
+			OutputDebugStringA(message);
+
+			lastRendererLogTime = currentRendererLogTime;
+			lastRendererLogFrameCount = renderedFrameCount;
+		}
+#endif
 	}
+
+#ifdef _DEBUG
+	debugRendererHandle = nullptr;
+#endif
 
 	moduleApi.destroyRenderer(rendererHandle);
 
@@ -257,27 +328,39 @@ bool Renderer::AcquireFrame(Frame& outFrame)
 	return true;
 }
 
-bool Renderer::BuildRenderCommandList(
-	const Frame& currentFrame,
-	RenderCommandBuffer& outCommandBuffer)
+bool Renderer::BuildRenderCommandList(const Frame& currentFrame, RenderCommandBuffer& outCommandBuffer)
 {
-	(void)currentFrame;
-
-	// command buffer의 저장 공간은 유지하고,
-	// 이번 프레임의 command stream 내용만 비웁니다.
 	outCommandBuffer.Reset();
 
-	if (outCommandBuffer.AppendClearRenderTarget(0.05f, 0.08f, 0.12f, 1.0f) == false)
+	ClearRenderTargetCommand clearCommand = {};
+	clearCommand.color[0] = 0.05f;
+	clearCommand.color[1] = 0.08f;
+	clearCommand.color[2] = 0.12f;
+	clearCommand.color[3] = 1.0f;
+
+	if (outCommandBuffer.AppendCommand(
+		RenderCommandType::ClearRenderTarget,
+		&clearCommand,
+		static_cast<uint32>(sizeof(clearCommand))) == false)
 	{
 		return false;
 	}
 
-	if (outCommandBuffer.AppendPresent() == false)
+	for (const TexturedQuadDrawItem& drawItem : currentFrame.texturedQuadDrawItems)
 	{
-		return false;
+		DrawTexturedQuadCommand drawCommand = {};
+		drawCommand.textureId = drawItem.textureId;
+
+		if (outCommandBuffer.AppendCommand(
+			RenderCommandType::DrawTexturedQuad,
+			&drawCommand,
+			static_cast<uint32>(sizeof(drawCommand))) == false)
+		{
+			return false;
+		}
 	}
 
-	return true;
+	return outCommandBuffer.AppendCommand(RenderCommandType::Present, nullptr, 0);
 }
 
 bool Renderer::ExecuteRenderCommandList(

@@ -1,25 +1,39 @@
 #pragma once
 
+#include <vector>
+
 #include "Core/Public/CPrimitiveTypes.h"
+#include "Resource/Public/Resource.h"
+
+// ============================================================================
+// TexturedQuadDrawItem
+// ----------------------------------------------------------------------------
+// Frame이 참조하는 2D textured quad draw item입니다.
+//
+// Frame은 이미 만들어진 월드 / 렌더 입력의 스냅샷이므로 texture bytes나
+// CPU-side Texture2D payload를 들지 않습니다.
+//
+// Renderer는 textureId를 DrawTexturedQuad command로 변환하고,
+// Backend는 textureId로 GPU resource table을 조회합니다.
+// ============================================================================
+
+struct TexturedQuadDrawItem
+{
+	ResourceId textureId = InvalidResourceId;
+};
 
 // ============================================================================
 // Frame
 // ----------------------------------------------------------------------------
-// Renderer에 제출되는 공개 프레임 입력 POD입니다.
+// 특정 시점에 스냅샷된 렌더 입력입니다.
 //
-// Engine / Runtime은 현재 World 상태를 렌더링 가능한 형태로 고정한 뒤,
-// 그 결과를 Frame으로 만들어 Renderer에 제출합니다.
-//
-// Renderer는 Frame을 복사해 Render Thread에서 소비하고,
-// 이 입력을 기반으로 RenderCommand IR을 생성합니다.
-//
-// 주의:
-//   - Core 전역 타입이 아닙니다.
-//   - Renderer 내부 전용 타입도 아닙니다.
-//   - Backend DLL로 직접 전달되는 ABI 타입도 아닙니다.
-//   - Backend로 내려가는 것은 Frame이 아니라 RenderCommandList입니다.
+// Frame은 hot path에 가까운 데이터이므로 ResourceId 같은 작은 참조만
+// 보유합니다. Resource upload / destroy 같은 리소스 수명 이벤트는 Frame
+// 자체에서 나오지 않고 별도 pending resource 경로에서 command로 변환됩니다.
 // ============================================================================
+
 struct Frame
 {
 	uint64 frameNumber = 0;
+	std::vector<TexturedQuadDrawItem> texturedQuadDrawItems;
 };

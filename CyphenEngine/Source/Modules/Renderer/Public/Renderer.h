@@ -9,7 +9,11 @@
 #include "Modules/Public/ModuleBinder.h"
 #include "Modules/Renderer/Public/Frame.h"
 #include "Modules/Renderer/Public/RendererModule.h"
-#include "Modules/Renderer/Private/RenderCommandBuffer.h"
+#include "Modules/Renderer/Public/RenderCommand.h"
+
+#ifdef _DEBUG
+#include "Modules/Resource/Public/ResourceCommand.h"
+#endif
 
 // ============================================================================
 // Renderer
@@ -55,6 +59,14 @@ public:
 
 	bool BeginRenderingFrame(const Frame& frame);
 
+#ifdef _DEBUG
+public:
+	RendererHandle GetDebugRendererHandle() const;
+	bool ExecuteDebugResourceCommandList(const ResourceCommandBuffer& commandBuffer);
+private:
+	RendererHandle debugRendererHandle = nullptr;
+#endif
+
 	bool IsInitialized() const;
 	RendererType GetRendererType() const;
 
@@ -65,7 +77,6 @@ private:
 	bool AcquireFrame(Frame& outFrame);
 
 	bool BuildRenderCommandList(const Frame& currentFrame, RenderCommandBuffer& outCommandBuffer);
-
 	bool ExecuteRenderCommandList(RendererHandle rendererHandle, const RenderCommandBuffer& commandBuffer);
 
 	void StartFrameInput();
