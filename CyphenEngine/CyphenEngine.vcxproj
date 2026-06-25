@@ -204,31 +204,6 @@
   </ItemGroup>
   <!-- DevLog -->
   <ItemGroup>
-    <Text Include="DevLog\2025\25.02.11.txt" />
-    <Text Include="DevLog\2025\25.02.17.txt" />
-    <Text Include="DevLog\2025\25.03.06.txt" />
-    <Text Include="DevLog\2025\25.04.07.txt" />
-    <Text Include="DevLog\2025\25.06.04.txt" />
-    <Text Include="DevLog\2025\25.07.02.txt" />
-    <Text Include="DevLog\2025\25.07.03.txt" />
-    <Text Include="DevLog\2025\25.07.04.txt" />
-    <Text Include="DevLog\2025\25.07.09.txt" />
-    <Text Include="DevLog\2025\25.07.17.txt" />
-    <Text Include="DevLog\2025\25.07.24.txt" />
-    <Text Include="DevLog\2026\26.05.27.txt" />
-    <Text Include="DevLog\2026\26.06.01.txt" />
-    <Text Include="DevLog\2026\26.06.08.txt" />
-    <Text Include="DevLog\2026\26.06.09.txt" />
-    <Text Include="DevLog\2026\26.06.10.txt" />
-    <Text Include="DevLog\2026\26.06.15.txt" />
-    <Text Include="DevLog\2026\26.06.16.txt" />
-    <Text Include="DevLog\2026\26.06.17.txt" />
-    <Text Include="DevLog\2026\26.06.19.txt" />
-    <Text Include="DevLog\2026\26.06.22.txt" />
-    <Text Include="DevLog\2026\26.06.23.txt" />
-    <Text Include="DevLog\2026\26.06.24.txt" />
-    <Text Include="DevLog\Todos.txt" />
-    <Text Include="DevLog\폴더 기능 정리.txt" />
     <Text Include="Resources\Test\CoreIo\ReadAllText_UTF8_LF.txt" />
   </ItemGroup>
   <!-- Other -->
