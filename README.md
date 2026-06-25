@@ -13,8 +13,9 @@ CyphenEngine은 개인 엔진 개발 프로젝트입니다.
 	- 객체 모델은 부정하지 않지만, 성능과 책임 경계를 흐리는 추상화는 피합니다.
 
 - **모듈식 엔진**
-	- Core, Platform, Runtime, Editor, Module 계층을 분리합니다.
+	- Core, Platform, Engine, Runtime, Editor, Modules 계층을 분리합니다.
 	- 각 계층은 자신의 책임만 갖고, 다른 계층의 정책을 대신 결정하지 않습니다.
+	- Renderer는 Engine에 고정된 구현이 아니라, Module ABI와 Backend DLL을 통해 연결되는 방향으로 구축합니다.
 
 - **빌드 타임 추상화**
 	- 플랫폼처럼 빌드 시점에 고정 가능한 차이는 빌드 시스템이 선택합니다.
@@ -54,13 +55,21 @@ CyphenEngine은 다음 방향을 참고합니다.
 - Path는 순수 문자열 유틸리티입니다.
 - File은 파일 내용 I/O helper입니다.
 - FileSystem은 파일 시스템 네임스페이스 관리 API입니다.
-- ResourceManager는 아직 만들지 않습니다.
+- Renderer는 Frame을 RenderCommand IR로 변환합니다.
+- Backend는 RenderCommand / ResourceCommand를 실제 그래픽 API 호출로 변환합니다.
+- ResourceManager는 아직 정식화하지 않습니다.
 - RuntimePath 같은 정책 경로 계층은 실제 트리거가 올 때 만듭니다.
 - 테스트 편의를 위해 미확정 계층을 앞당기지 않습니다.
 
+## 구조 시각화
+
+현재 계층, Renderer 모듈 기초 구조, Command Stream, Texture2D 업로드, Windows / Linux 빌드 경계는 [Docs/Architecture.md](Docs/Architecture.md)에 정리합니다.
+
 ## 현재 상태
 
-현재 작업은 엔진 Core 기반을 정리하는 단계입니다.
+현재 작업은 Core 기반 정리 이후, Renderer 모듈 기초 구축을 마감하고 Linux 전환 준비 단계로 넘어가는 상태입니다.
+
+완료된 주요 기반은 다음과 같습니다.
 
 - Time 시스템 Core / Platform 분리
 - Path 경로 문자열 유틸리티 정리
@@ -68,6 +77,19 @@ CyphenEngine은 다음 방향을 참고합니다.
 - TextCodec 인코딩 변환 정리
 - FileSystem 파일 / 디렉터리 관리 API 추가
 - Debug 전용 Core I/O 회귀 테스트 추가
+- LaunchContext / EngineContext 기반 실행 정보 전달
+- ModuleDescriptor / ModuleManager / ModuleLoader 기반 동적 모듈 관리
+- Renderer Module ABI와 DX11 Renderer Backend DLL 분리
+- Engine Thread -> Render Thread -> Backend DLL 실행 흐름 구성
+- Frame -> RenderCommand -> executeCommandList 경로 구성
+- ClearRenderTarget / Present command stream 구현
+- Content Codec / Resource / Texture2D 기초 경로 추가
+- Texture2D 업로드용 ResourceCommand 경로 추가
+- ResourceId 기반 Backend texture table 구성
+- DrawTexturedQuad와 DX11 fullscreen textured quad 렌더링 구현
+- Debug fixture에서 Profile.jpg / Profile2.jpg 교체 표시 확인
+- 플랫폼 컴파일 환경과 디버그 출력 경계를 framework.h로 정리
+- Linux 빌드 준비용 CMake 경로 추가
 
 자세한 폴더 책임은 `폴더 기능 정리.txt`를 기준으로 관리합니다.
 
@@ -82,26 +104,65 @@ CyphenEngine은 다음 방향을 참고합니다.
 - `Editor`
 - `Modules`
 - `Test`
+- `Content`
 - `Resource`
 - `Resources`
 - `DevLog`
 
 ## 테스트
 
-Debug 빌드에서 Core I/O 기준선을 검증합니다.
+Debug 빌드에서 현재 기준선을 검증합니다.
 
-- Path
-- TextCodec
-- File
-- FileSystem
+- Core I/O 회귀 테스트
+	- Path
+	- TextCodec
+	- File
+	- FileSystem
+- Module 테스트
+	- ModuleCommand / ModuleCommandBuffer
+	- ModuleManager / Renderer Module 계약
+- Renderer Debug fixture
+	- Profile.jpg / Profile2.jpg 로드
+	- Texture2D 업로드
+	- TexturedQuad 표시
 
-테스트는 엔진 스레드 시작 전 실행되며, 결과는 `OutputDebugString`으로 보고합니다. 테스트 실패는 실행 흐름을 차단하지 않습니다.
+현재 확인된 기준선은 다음과 같습니다.
+
+- CoreIoTests: `PASS=69 / FAIL=0`
+- ModuleTests: `PASS=34 / FAIL=0`
+- Debug x64에서 CyphenEngine / CyphenRendererDx11 빌드 성공
+- Debug 실행에서 Profile.jpg / Profile2.jpg 1초 단위 교체 렌더링 확인
+
+테스트와 진단 출력은 Debug 기준으로 운용합니다. 디버그 출력은 `PRINT_DEBUG_OUTPUT` 경유로 정리했으며, 플랫폼별 실제 출력 경계는 `framework.h`가 소유합니다.
 
 ## 빌드
 
-현재는 Visual Studio `vcxproj` 기반입니다.
+Windows 프로덕션 빌드는 Visual Studio `.sln` / `.vcxproj` 기반입니다.
 
-향후 CMake 전환을 예정하고 있으며, 플랫폼별 구현 선택은 CMake 빌드 타겟에서 정리할 계획입니다. Mac 빌드는 별도 툴체인 흐름으로 분리합니다.
+Linux 빌드 준비를 위해 CMake 경로를 추가했습니다. CMake는 Linux 빌드 전용으로 운용하며, Windows에서의 CMake 빌드는 Linux 환경 없이 CMake 기술서를 검증하기 위한 프록시 성격입니다.
+
+빌드 산출물은 `BuildArtifacts` 아래에 정리합니다.
+
+- `BuildArtifacts/Binaries/<OS>/<Config>/`
+- `BuildArtifacts/Intermediate/<OS>/<Config>/`
+
+현재 #2와 #3의 경계는 "Linux에서 컴파일된다"입니다. 실제 Linux 빌드, Platform/Linux 구현, Linux Renderer Backend, first-light, 통합 테스트는 #3에서 진행합니다.
+
+## 다음 단계
+
+#3에서는 Linux 빌드와 통합 검증을 진행합니다.
+
+- WSL2 / Linux 환경에서 실제 CMake 빌드 수행
+- Platform/Linux 구현
+	- ModuleLoader: dlopen / dlsym / dlclose
+	- PlatformFile: POSIX file descriptor 기반 구현
+	- PlatformTime: clock_gettime
+	- Linux Launch / main
+- OpenGL ES / EGL 기반 Linux Renderer Backend first-light
+- Linux JPEG leaf 또는 대체 이미지 decode 경로
+- Linux 통합 테스트
+- Linux 빌드 가능성 확인 이후 ResourceManager, FrameQueue, Mesh / Material 확장 검토
+- Vulkan은 이후 단계로 유지
 
 ## 개발 방식
 
@@ -110,4 +171,3 @@ Debug 빌드에서 Core I/O 기준선을 검증합니다.
 - 트리거가 오기 전까지 계층을 만들지 않습니다.
 - 자동화보다 실제 엔진 설계를 우선합니다.
 - DevLog는 작업 흐름 단위로 핵심 결정만 압축해 남깁니다.
-
