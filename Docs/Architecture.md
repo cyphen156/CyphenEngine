@@ -35,6 +35,36 @@ flowchart TB
 - Content는 파일 바이트를 엔진 중간 표현으로 해석합니다.
 - ResourceManager는 아직 정식화하지 않았고, Resource / Texture2D 기초 타입과 debug upload 경로만 존재합니다.
 
+## 빌드 타임 플랫폼 선택
+
+```mermaid
+flowchart TB
+	Target["Target Build"] --> PlatformDefine["PlatformDefine.h"]
+	PlatformDefine --> Framework["framework.h"]
+	Framework --> PlatformTypes["Platform Type Rules"]
+	Framework --> PlatformHeaders["Platform System Headers"]
+	Framework --> DebugBoundary["Debug Output / CRT Boundary"]
+	Framework --> Concrete["Selected Platform Concrete"]
+
+	Concrete --> Windows["Platform/Windows"]
+	Concrete --> Linux["Platform/Linux (#3)"]
+	Concrete --> Android["Platform/Android (future)"]
+	Concrete --> Mac["Platform/Mac (future)"]
+
+	Pch["pch.h"] --> Framework
+	Pch --> Define["define.h"]
+
+	classDef current fill:#e8f3ff,stroke:#2f6fed,color:#111;
+	classDef future fill:#fff7df,stroke:#c98a00,color:#111;
+	class Target,PlatformDefine,Framework,PlatformTypes,PlatformHeaders,DebugBoundary,Concrete,Windows,Pch,Define current;
+	class Linux,Android,Mac future;
+```
+
+- `PlatformDefine.h`는 빌드 타깃을 `PLATFORM_*`로 확정합니다.
+- `framework.h`는 선택된 플랫폼 기준으로 시스템 헤더, OS 타입 규약, 디버그 출력 경계를 준비합니다.
+- `pch.h`는 플랫폼 결정을 직접 수행하지 않고, `framework.h`와 공통 define을 묶는 진입점으로 둡니다.
+- 빌드 시점에 이미 결정 가능한 플랫폼 차이는 런타임 인터페이스가 아니라 빌드 타임 concrete 선택으로 고정합니다.
+
 ## Renderer 모듈 기초 구조 (#2)
 
 ```mermaid
@@ -111,20 +141,22 @@ flowchart LR
 ```mermaid
 flowchart TB
 	Source["공통 Source"] --> WindowsBuild["Windows build"]
-	Source --> LinuxBuild["Linux build (#3)"]
+	Source --> LinuxCompile["Linux compile boundary (#2)"]
+	LinuxCompile --> LinuxBuild["Linux build / integration (#3)"]
 
 	WindowsBuild --> VS["Visual Studio .sln / .vcxproj"]
 	WindowsBuild --> WinLeaf["Platform/Windows + DX11 + WIC"]
 	VS --> WinBin["BuildArtifacts/Binaries/Windows/<Config>"]
 
-	LinuxBuild --> CMake["CMake"]
+	LinuxCompile --> CMake["CMake"]
+	CMake --> LinuxObject["Common Core compile"]
 	LinuxBuild --> LinuxLeaf["Platform/Linux 구현 예정"]
 	LinuxLeaf --> LinuxTasks["dlopen / POSIX fd / clock_gettime / main"]
-	CMake --> LinuxBin["BuildArtifacts/Binaries/Linux/<Config>"]
+	LinuxBuild --> LinuxBin["BuildArtifacts/Binaries/Linux/<Config>"]
 
 	classDef current fill:#e8f3ff,stroke:#2f6fed,color:#111;
 	classDef future fill:#fff7df,stroke:#c98a00,color:#111;
-	class Source,WindowsBuild,VS,WinLeaf,WinBin,CMake current;
+	class Source,WindowsBuild,VS,WinLeaf,WinBin,LinuxCompile,CMake,LinuxObject current;
 	class LinuxBuild,LinuxLeaf,LinuxTasks,LinuxBin future;
 ```
 
@@ -132,6 +164,7 @@ flowchart TB
 - CMake는 Linux 빌드 전용 경로입니다.
 - Windows에서의 CMake 빌드는 Linux 환경 없이 CMake 기술서를 확인하는 프록시 성격입니다.
 - #2와 #3의 경계는 "Linux에서 컴파일된다"입니다.
+- 실제 Linux 빌드, Platform/Linux 구현, Linux Renderer Backend, first-light, 통합 테스트는 #3에서 진행합니다.
 
 ## #3 시작점
 
