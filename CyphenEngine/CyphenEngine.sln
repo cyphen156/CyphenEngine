@@ -12,6 +12,10 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CyphenRendererDx11", "..\Modules\Renderer\CyphenRendererDx11\CyphenRendererDx11.vcxproj", "{D9C112A7-0105-421E-8233-B7E3B51C0FDC}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CyphenRendererOpenGLES", "..\Modules\Renderer\CyphenRendererOpenGLES\CyphenRendererOpenGLES.vcxproj", "{0D9229E7-3848-41EC-81AB-4C34D230924A}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CyphenRendererVulkan", "..\Modules\Renderer\CyphenRendererVulkan\CyphenRendererVulkan.vcxproj", "{9F25A0E7-56B5-4252-B47C-CB0B16A539E5}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -36,6 +40,22 @@ Global
 		{D9C112A7-0105-421E-8233-B7E3B51C0FDC}.Release|x64.Build.0 = Release|x64
 		{D9C112A7-0105-421E-8233-B7E3B51C0FDC}.Release|x86.ActiveCfg = Release|Win32
 		{D9C112A7-0105-421E-8233-B7E3B51C0FDC}.Release|x86.Build.0 = Release|Win32
+		{0D9229E7-3848-41EC-81AB-4C34D230924A}.Debug|x64.ActiveCfg = Debug|x64
+		{0D9229E7-3848-41EC-81AB-4C34D230924A}.Debug|x64.Build.0 = Debug|x64
+		{0D9229E7-3848-41EC-81AB-4C34D230924A}.Debug|x86.ActiveCfg = Debug|Win32
+		{0D9229E7-3848-41EC-81AB-4C34D230924A}.Debug|x86.Build.0 = Debug|Win32
+		{0D9229E7-3848-41EC-81AB-4C34D230924A}.Release|x64.ActiveCfg = Release|x64
+		{0D9229E7-3848-41EC-81AB-4C34D230924A}.Release|x64.Build.0 = Release|x64
+		{0D9229E7-3848-41EC-81AB-4C34D230924A}.Release|x86.ActiveCfg = Release|Win32
+		{0D9229E7-3848-41EC-81AB-4C34D230924A}.Release|x86.Build.0 = Release|Win32
+		{9F25A0E7-56B5-4252-B47C-CB0B16A539E5}.Debug|x64.ActiveCfg = Debug|x64
+		{9F25A0E7-56B5-4252-B47C-CB0B16A539E5}.Debug|x64.Build.0 = Debug|x64
+		{9F25A0E7-56B5-4252-B47C-CB0B16A539E5}.Debug|x86.ActiveCfg = Debug|Win32
+		{9F25A0E7-56B5-4252-B47C-CB0B16A539E5}.Debug|x86.Build.0 = Debug|Win32
+		{9F25A0E7-56B5-4252-B47C-CB0B16A539E5}.Release|x64.ActiveCfg = Release|x64
+		{9F25A0E7-56B5-4252-B47C-CB0B16A539E5}.Release|x64.Build.0 = Release|x64
+		{9F25A0E7-56B5-4252-B47C-CB0B16A539E5}.Release|x86.ActiveCfg = Release|Win32
+		{9F25A0E7-56B5-4252-B47C-CB0B16A539E5}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

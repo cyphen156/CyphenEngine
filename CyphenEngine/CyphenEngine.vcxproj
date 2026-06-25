@@ -90,6 +90,7 @@
     <ClInclude Include="Source\Build\Public\PlatformDefine.h" />
     <ClInclude Include="Source\Content\Private\Image\ImageCodec.h" />
     <ClInclude Include="Source\Content\Private\Image\Jpeg\JpegCodec.h" />
+    <ClInclude Include="Source\Content\Private\Image\Jpeg\LinuxJpegCodec.h" />
     <ClInclude Include="Source\Content\Private\Image\Jpeg\WindowsJpegCodec.h" />
     <ClInclude Include="Source\Content\Public\Codec.h" />
     <!-- Core -->
@@ -145,6 +146,7 @@
     <ClCompile Include="Source\Content\Private\Codec.cpp" />
     <ClCompile Include="Source\Content\Private\Image\ImageCodec.cpp" />
     <ClCompile Include="Source\Content\Private\Image\Jpeg\JpegCodec.cpp" />
+    <ClCompile Include="Source\Content\Private\Image\Jpeg\LinuxJpegCodec.cpp" />
     <ClCompile Include="Source\Content\Private\Image\Jpeg\WindowsJpegCodec.cpp" />
     <ClCompile Include="Source\Core\Private\File.cpp" />
     <ClCompile Include="Source\Core\Private\FileSystem.cpp" />
