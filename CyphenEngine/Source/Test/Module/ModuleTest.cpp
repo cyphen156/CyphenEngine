@@ -50,16 +50,16 @@ namespace
 
 	void WriteTestLine(const char* message)
 	{
-#if PLATFORM_WINDOWS
-		OutputDebugStringA(message);
+#ifdef _DEBUG
+		PRINT_DEBUG_OUTPUT(message);
 #endif
 	}
 
 	void WriteTestLineWithNewLine(const char* message)
 	{
-#if PLATFORM_WINDOWS
-		OutputDebugStringA(message);
-		OutputDebugStringA("\n");
+#ifdef _DEBUG
+		PRINT_DEBUG_OUTPUT(message);
+		PRINT_DEBUG_OUTPUT("\n");
 #endif
 	}
 
@@ -72,16 +72,16 @@ namespace
 		{
 			++context.passCount;
 
-#if PLATFORM_WINDOWS
-			OutputDebugStringA("[PASS] ");
+#ifdef _DEBUG
+			PRINT_DEBUG_OUTPUT("[PASS] ");
 #endif
 		}
 		else
 		{
 			++context.failCount;
 
-#if PLATFORM_WINDOWS
-			OutputDebugStringA("[FAIL] ");
+#ifdef _DEBUG
+			PRINT_DEBUG_OUTPUT("[FAIL] ");
 #endif
 		}
 

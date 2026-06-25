@@ -4,8 +4,10 @@
 		<CyphenRepoRoot>$(MSBuildThisFileDirectory)</CyphenRepoRoot>
 		<CyphenBuildArtifactsRoot>$(CyphenRepoRoot)BuildArtifacts\</CyphenBuildArtifactsRoot>
 
-		<OutDir>$(CyphenBuildArtifactsRoot)Binaries\$(Platform)\$(Configuration)\</OutDir>
-		<IntDir>$(CyphenBuildArtifactsRoot)Intermediate\$(Platform)\$(Configuration)\$(MSBuildProjectName)\</IntDir>
+		<!-- 산출물 경로 규격화: Binaries/Intermediate 아래 OS 키(Windows) 한 겹 추가.
+		     Linux(CMake)는 BuildArtifacts\Binaries\Linux\<Config>\ 로 대응. -->
+		<OutDir>$(CyphenBuildArtifactsRoot)Binaries\Windows\$(Platform)\$(Configuration)\</OutDir>
+		<IntDir>$(CyphenBuildArtifactsRoot)Intermediate\Windows\$(Platform)\$(Configuration)\$(MSBuildProjectName)\</IntDir>
 
 		<TargetName>$(MSBuildProjectName)</TargetName>
 

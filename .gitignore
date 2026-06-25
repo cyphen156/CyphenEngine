@@ -35,7 +35,6 @@
 
 **.vcxproj.filters
 **.vcxproj.user
-CyphenEngine/CyphenEngine/
 
 BuildArtifacts/
 .vs/

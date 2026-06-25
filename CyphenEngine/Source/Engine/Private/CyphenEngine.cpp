@@ -94,7 +94,7 @@ void CyphenEngine::Run()
 				File::ReadAllBytes(path, bytes) == false ||
 				Codec::Decode(path, bytes, texture) == false)
 			{
-				OutputDebugStringA("[Resource] texture load failed.\n");
+				PRINT_DEBUG_OUTPUT("[Resource] texture load failed.\n");
 				continue;
 			}
 
@@ -105,7 +105,7 @@ void CyphenEngine::Run()
 				texture.width == 0 || texture.height == 0 ||
 				static_cast<uint64>(texture.pixels.size()) != pixelBytes)
 			{
-				OutputDebugStringA("[Resource] texture invalid.\n");
+				PRINT_DEBUG_OUTPUT("[Resource] texture invalid.\n");
 				continue;
 			}
 
@@ -171,7 +171,7 @@ void CyphenEngine::Run()
 		if (renderer.BeginRenderingFrame(frame) == false)
 		{
 #ifdef _DEBUG
-			OutputDebugStringA("[CyphenEngine] BeginRenderingFrame failed.\n");
+			PRINT_DEBUG_OUTPUT("[CyphenEngine] BeginRenderingFrame failed.\n");
 #endif
 			continue;
 		}
@@ -187,7 +187,7 @@ void CyphenEngine::Run()
 		//		"[Renderer] Frame submitted: %llu\n[Time] ElapsedTime: %.6f\n",
 		//		static_cast<unsigned long long>(frame.frameNumber),
 		//		Time::ElapsedTime());
-		//	OutputDebugStringA(message);
+		//	PRINT_DEBUG_OUTPUT(message);
 		//}
 		
 		// Debug Log Per sec(FPS)
@@ -209,7 +209,7 @@ void CyphenEngine::Run()
 				engineFrameRate,
 				currentEngineLogTime);
 
-			OutputDebugStringA(message);
+			PRINT_DEBUG_OUTPUT(message);
 
 			lastEngineLogTime = currentEngineLogTime;
 			lastEngineLogFrameNumber = frameNumber;

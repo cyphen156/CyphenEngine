@@ -261,7 +261,7 @@ void Renderer::Run(NativeWindowInfo windowInfo)
 				rendererFrameRate,
 				currentRendererLogTime);
 
-			OutputDebugStringA(message);
+			PRINT_DEBUG_OUTPUT(message);
 
 			lastRendererLogTime = currentRendererLogTime;
 			lastRendererLogFrameCount = renderedFrameCount;
