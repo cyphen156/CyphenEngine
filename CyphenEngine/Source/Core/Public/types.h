@@ -13,18 +13,6 @@ enum EngineStatus
 	None
 };
 
-enum class RendererType
-{
-	Dx11,
-	Dx12,
-	Vulkan,
-	OpenGL,
-	Metal,
-	GDI_Plus,
-
-	NONE
-};
-
 constexpr const CChar* RendererNames[] =
 {
 	CTEXT("Dx11"),
@@ -36,6 +24,7 @@ constexpr const CChar* RendererNames[] =
 
 	CTEXT("NONE")
 };
+
 
 enum class LogLevel
 {

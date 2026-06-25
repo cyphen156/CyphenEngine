@@ -1,2 +1,0 @@
-CyphenEngine File I/O Test
-한글 출력 테스트

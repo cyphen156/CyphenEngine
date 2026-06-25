@@ -2,16 +2,18 @@
 
 #ifdef _DEBUG
 #include "Test/CoreIo/CoreIoTests.h" 
+#include "Test/Module/ModuleTest.h"
 #endif
-
-#include <thread>
 
 #include "HAL/Public/Launch.h"
 #include "Platform/Windows/Resource/Resource.h"
+#include "Core/Public/Thread.h"
 #include "Engine/Public/CyphenEngine.h"
+#include "Engine/Public/EngineContext.h"
+#include "Modules/Public/ModuleDescriptor.h"
+#include "Modules/Public/ModuleManager.h"
 
 #define MAX_LOADSTRING 100
-
 
 // 전역 변수
 HINSTANCE hInst = nullptr;                      // 현재 인스턴스입니다.
@@ -43,18 +45,20 @@ private:
 		_In_ LPWSTR lpCmdLine,
 		_In_ int nCmdShow);
 
+	static LaunchContext CreateLaunchContext(HWND windowHandle);
+
 	static HANDLE GetEngineThreadHandle();
-	static bool StartEngineThread();
+	static bool StartEngineThread(const LaunchContext& launchContext);
 	static void RequestEngineShutdown();
 	static void JoinEngineThread();
 
 private:
 	static CyphenEngine engineInstance;
-	static std::thread engineThread;
+	static Thread engineThread;
 };
 
 CyphenEngine Launch::engineInstance;
-std::thread Launch::engineThread;
+Thread Launch::engineThread;
 
 const CyphenEngine* const GEngine = &Launch::GetEngine();
 
@@ -63,22 +67,61 @@ const CyphenEngine& Launch::GetEngine()
 	return engineInstance;
 }
 
-HANDLE Launch::GetEngineThreadHandle()
+LaunchContext Launch::CreateLaunchContext(HWND windowHandle)
 {
-	return engineThread.native_handle();
+	LaunchContext launchContext;
+	launchContext.windowInfo.nativeWindowHandle = windowHandle;
+
+	RECT clientRect = {};
+
+	if (::GetClientRect(windowHandle, &clientRect) != FALSE)
+	{
+		launchContext.windowInfo.windowWidth =
+			static_cast<uint32>(clientRect.right - clientRect.left);
+
+		launchContext.windowInfo.windowHeight =
+			static_cast<uint32>(clientRect.bottom - clientRect.top);
+	}
+
+	// Descriptor 파일과 UserPreference Resolver가 생기기 전까지 사용하는
+	// Renderer Module 부트스트랩 구성입니다.
+	ModuleDescriptor rendererModule;
+	rendererModule.moduleName = CTEXT("Renderer");
+	rendererModule.implementationName = CTEXT("Dx11");
+	rendererModule.binaryName = CTEXT("CyphenRendererDx11");
+	rendererModule.isEnabled = true;
+
+	launchContext.moduleDescriptors.push_back(rendererModule);
+
+	return launchContext;
 }
 
-bool Launch::StartEngineThread()
+HANDLE Launch::GetEngineThreadHandle()
 {
-	if (engineInstance.InitEngine() == false)
+	return static_cast<HANDLE>(engineThread.GetNativeHandle());
+}
+
+bool Launch::StartEngineThread(const LaunchContext& launchContext)
+{
+	// Refresh 실패는 유효한 Descriptor까지 폐기하지 않습니다.
+	// 개별 시스템이 자신에게 필요한 Module을 Initialize에서 검증합니다.
+	ModuleManager::Refresh(launchContext.moduleDescriptors);
+
+	if (engineInstance.InitEngine(launchContext) == false)
 	{
 		return false;
 	}
-	engineThread = std::thread(&CyphenEngine::Run, &engineInstance);
+
+	if (engineThread.Start(&CyphenEngine::Run, &engineInstance) == false)
+	{
+		// Engine Thread 생성 실패 시 이미 초기화된 시스템을 역순 종료합니다.
+		engineInstance.ShutdownEngine();
+
+		return false;
+	}
 
 	return true;
 }
-
 
 void Launch::RequestEngineShutdown()
 {
@@ -87,10 +130,17 @@ void Launch::RequestEngineShutdown()
 
 void Launch::JoinEngineThread()
 {
-	if (engineThread.joinable())
-	{
-		engineThread.join();
-	}
+	// Engine Thread 종료를 확인한 뒤 Module Binary를 정리합니다.
+	engineThread.Join();
+
+	const bool isModuleShutdownSuccessful =
+		ModuleManager::Shutdown();
+
+#ifdef _DEBUG
+	_ASSERT(isModuleShutdownSuccessful);
+#endif
+
+	(void)isModuleShutdownSuccessful;
 }
 
 int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
@@ -125,12 +175,19 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 #endif 
 
 	// 엔진의 메인 루프를 별도의 스레드로 실행합니다.
-	bool isEngineStarted = Launch::StartEngineThread();
+	const LaunchContext launchContext = Launch::CreateLaunchContext(g_hMainWindow);
+
+	bool isEngineStarted = Launch::StartEngineThread(launchContext);
 
 	if (!isEngineStarted)
 	{
+		ModuleManager::Shutdown();
 		return FALSE;
 	}
+
+#ifdef _DEBUG
+	RunModuleTests();
+#endif // _DEBUG
 
 	HANDLE engineThreadHandle = Launch::GetEngineThreadHandle();
 

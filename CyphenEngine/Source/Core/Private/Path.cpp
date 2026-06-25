@@ -187,3 +187,19 @@ CString Path::GetExtension(const CString& path)
 
 	return fileName.substr(extensionIndex);
 }
+
+CString Path::GetExtensionLower(const CString& path)
+{
+	CString extension = GetExtension(path);
+
+	for (CChar& character : extension)
+	{
+		if (character >= CTEXT("A")[0] && character <= CTEXT("Z")[0])
+		{
+			character = static_cast<CChar>(
+				character - CTEXT("A")[0] + CTEXT("a")[0]);
+		}
+	}
+
+	return extension;
+}

@@ -26,7 +26,7 @@ public:
 	static CString GetFileName(const CString& path);
 	static CString GetFileNameWithoutExtension(const CString& path);
 	static CString GetExtension(const CString& path);
-
+	static CString GetExtensionLower(const CString& path);
 private:
 	Path() = delete;
 	~Path() = delete;

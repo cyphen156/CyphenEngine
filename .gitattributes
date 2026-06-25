@@ -1,0 +1,45 @@
+# Normalize all text files to LF in the repository.
+# Working tree line endings stay native per each machine's core.autocrlf.
+* text=auto
+
+# Explicit text types (helps detection / cross-tool consistency)
+*.cpp   text
+*.cc    text
+*.cxx   text
+*.c     text
+*.h     text
+*.hpp   text
+*.hxx   text
+*.inl   text
+*.cs    text
+*.md    text
+*.txt   text
+*.json  text
+*.xml   text
+*.props text
+*.targets text
+
+# Visual Studio project/solution files: keep CRLF in working tree
+# (VS rewrites them as CRLF; pinning avoids churn)
+*.sln     text eol=crlf
+*.vcxproj text eol=crlf
+*.vcxproj.filters text eol=crlf
+
+# Binary assets — never touch
+*.png  binary
+*.jpg  binary
+*.jpeg binary
+*.gif  binary
+*.bmp  binary
+*.dds  binary
+*.tga  binary
+*.ico  binary
+*.ttf  binary
+*.otf  binary
+*.lib  binary
+*.dll  binary
+*.exe  binary
+*.pdb  binary
+*.ilk  binary
+*.obj  binary
+*.pch  binary

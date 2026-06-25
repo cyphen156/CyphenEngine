@@ -13,6 +13,13 @@
 
 #if PLATFORM_WINDOWS
 
+#ifdef _DEBUG
+#define _CRTDBG_MAP_ALLOC
+#include <crtdbg.h>
+#define new new(_NORMAL_BLOCK, __FILE__, __LINE__)
+#define PRINT_DEBUG_OUTPUT(text)	OutputDebugStringA(text)
+#endif
+
 #define NOMINMAX
 #define WIN32_LEAN_AND_MEAN
 
@@ -23,7 +30,14 @@ using LARGEINTEGER = LARGE_INTEGER;
 
 #elif PLATFORM_LINUX
 
+#ifdef _DEBUG
+#define PRINT_DEBUG_OUTPUT(text) std::fputs((text), stderr)
+#include <cstdio>
+#endif
+
 #include <cstdint>
+
+// Linux 디버그 힙 경계 (crtdbg 등가물 없음 → ASan/valgrind, 추후 Diagnostics)
 
 using LARGEINTEGER = int64_t;
 
