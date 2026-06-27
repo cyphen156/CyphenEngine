@@ -1,23 +1,24 @@
 # Normalize all text files to LF in the repository.
-# Working tree line endings stay native per each machine's core.autocrlf.
+# Source/text types are pinned to LF in the working tree too (eol=lf overrides
+# core.autocrlf), so Windows/MSVC and Linux/WSL2 see identical LF endings.
 * text=auto
 
-# Explicit text types (helps detection / cross-tool consistency)
-*.cpp   text
-*.cc    text
-*.cxx   text
-*.c     text
-*.h     text
-*.hpp   text
-*.hxx   text
-*.inl   text
-*.cs    text
-*.md    text
-*.txt   text
-*.json  text
-*.xml   text
-*.props text
-*.targets text
+# Explicit text types — LF in working tree (deterministic across machines)
+*.cpp   text eol=lf
+*.cc    text eol=lf
+*.cxx   text eol=lf
+*.c     text eol=lf
+*.h     text eol=lf
+*.hpp   text eol=lf
+*.hxx   text eol=lf
+*.inl   text eol=lf
+*.cs    text eol=lf
+*.md    text eol=lf
+*.txt   text eol=lf
+*.json  text eol=lf
+*.xml   text eol=lf
+*.props text eol=lf
+*.targets text eol=lf
 
 # Visual Studio project/solution files: keep CRLF in working tree
 # (VS rewrites them as CRLF; pinning avoids churn)
