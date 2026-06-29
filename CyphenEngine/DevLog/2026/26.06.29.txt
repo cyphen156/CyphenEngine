@@ -1,0 +1,56 @@
+Date: 2026-06-29
+Branch: #3-Linux-빌드-테스트
+
+작업 요약
+	#3_1에서 미러로 등록해 둔 Linux 플랫폼 구현 본체를 채우고, X11 기반 Launch까지 연결하여 Linux 실행이 Core IO 검증에 도달하도록 했습니다.
+
+	경로·핸들 경계를 정리(PlatformPath 단방향, LinuxPath native facade)한 위에서 PlatformFile / PlatformTime / ModuleLoader / LinuxJpegCodec를 Linux 경계로 구현하고, CMake Linux 링크 의존성을 연결했습니다.
+
+	WSL Linux 실행에서 CoreIoTests PASS=69 FAIL=0을 확인했습니다.
+
+
+진행한 커밋
+	#3_2 [Platform] Linux 플랫폼 구현 본체와 X11 Launch 연결
+
+
+주요 정리 내용
+	1. PlatformFile Linux 구현
+		POSIX fd 기반으로 open / read / write / seek / tell / close를 구현했습니다.
+		stat / mkdir / rmdir / unlink / rename / opendir 계열로 파일·디렉터리 연산을 Linux에서 수행하도록 정리했습니다.
+		재귀 삭제는 lstat로 심볼릭 링크를 따라가지 않아 트리 밖 삭제를 방지합니다.
+
+	2. PlatformPath / LinuxPath 경계 정리
+		PlatformPath를 ToPlatformPath 단방향 계약으로 정리했습니다. 역방향은 Path::Normalize가 수행하므로 ToEnginePath를 제거했습니다.
+		LinuxPath는 PlatformPath와 LinuxString을 묶는 native path facade로 두어, PlatformFile이 경로 규칙과 문자열 전사 세부를 직접 알지 않도록 했습니다.
+
+	3. PlatformTime / ModuleLoader Linux 구현
+		PlatformTime은 clock_gettime 기반, ModuleLoader는 dlopen / dlsym / dlclose 기반으로 HAL 본체를 채웠습니다.
+
+	4. Content / Image / Jpeg Linux leaf 구현
+		LinuxJpegCodec을 libjpeg-turbo(turbojpeg) decode leaf로 구현하고, CMake에서 turbojpeg 의존성을 연결했습니다.
+
+	5. Linux Launch 연결
+		X11으로 window를 생성하고 LaunchContext에 native window handle과 크기를 전달했습니다.
+		engine thread 실행과 shutdown pipe를 연결하여 X11 event loop와 엔진 종료 신호를 함께 감시하도록 구성했습니다.
+
+	6. CMake Linux 링크 정리
+		LinuxPath / LinuxJpegCodec 소스를 Linux 빌드 목록에 포함하고, Threads / dl / X11 / turbojpeg를 링크 의존성으로 연결했습니다.
+
+
+정리한 설계 기준
+	- PlatformFile은 native 경로 파이프라인을 모른다. 경로 변환은 LinuxPath / WindowsPath native facade가 은닉한다.
+	- PlatformPath는 engine→platform-rule CString 단방향 seam이다. platform→engine 변환은 Path::Normalize의 책임이다.
+	- FileHandle은 native fd / handle을 숨기는 opaque 값이며 RAII가 아니다. RAII는 FileStream이 담당한다.
+	- Launch는 플랫폼별 진입점이며, Linux는 X11 window + engine thread + shutdown pipe로 구성한다.
+
+
+검증
+	WSL Linux 환경에서 CyphenEngine 실행 파일을 실행하고 CoreIoTests PASS=69 FAIL=0을 확인했습니다.
+
+	현재 실행은 Core IO 검증 이후 Renderer 모듈 단계에서 종료됩니다. 이는 Launch 링크 문제가 아니라 Linux용 Renderer 모듈 .so 산출물과 로드 / 초기화 경로가 아직 연결되지 않았기 때문입니다.
+
+
+다음 작업
+	- Linux Renderer 모듈 .so 빌드 / 산출물 배치 / export 주입 정리.
+	- 이후 Vulkan backend first-light로 Linux 실행 루프를 끝까지 검증.
+	- ResourceManager / Mesh / Material는 Linux 표시 확인 이후로 이월.
