@@ -610,6 +610,38 @@ namespace
 	}
 }
 
+TextEncoding TextCodec::GetDefaultTextEncoding()
+{
+	return TextEncoding::Utf8;
+}
+
+TextEncoding TextCodec::ResolveEncoding(const std::vector<uint8>& bytes, TextEncoding fallbackEncoding)
+{
+	if (bytes.size() >= 3 &&
+		bytes[0] == 0xEF &&
+		bytes[1] == 0xBB &&
+		bytes[2] == 0xBF)
+	{
+		return TextEncoding::Utf8;
+	}
+
+	if (bytes.size() >= 2 &&
+		bytes[0] == 0xFF &&
+		bytes[1] == 0xFE)
+	{
+		return TextEncoding::Utf16LE;
+	}
+
+	if (bytes.size() >= 2 &&
+		bytes[0] == 0xFE &&
+		bytes[1] == 0xFF)
+	{
+		return TextEncoding::Utf16BE;
+	}
+
+	return fallbackEncoding;
+}
+
 bool TextCodec::Encode(
 	const CString& text,
 	std::vector<uint8>& outBytes,

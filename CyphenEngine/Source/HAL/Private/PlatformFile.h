@@ -4,6 +4,7 @@
 
 #include "Core/Public/CPrimitiveTypes.h"
 #include "Core/Public/CString.h"
+#include "Core/Public/FileTypes.h"
 
 // ============================================================================
 // PlatformFile
@@ -15,7 +16,7 @@
 // File / FileSystem 공개 API를 통해 파일 시스템에 접근합니다.
 //
 // 책임:
-//     파일 하나의 raw byte I/O.
+//     raw 파일 open / close / read / write / seek / tell / size.
 //     파일 하나의 생성 / 삭제 / 크기 조회.
 //     디렉터리 하나의 존재 확인 / 생성 / 삭제(empty-only).
 //     명시적 디렉터리 트리 삭제.
@@ -26,17 +27,17 @@
 //     줄바꿈 정책.
 //     엔진 기본 경로 정책.
 //     ResourceManager / Logger / Diagnostics.
-//     공개 FileHandle / 스트림 API.
+//     텍스트 API.
+//     FileStream RAII.
 //     휴지통 이동 / undo-redo 트랜잭션.
 //
 // PlatformFile의 기본 대상은 파일입니다.
 // 따라서 파일 단위 연산은 Create / Exists / Remove / GetSize처럼 짧게 쓰고,
 // 디렉터리 연산만 Directory 이름을 명시합니다.
 //
-// PlatformFile은 핸들 구조체를 헤더에 노출하지 않습니다.
-// open / close와 native handle 관리는 각 플랫폼 구현 파일 내부에서 처리합니다.
-// whole-file I/O는 native I/O로 파일을 읽거나 쓴 뒤,
-// File 공개 API가 std::vector<uint8> 메모리 버퍼로 전달합니다.
+// PlatformFile은 native HANDLE / fd를 헤더에 노출하지 않습니다.
+// FileHandle은 native 값을 담는 opaque 슬롯이며 RAII가 아닙니다.
+// Close 책임은 호출자 또는 이후 FileStream RAII 계층이 집니다.
 //
 // 인터페이스(virtual)가 아니라, 플랫폼별 동일 시그니처 구현을 빌드가 선택하는
 // concrete HAL입니다.
@@ -57,10 +58,16 @@ private:
 	friend class File;
 	friend class FileSystem;
 
-	static bool ReadAllBytes(const CString& path, std::vector<uint8>& outBytes);
-	static bool ReadHead(const CString& path, uint64 maxSize, std::vector<uint8>& outBytes);
-	static bool WriteAllBytes(const CString& path, const std::vector<uint8>& bytes);
-	static bool AppendAllBytes(const CString& path, const std::vector<uint8>& bytes);
+	static bool OpenRead(const CString& path, FileHandle& outHandle);
+	static bool OpenWrite(const CString& path, bool canReplace, FileHandle& outHandle);
+	static bool OpenAppend(const CString& path, FileHandle& outHandle);
+	static void Close(FileHandle& handle);
+
+	static bool Read(FileHandle handle, uint8* outBytes, uint64 bytesToRead, uint64& outBytesRead);
+	static bool Write(FileHandle handle, const uint8* bytes, uint64 bytesToWrite, uint64& outBytesWritten);
+	static bool Seek(FileHandle handle, uint64 position);
+	static bool Tell(FileHandle handle, uint64& outPosition);
+	static bool GetSize(FileHandle handle, uint64& outSize);
 
 	static bool Create(const CString& path);
 	static bool GetSize(const CString& path, uint64& outSize);

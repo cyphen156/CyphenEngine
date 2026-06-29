@@ -99,8 +99,10 @@
     <ClInclude Include="Source\Core\Public\CPrimitiveTypes.h" />
     <ClInclude Include="Source\Core\Public\CString.h" />
     <ClInclude Include="Source\Core\Public\File.h" />
+    <ClInclude Include="Source\Core\Public\FileStream.h" />
     <ClInclude Include="Source\Core\Public\FileSystem.h" />
     <ClInclude Include="Source\Core\Public\FileTypes.h" />
+    <ClInclude Include="Source\HAL\Private\PlatformPath.h" />
     <ClInclude Include="Source\Modules\Public\ModuleBinder.h" />
     <ClInclude Include="Source\Modules\Public\Command.h" />
     <ClInclude Include="Source\Modules\Public\CommandBuffer.h" />
@@ -128,6 +130,7 @@
     <ClInclude Include="Source\Modules\Renderer\Public\RendererModule.h" />
     <ClInclude Include="Source\Modules\Renderer\Public\RendererTypes.h" />
     <ClInclude Include="Source\Modules\Resource\Public\ResourceCommand.h" />
+    <ClInclude Include="Source\Platform\Windows\Private\WindowsPath.h" />
     <!-- Platform -->
     <ClInclude Include="Source\Platform\Windows\Private\WindowsString.h" />
     <ClInclude Include="Source\Platform\Windows\Public\targetver.h" />
@@ -146,9 +149,13 @@
     <ClCompile Include="Source\Content\Private\Codec.cpp" />
     <ClCompile Include="Source\Content\Private\Image\ImageCodec.cpp" />
     <ClCompile Include="Source\Content\Private\Image\Jpeg\JpegCodec.cpp" />
-    <ClCompile Include="Source\Content\Private\Image\Jpeg\LinuxJpegCodec.cpp" />
+    <ClCompile Include="Source\Content\Private\Image\Jpeg\LinuxJpegCodec.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="Source\Content\Private\Image\Jpeg\WindowsJpegCodec.cpp" />
     <ClCompile Include="Source\Core\Private\File.cpp" />
+    <ClCompile Include="Source\Core\Private\FileStream.cpp" />
     <ClCompile Include="Source\Core\Private\FileSystem.cpp" />
     <ClCompile Include="Source\Modules\Private\ModuleBinder.cpp" />
     <ClCompile Include="Source\Modules\Private\ModuleManager.cpp" />
@@ -165,22 +172,36 @@
     <ClCompile Include="Source\Platform\Windows\Private\Launch.cpp" />
     <ClCompile Include="Source\Platform\Windows\Private\ModuleLoader.cpp" />
     <ClCompile Include="Source\Platform\Windows\Private\PlatformFile.cpp" />
+    <ClCompile Include="Source\Platform\Windows\Private\PlatformPath.cpp" />
     <ClCompile Include="Source\Platform\Windows\Private\PlatformTime.cpp" />
+    <ClCompile Include="Source\Platform\Windows\Private\WindowsPath.cpp" />
     <ClCompile Include="Source\Platform\Windows\Private\WindowsString.cpp" />
     <!-- Platform - Linux -->
     <ClCompile Include="Source\Platform\Linux\Private\Launch.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </ClCompile>
-    <ClCompile Include="Source\Platform\Linux\Private\File.cpp">
+    <ClCompile Include="Source\Platform\Linux\Private\LinuxPath.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </ClCompile>
-    <ClCompile Include="Source\Platform\Linux\Private\Path.cpp">
+    <ClCompile Include="Source\Platform\Linux\Private\LinuxString.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </ClCompile>
-    <ClCompile Include="Source\Platform\Linux\Private\Time.cpp">
+    <ClCompile Include="Source\Platform\Linux\Private\ModuleLoader.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="Source\Platform\Linux\Private\PlatformFile.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="Source\Platform\Linux\Private\PlatformPath.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="Source\Platform\Linux\Private\PlatformTime.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </ClCompile>

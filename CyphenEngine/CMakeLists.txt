@@ -1,7 +1,7 @@
 # ============================================================================
 # CyphenEngine — CMake 빌드 (실행파일 타깃)
 # ----------------------------------------------------------------------------
-# #2_7 P2: 공통 코어 + 실행파일을 CMake로 빌드. MSVC vcxproj와 병존.
+# 공통 코어 + 실행파일을 CMake로 빌드. MSVC vcxproj와 병존.
 #
 # 실제 배치:
 #   <repo>/
@@ -24,9 +24,9 @@
 #   cmake -S . -B ../BuildArtifacts/Intermediate/Linux/x64/Debug/CyphenEngine -G Ninja -DCMAKE_BUILD_TYPE=Debug
 #   cmake --build ../BuildArtifacts/Intermediate/Linux/x64/Debug/CyphenEngine
 #
-# Linux: 공통 코어 + exe 컴파일 통과까지가 #2_7.
-#        ModuleLoader / PlatformFile / PlatformTime / main 진입점은 미구현이면
-#        링크 단계 미해결로 노출된다. 이것을 #3 입력으로 사용한다.
+# Linux: PlatformFile / PlatformTime / ModuleLoader / main 링크 게이트는
+#        2026-06-29 포팅 패스에서 구현한다.
+#        실제 Linux 컴파일 검증은 Linux/WSL 툴체인 환경에서 수행한다.
 # ============================================================================
 
 cmake_minimum_required(VERSION 3.20)
@@ -53,6 +53,7 @@ set(CYPHEN_COMMON_SOURCES
 	Source/Content/Private/Image/Jpeg/JpegCodec.cpp
 
 	Source/Core/Private/File.cpp
+	Source/Core/Private/FileStream.cpp
 	Source/Core/Private/FileSystem.cpp
 	Source/Core/Private/Path.cpp
 	Source/Core/Private/Separator.cpp
@@ -81,24 +82,23 @@ set(CYPHEN_WINDOWS_SOURCES
 	Source/Platform/Windows/Private/Launch.cpp
 	Source/Platform/Windows/Private/ModuleLoader.cpp
 	Source/Platform/Windows/Private/PlatformFile.cpp
+	Source/Platform/Windows/Private/PlatformPath.cpp
 	Source/Platform/Windows/Private/PlatformTime.cpp
+	Source/Platform/Windows/Private/WindowsPath.cpp
 	Source/Platform/Windows/Private/WindowsString.cpp
 	Source/pch.cpp
 )
 
-# Linux: 현재 Launch.cpp 스텁만 존재한다고 가정.
-# #3에서 추가될 HAL 계약 구현:
-#   Source/Platform/Linux/Private/ModuleLoader.cpp
-#   Source/Platform/Linux/Private/PlatformFile.cpp
-#   Source/Platform/Linux/Private/PlatformTime.cpp
-#   Source/Platform/Linux/Private/Launch.cpp
-#
-# 주의:
-#   기존 Platform/Linux/File.cpp, Path.cpp, Time.cpp 가 HAL 계약명과 다르면
-#   여기에는 넣지 않는다.
-#   Path는 이미 Core 공통 책임이므로 Linux leaf로 다시 넣으면 중복 심볼 위험이 있다.
 set(CYPHEN_LINUX_SOURCES
+	Source/Content/Private/Image/Jpeg/LinuxJpegCodec.cpp
 	Source/Platform/Linux/Private/Launch.cpp
+	Source/Platform/Linux/Private/LinuxPath.cpp
+	Source/Platform/Linux/Private/LinuxString.cpp
+	Source/Platform/Linux/Private/ModuleLoader.cpp
+	Source/Platform/Linux/Private/PlatformFile.cpp
+	Source/Platform/Linux/Private/PlatformPath.cpp
+	Source/Platform/Linux/Private/PlatformTime.cpp
+	Source/pch.cpp
 )
 
 # ----------------------------------------------------------------------------
@@ -216,9 +216,24 @@ endif()
 # ----------------------------------------------------------------------------
 if(UNIX)
 	find_package(Threads REQUIRED)
+	find_package(X11 REQUIRED)
+
+	find_path(TURBOJPEG_INCLUDE_DIR NAMES turbojpeg.h)
+	find_library(TURBOJPEG_LIBRARY NAMES turbojpeg)
+
+	if(NOT TURBOJPEG_INCLUDE_DIR OR NOT TURBOJPEG_LIBRARY)
+		message(FATAL_ERROR "libjpeg-turbo development files are required for Linux JPEG decoding.")
+	endif()
+
+	target_include_directories(CyphenEngine PRIVATE
+		${TURBOJPEG_INCLUDE_DIR}
+		${X11_INCLUDE_DIR}
+	)
 
 	target_link_libraries(CyphenEngine PRIVATE
 		Threads::Threads
+		${TURBOJPEG_LIBRARY}
+		${X11_LIBRARIES}
 		${CMAKE_DL_LIBS}
 	)
 endif()

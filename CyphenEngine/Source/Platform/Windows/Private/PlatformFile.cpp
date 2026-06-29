@@ -4,348 +4,44 @@
 #include <cwchar>
 #include <limits>
 #include <string>
-#include <vector>
 
-#include "Core/Public/Separator.h"
 #include "HAL/Private/PlatformFile.h"
-#include "Platform/Windows/Private/WindowsString.h"
+#include "Platform/Windows/Private/WindowsPath.h"
 
 namespace
 {
-	class ScopedFileHandle final
+	constexpr std::uintptr_t InvalidFileHandleValue =
+		std::numeric_limits<std::uintptr_t>::max();
+
+	HANDLE ToNativeHandle(FileHandle handle)
 	{
-	public:
-		explicit ScopedFileHandle(HANDLE fileHandle)
-			: fileHandle(fileHandle)
-		{
-		}
-
-		~ScopedFileHandle()
-		{
-			Close();
-		}
-
-		ScopedFileHandle(ScopedFileHandle&& other) noexcept
-			: fileHandle(other.fileHandle)
-		{
-			other.fileHandle = INVALID_HANDLE_VALUE;
-		}
-
-		ScopedFileHandle& operator=(ScopedFileHandle&& other) noexcept
-		{
-			if (this != &other)
-			{
-				Close();
-
-				fileHandle = other.fileHandle;
-				other.fileHandle = INVALID_HANDLE_VALUE;
-			}
-
-			return *this;
-		}
-
-		ScopedFileHandle(const ScopedFileHandle& other) = delete;
-		ScopedFileHandle& operator=(const ScopedFileHandle& other) = delete;
-
-		bool IsValid() const
-		{
-			return fileHandle != INVALID_HANDLE_VALUE;
-		}
-
-		HANDLE Get() const
-		{
-			return fileHandle;
-		}
-
-	private:
-		void Close()
-		{
-			if (fileHandle != INVALID_HANDLE_VALUE)
-			{
-				::CloseHandle(fileHandle);
-				fileHandle = INVALID_HANDLE_VALUE;
-			}
-		}
-
-		HANDLE fileHandle = INVALID_HANDLE_VALUE;
-	};
-
-	class ScopedFindHandle final
-	{
-	public:
-		explicit ScopedFindHandle(HANDLE findHandle)
-			: findHandle(findHandle)
-		{
-		}
-
-		~ScopedFindHandle()
-		{
-			if (IsValid())
-			{
-				::FindClose(findHandle);
-			}
-		}
-
-		ScopedFindHandle(const ScopedFindHandle& other) = delete;
-		ScopedFindHandle& operator=(const ScopedFindHandle& other) = delete;
-
-		bool IsValid() const
-		{
-			return findHandle != INVALID_HANDLE_VALUE;
-		}
-
-		HANDLE Get() const
-		{
-			return findHandle;
-		}
-
-	private:
-		HANDLE findHandle = INVALID_HANDLE_VALUE;
-	};
-
-	bool ConvertPathForWindows(const CString& path, std::wstring& outPath)
-	{
-		outPath.clear();
-
-		if (path.empty())
-		{
-			return false;
-		}
-
-		const CString windowsPath = Separators::Convert(path, Separators::Engine, Separators::Windows);
-
-		return WindowsString::ToWideString(windowsPath, outPath);
-	}
-
-	ScopedFileHandle OpenFile(
-		const CString& path,
-		DWORD desiredAccess,
-		DWORD shareMode,
-		DWORD creationDisposition,
-		DWORD flagsAndAttributes)
-	{
-		std::wstring fileName;
-
-		if (!ConvertPathForWindows(path, fileName))
-		{
-			return ScopedFileHandle(INVALID_HANDLE_VALUE);
-		}
-
-		return ScopedFileHandle(::CreateFileW(
-			fileName.c_str(),
-			desiredAccess,
-			shareMode,
-			nullptr,
-			creationDisposition,
-			flagsAndAttributes,
-			nullptr));
-	}
-
-	bool GetAttributes(const CString& path, DWORD& outAttributes)
-	{
-		outAttributes = INVALID_FILE_ATTRIBUTES;
-
-		std::wstring fileName;
-
-		if (!ConvertPathForWindows(path, fileName))
-		{
-			return false;
-		}
-
-		outAttributes = ::GetFileAttributesW(fileName.c_str());
-
-		return outAttributes != INVALID_FILE_ATTRIBUTES;
-	}
-
-	bool ReadAllBytesFromHandle(HANDLE fileHandle, std::vector<uint8>& outBytes)
-	{
-		LARGE_INTEGER fileSize = {};
-
-		if (::GetFileSizeEx(fileHandle, &fileSize) == FALSE)
-		{
-			return false;
-		}
-
-		if (fileSize.QuadPart < 0)
-		{
-			return false;
-		}
-
-		if (static_cast<unsigned long long>(fileSize.QuadPart) >
-			static_cast<unsigned long long>(std::numeric_limits<std::size_t>::max()))
-		{
-			return false;
-		}
-
-		outBytes.clear();
-		outBytes.resize(static_cast<std::size_t>(fileSize.QuadPart));
-
-		std::size_t offset = 0;
-		std::size_t remainingSize = outBytes.size();
-
-		while (remainingSize > 0)
-		{
-			const DWORD readSize = static_cast<DWORD>(
-				std::min<std::size_t>(
-					remainingSize,
-					static_cast<std::size_t>(std::numeric_limits<DWORD>::max())));
-
-			DWORD bytesRead = 0;
-
-			if (::ReadFile(fileHandle, outBytes.data() + offset, readSize, &bytesRead, nullptr) == FALSE)
-			{
-				outBytes.clear();
-				return false;
-			}
-
-			if (bytesRead == 0)
-			{
-				break;
-			}
-
-			offset += bytesRead;
-			remainingSize -= bytesRead;
-		}
-
-		if (offset != outBytes.size())
-		{
-			outBytes.clear();
-			return false;
-		}
-
-		return true;
-	}
-
-	bool ReadBytesFromHandle(
-		HANDLE fileHandle,
-		uint64 maxSize,
-		std::vector<uint8>& outBytes)
-	{
-		outBytes.clear();
-
-		if (maxSize == 0)
-		{
-			return true;
-		}
-
-		const DWORD readSize = static_cast<DWORD>(
-			std::min<uint64>(
-				maxSize,
-				static_cast<uint64>(std::numeric_limits<DWORD>::max())));
-
-		outBytes.resize(readSize);
-
-		DWORD bytesRead = 0;
-
-		if (::ReadFile(fileHandle, outBytes.data(), readSize, &bytesRead, nullptr) == FALSE)
-		{
-			outBytes.clear();
-			return false;
-		}
-
-		outBytes.resize(bytesRead);
-
-		return true;
-	}
-
-	bool WriteAllBytesToHandle(HANDLE fileHandle, const std::vector<uint8>& bytes)
-	{
-		std::size_t offset = 0;
-		std::size_t remainingSize = bytes.size();
-
-		while (remainingSize > 0)
-		{
-			const DWORD writeSize = static_cast<DWORD>(
-				std::min<std::size_t>(
-					remainingSize,
-					static_cast<std::size_t>(std::numeric_limits<DWORD>::max())));
-
-			DWORD bytesWritten = 0;
-
-			if (::WriteFile(fileHandle, bytes.data() + offset, writeSize, &bytesWritten, nullptr) == FALSE)
-			{
-				return false;
-			}
-
-			if (bytesWritten != writeSize)
-			{
-				return false;
-			}
-
-			offset += bytesWritten;
-			remainingSize -= bytesWritten;
-		}
-
-		return true;
-	}
-
-	bool IsDotDirectoryEntry(const wchar_t* fileName)
-	{
-		return std::wcscmp(fileName, L".") == 0 ||
-			std::wcscmp(fileName, L"..") == 0;
-	}
-
-	std::wstring MakeDirectorySearchPattern(const std::wstring& directoryName)
-	{
-		std::wstring searchPattern = directoryName;
-
-		if (!searchPattern.empty())
-		{
-			const wchar_t lastCharacter = searchPattern.back();
-
-			if (lastCharacter != L'\\' && lastCharacter != L'/')
-			{
-				searchPattern.push_back(L'\\');
-			}
-		}
-
-		searchPattern.push_back(L'*');
-
-		return searchPattern;
-	}
-
-	std::wstring MakeChildPath(const std::wstring& directoryName, const wchar_t* childName)
-	{
-		std::wstring childPath = directoryName;
-
-		if (!childPath.empty())
-		{
-			const wchar_t lastCharacter = childPath.back();
-
-			if (lastCharacter != L'\\' && lastCharacter != L'/')
-			{
-				childPath.push_back(L'\\');
-			}
-		}
-
-		childPath += childName;
-
-		return childPath;
+		return reinterpret_cast<HANDLE>(handle.value);
 	}
 
 	bool DeleteDirectoryTree(const std::wstring& directoryName)
 	{
-		const std::wstring searchPattern = MakeDirectorySearchPattern(directoryName);
+		const std::wstring searchPattern = WindowsPath::JoinNativePath(directoryName, L"*");
 
 		WIN32_FIND_DATAW findData = {};
 
-		ScopedFindHandle findHandle(::FindFirstFileW(
-			searchPattern.c_str(),
-			&findData));
+		HANDLE findHandle = ::FindFirstFileW(searchPattern.c_str(), &findData);
 
-		if (!findHandle.IsValid())
+		if (findHandle == INVALID_HANDLE_VALUE)
 		{
 			return false;
 		}
 
+		bool result = true;
+
 		do
 		{
-			if (IsDotDirectoryEntry(findData.cFileName))
+			if (std::wcscmp(findData.cFileName, L".") == 0 ||
+				std::wcscmp(findData.cFileName, L"..") == 0)
 			{
 				continue;
 			}
 
-			const std::wstring childPath = MakeChildPath(directoryName, findData.cFileName);
+			const std::wstring childPath = WindowsPath::JoinNativePath(directoryName, findData.cFileName);
 			const bool isDirectory =
 				(findData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) != 0;
 			const bool isReparsePoint =
@@ -355,116 +51,268 @@ namespace
 			{
 				if (isReparsePoint)
 				{
-					if (::RemoveDirectoryW(childPath.c_str()) == FALSE)
-					{
-						return false;
-					}
+					result = ::RemoveDirectoryW(childPath.c_str()) != FALSE;
 				}
-				else if (!DeleteDirectoryTree(childPath))
+				else
 				{
-					return false;
+					result = DeleteDirectoryTree(childPath);
 				}
-
-				continue;
 			}
-
-			if (::DeleteFileW(childPath.c_str()) == FALSE)
+			else
 			{
-				return false;
+				result = ::DeleteFileW(childPath.c_str()) != FALSE;
 			}
-		} while (::FindNextFileW(findHandle.Get(), &findData) != FALSE);
+		} while (result && ::FindNextFileW(findHandle, &findData) != FALSE);
 
-		if (::GetLastError() != ERROR_NO_MORE_FILES)
+		if (result && ::GetLastError() != ERROR_NO_MORE_FILES)
 		{
-			return false;
+			result = false;
 		}
 
-		return ::RemoveDirectoryW(directoryName.c_str()) != FALSE;
+		::FindClose(findHandle);
+
+		return result && ::RemoveDirectoryW(directoryName.c_str()) != FALSE;
 	}
 }
 
-bool PlatformFile::ReadAllBytes(const CString& path, std::vector<uint8>& outBytes)
+bool PlatformFile::OpenRead(const CString& path, FileHandle& outHandle)
 {
-	outBytes.clear();
+	outHandle.value = InvalidFileHandleValue;
 
-	ScopedFileHandle fileHandle = OpenFile(
-		path,
-		GENERIC_READ,
-		FILE_SHARE_READ,
-		OPEN_EXISTING,
-		FILE_ATTRIBUTE_NORMAL);
+	std::wstring fileName;
 
-	if (!fileHandle.IsValid())
+	if (!WindowsPath::ToNativePath(path, fileName))
 	{
 		return false;
 	}
 
-	return ReadAllBytesFromHandle(fileHandle.Get(), outBytes);
-}
+	HANDLE fileHandle = ::CreateFileW(
+		fileName.c_str(), GENERIC_READ, FILE_SHARE_READ, nullptr,
+		OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
 
-bool PlatformFile::ReadHead(const CString& path, uint64 maxSize, std::vector<uint8>& outBytes)
-{
-	outBytes.clear();
-
-	ScopedFileHandle fileHandle = OpenFile(
-		path,
-		GENERIC_READ,
-		FILE_SHARE_READ,
-		OPEN_EXISTING,
-		FILE_ATTRIBUTE_NORMAL);
-
-	if (!fileHandle.IsValid())
+	if (fileHandle == INVALID_HANDLE_VALUE)
 	{
 		return false;
 	}
 
-	return ReadBytesFromHandle(fileHandle.Get(), maxSize, outBytes);
+	outHandle.value = reinterpret_cast<std::uintptr_t>(fileHandle);
+
+	return true;
 }
 
-bool PlatformFile::WriteAllBytes(const CString& path, const std::vector<uint8>& bytes)
+bool PlatformFile::OpenWrite(const CString& path, bool canReplace, FileHandle& outHandle)
 {
-	ScopedFileHandle fileHandle = OpenFile(
-		path,
+	outHandle.value = InvalidFileHandleValue;
+
+	std::wstring fileName;
+	if (!WindowsPath::ToNativePath(path, fileName))
+	{
+		return false;
+	}
+
+	HANDLE fileHandle = ::CreateFileW(
+		fileName.c_str(),
 		GENERIC_WRITE,
 		0,
-		CREATE_ALWAYS,
-		FILE_ATTRIBUTE_NORMAL);
+		nullptr,
+		canReplace ? CREATE_ALWAYS : CREATE_NEW,
+		FILE_ATTRIBUTE_NORMAL,
+		nullptr);
 
-	if (!fileHandle.IsValid())
+	if (fileHandle == INVALID_HANDLE_VALUE)
 	{
 		return false;
 	}
 
-	return WriteAllBytesToHandle(fileHandle.Get(), bytes);
+	outHandle.value = reinterpret_cast<std::uintptr_t>(fileHandle);
+
+	return true;
 }
 
-bool PlatformFile::AppendAllBytes(const CString& path, const std::vector<uint8>& bytes)
+bool PlatformFile::OpenAppend(const CString& path, FileHandle& outHandle)
 {
-	ScopedFileHandle fileHandle = OpenFile(
-		path,
-		FILE_APPEND_DATA,
-		FILE_SHARE_READ,
-		OPEN_ALWAYS,
-		FILE_ATTRIBUTE_NORMAL);
+	outHandle.value = InvalidFileHandleValue;
 
-	if (!fileHandle.IsValid())
+	std::wstring fileName;
+	if (!WindowsPath::ToNativePath(path, fileName))
 	{
 		return false;
 	}
 
-	return WriteAllBytesToHandle(fileHandle.Get(), bytes);
+	HANDLE fileHandle = ::CreateFileW(
+		fileName.c_str(),
+		FILE_APPEND_DATA,
+		FILE_SHARE_READ,
+		nullptr,
+		OPEN_ALWAYS,
+		FILE_ATTRIBUTE_NORMAL,
+		nullptr);
+
+	if (fileHandle == INVALID_HANDLE_VALUE)
+	{
+		return false;
+	}
+
+	outHandle.value = reinterpret_cast<std::uintptr_t>(fileHandle);
+
+	return true;
+}
+
+void PlatformFile::Close(FileHandle& handle)
+{
+	if (handle.value == InvalidFileHandleValue)
+	{
+		return;
+	}
+
+	::CloseHandle(ToNativeHandle(handle));
+
+	handle.value = InvalidFileHandleValue;
+}
+
+bool PlatformFile::Read(FileHandle handle, uint8* outBytes, uint64 bytesToRead,
+	uint64& outBytesRead)
+{
+	outBytesRead = 0;
+
+	if (handle.value == InvalidFileHandleValue ||
+		(outBytes == nullptr && bytesToRead > 0))
+	{
+		return false;
+	}
+
+	const DWORD readSize = static_cast<DWORD>(
+		std::min<uint64>(
+			bytesToRead,
+			static_cast<uint64>(std::numeric_limits<DWORD>::max())));
+
+	DWORD bytesRead = 0;
+
+	if (::ReadFile(ToNativeHandle(handle), outBytes, readSize, &bytesRead, nullptr) == FALSE)
+	{
+		return false;
+	}
+
+	outBytesRead = static_cast<uint64>(bytesRead);
+
+	return true;
+}
+
+bool PlatformFile::Write(FileHandle handle, const uint8* bytes, uint64 bytesToWrite,
+	uint64& outBytesWritten)
+{
+	outBytesWritten = 0;
+
+	if (handle.value == InvalidFileHandleValue ||
+		(bytes == nullptr && bytesToWrite > 0))
+	{
+		return false;
+	}
+
+	const DWORD writeSize = static_cast<DWORD>(
+		std::min<uint64>(
+			bytesToWrite,
+			static_cast<uint64>(std::numeric_limits<DWORD>::max())));
+
+	DWORD bytesWritten = 0;
+
+	if (::WriteFile(ToNativeHandle(handle), bytes, writeSize, &bytesWritten, nullptr) == FALSE)
+	{
+		return false;
+	}
+
+	outBytesWritten = static_cast<uint64>(bytesWritten);
+
+	return true;
+}
+
+bool PlatformFile::Seek(FileHandle handle, uint64 position)
+{
+	if (handle.value == InvalidFileHandleValue)
+	{
+		return false;
+	}
+
+	LARGE_INTEGER targetPosition = {};
+	targetPosition.QuadPart = static_cast<LONGLONG>(position);
+
+	if (targetPosition.QuadPart < 0)
+	{
+		return false;
+	}
+
+	return ::SetFilePointerEx(
+		ToNativeHandle(handle),
+		targetPosition,
+		nullptr,
+		FILE_BEGIN) != FALSE;
+}
+
+bool PlatformFile::Tell(FileHandle handle, uint64& outPosition)
+{
+	outPosition = 0;
+
+	if (handle.value == InvalidFileHandleValue)
+	{
+		return false;
+	}
+
+	LARGE_INTEGER distance = {};
+	LARGE_INTEGER position = {};
+
+	if (::SetFilePointerEx(
+		ToNativeHandle(handle),
+		distance,
+		&position,
+		FILE_CURRENT) == FALSE)
+	{
+		return false;
+	}
+
+	if (position.QuadPart < 0)
+	{
+		return false;
+	}
+
+	outPosition = static_cast<uint64>(position.QuadPart);
+
+	return true;
+}
+
+bool PlatformFile::GetSize(FileHandle handle, uint64& outSize)
+{
+	outSize = 0;
+
+	if (handle.value == InvalidFileHandleValue)
+	{
+		return false;
+	}
+
+	LARGE_INTEGER fileSize = {};
+
+	if (::GetFileSizeEx(ToNativeHandle(handle), &fileSize) == FALSE ||
+		fileSize.QuadPart < 0)
+	{
+		return false;
+	}
+
+	outSize = static_cast<uint64>(fileSize.QuadPart);
+
+	return true;
 }
 
 bool PlatformFile::Create(const CString& path)
 {
-	ScopedFileHandle fileHandle = OpenFile(
-		path,
-		GENERIC_WRITE,
-		0,
-		CREATE_NEW,
-		FILE_ATTRIBUTE_NORMAL);
+	FileHandle handle;
 
-	return fileHandle.IsValid();
+	if (!OpenWrite(path, false, handle))
+	{
+		return false;
+	}
+
+	Close(handle);
+
+	return true;
 }
 
 bool PlatformFile::GetSize(const CString& path, uint64& outSize)
@@ -472,8 +320,7 @@ bool PlatformFile::GetSize(const CString& path, uint64& outSize)
 	outSize = 0;
 
 	std::wstring fileName;
-
-	if (!ConvertPathForWindows(path, fileName))
+	if (!WindowsPath::ToNativePath(path, fileName))
 	{
 		return false;
 	}
@@ -502,9 +349,15 @@ bool PlatformFile::GetSize(const CString& path, uint64& outSize)
 
 bool PlatformFile::Exists(const CString& path)
 {
-	DWORD attributes = INVALID_FILE_ATTRIBUTES;
+	std::wstring fileName;
+	if (!WindowsPath::ToNativePath(path, fileName))
+	{
+		return false;
+	}
 
-	if (!GetAttributes(path, attributes))
+	const DWORD attributes = ::GetFileAttributesW(fileName.c_str());
+
+	if (attributes == INVALID_FILE_ATTRIBUTES)
 	{
 		return false;
 	}
@@ -515,8 +368,7 @@ bool PlatformFile::Exists(const CString& path)
 bool PlatformFile::Remove(const CString& path)
 {
 	std::wstring fileName;
-
-	if (!ConvertPathForWindows(path, fileName))
+	if (!WindowsPath::ToNativePath(path, fileName))
 	{
 		return false;
 	}
@@ -526,9 +378,16 @@ bool PlatformFile::Remove(const CString& path)
 
 bool PlatformFile::DirectoryExists(const CString& path)
 {
-	DWORD attributes = INVALID_FILE_ATTRIBUTES;
+	std::wstring directoryName;
 
-	if (!GetAttributes(path, attributes))
+	if (!WindowsPath::ToNativePath(path, directoryName))
+	{
+		return false;
+	}
+
+	const DWORD attributes = ::GetFileAttributesW(directoryName.c_str());
+
+	if (attributes == INVALID_FILE_ATTRIBUTES)
 	{
 		return false;
 	}
@@ -540,7 +399,7 @@ bool PlatformFile::MakeDirectory(const CString& path)
 {
 	std::wstring directoryName;
 
-	if (!ConvertPathForWindows(path, directoryName))
+	if (!WindowsPath::ToNativePath(path, directoryName))
 	{
 		return false;
 	}
@@ -555,9 +414,9 @@ bool PlatformFile::MakeDirectory(const CString& path)
 		return false;
 	}
 
-	DWORD attributes = INVALID_FILE_ATTRIBUTES;
+	const DWORD attributes = ::GetFileAttributesW(directoryName.c_str());
 
-	if (!GetAttributes(path, attributes))
+	if (attributes == INVALID_FILE_ATTRIBUTES)
 	{
 		return false;
 	}
@@ -569,7 +428,7 @@ bool PlatformFile::DeleteDirectory(const CString& path)
 {
 	std::wstring directoryName;
 
-	if (!ConvertPathForWindows(path, directoryName))
+	if (!WindowsPath::ToNativePath(path, directoryName))
 	{
 		return false;
 	}
@@ -581,7 +440,7 @@ bool PlatformFile::DeleteDirectoryRecursively(const CString& path)
 {
 	std::wstring directoryName;
 
-	if (!ConvertPathForWindows(path, directoryName))
+	if (!WindowsPath::ToNativePath(path, directoryName))
 	{
 		return false;
 	}
@@ -595,8 +454,8 @@ bool PlatformFile::Copy(const CString& sourcePath, const CString& targetPath,
 	std::wstring sourceFileName;
 	std::wstring targetFileName;
 
-	if (!ConvertPathForWindows(sourcePath, sourceFileName) ||
-		!ConvertPathForWindows(targetPath, targetFileName))
+	if (!WindowsPath::ToNativePath(sourcePath, sourceFileName) ||
+		!WindowsPath::ToNativePath(targetPath, targetFileName))
 	{
 		return false;
 	}
@@ -613,8 +472,8 @@ bool PlatformFile::Move(const CString& sourcePath, const CString& targetPath,
 	std::wstring sourceFileName;
 	std::wstring targetFileName;
 
-	if (!ConvertPathForWindows(sourcePath, sourceFileName) ||
-		!ConvertPathForWindows(targetPath, targetFileName))
+	if (!WindowsPath::ToNativePath(sourcePath, sourceFileName) ||
+		!WindowsPath::ToNativePath(targetPath, targetFileName))
 	{
 		return false;
 	}
