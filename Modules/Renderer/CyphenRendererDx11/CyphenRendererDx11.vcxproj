@@ -1,35 +1,35 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
-	<ProjectConfiguration Include="Debug|x64">
-	  <Configuration>Debug</Configuration>
-	  <Platform>x64</Platform>
-	</ProjectConfiguration>
-	<ProjectConfiguration Include="Release|x64">
-	  <Configuration>Release</Configuration>
-	  <Platform>x64</Platform>
-	</ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-	<VCProjectVersion>17.0</VCProjectVersion>
-	<Keyword>Win32Proj</Keyword>
-	<ProjectGuid>{d9c112a7-0105-421e-8233-b7e3b51c0fdc}</ProjectGuid>
-	<RootNamespace>CyphenRendererDx11</RootNamespace>
-	<WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+    <VCProjectVersion>17.0</VCProjectVersion>
+    <Keyword>Win32Proj</Keyword>
+    <ProjectGuid>{d9c112a7-0105-421e-8233-b7e3b51c0fdc}</ProjectGuid>
+    <RootNamespace>CyphenRendererDx11</RootNamespace>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
-	<ConfigurationType>DynamicLibrary</ConfigurationType>
-	<UseDebugLibraries>true</UseDebugLibraries>
-	<PlatformToolset>v143</PlatformToolset>
-	<CharacterSet>Unicode</CharacterSet>
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
-	<ConfigurationType>DynamicLibrary</ConfigurationType>
-	<UseDebugLibraries>false</UseDebugLibraries>
-	<PlatformToolset>v143</PlatformToolset>
-	<WholeProgramOptimization>true</WholeProgramOptimization>
-	<CharacterSet>Unicode</CharacterSet>
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
@@ -37,59 +37,61 @@
   <ImportGroup Label="Shared">
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-	<Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-	<Import Project="..\..\..\CyphenBuild.props" />
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="..\..\..\CyphenBuild.props" />
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-	<Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-	<Import Project="..\..\..\CyphenBuild.props" />
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="..\..\..\CyphenBuild.props" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-	<ClCompile>
-	  <WarningLevel>Level3</WarningLevel>
-	  <SDLCheck>true</SDLCheck>
-	  <PreprocessorDefinitions>_DEBUG;_WINDOWS;TARGET_PLATFORM_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-	  <ConformanceMode>true</ConformanceMode>
-	  <AdditionalIncludeDirectories>$(CyphenRepoRoot)CyphenEngine\Source;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-	  <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
-	</ClCompile>
-	<Link>
-	  <GenerateDebugInformation>true</GenerateDebugInformation>
-	  <AdditionalDependencies>d3d11.lib;dxgi.lib;d3dcompiler.lib;%(AdditionalDependencies)</AdditionalDependencies>
-	</Link>
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>_DEBUG;_WINDOWS;TARGET_PLATFORM_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <AdditionalIncludeDirectories>$(CyphenRepoRoot)CyphenEngine\Source;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
+    </ClCompile>
+    <Link>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>d3d11.lib;dxgi.lib;d3dcompiler.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-	<ClCompile>
-	  <WarningLevel>Level3</WarningLevel>
-	  <FunctionLevelLinking>true</FunctionLevelLinking>
-	  <IntrinsicFunctions>true</IntrinsicFunctions>
-	  <SDLCheck>true</SDLCheck>
-	  <PreprocessorDefinitions>NDEBUG;_WINDOWS;TARGET_PLATFORM_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-	  <ConformanceMode>true</ConformanceMode>
-	  <AdditionalIncludeDirectories>$(CyphenRepoRoot)CyphenEngine\Source;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-	  <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
-	</ClCompile>
-	<Link>
-	  <EnableCOMDATFolding>true</EnableCOMDATFolding>
-	  <OptimizeReferences>true</OptimizeReferences>
-	  <GenerateDebugInformation>true</GenerateDebugInformation>
-	  <AdditionalDependencies>d3d11.lib;dxgi.lib;d3dcompiler.lib;%(AdditionalDependencies)</AdditionalDependencies>
-	</Link>
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>NDEBUG;_WINDOWS;TARGET_PLATFORM_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <AdditionalIncludeDirectories>$(CyphenRepoRoot)CyphenEngine\Source;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
+    </ClCompile>
+    <Link>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>d3d11.lib;dxgi.lib;d3dcompiler.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
   </ItemDefinitionGroup>
   <!-- Header Files -->
   <ItemGroup>
-	<!-- Shared Renderer Contract -->
-	<ClInclude Include="..\..\..\CyphenEngine\Source\HAL\Public\NativeWindowInfo.h" />
-	<ClInclude Include="..\..\..\CyphenEngine\Source\Modules\Renderer\Public\RendererModule.h" />
-	<ClInclude Include="..\..\..\CyphenEngine\Source\Modules\Renderer\Public\RendererTypes.h" />
-	<!-- Dx11 Renderer -->
-	<ClInclude Include="Source\Private\Dx11Renderer.h" />
+    <!-- Shared Renderer Contract -->
+    <ClInclude Include="..\..\..\CyphenEngine\Source\HAL\Public\NativeWindowInfo.h" />
+    <ClInclude Include="..\..\..\CyphenEngine\Source\Modules\Renderer\Public\RendererModule.h" />
+    <ClInclude Include="..\..\..\CyphenEngine\Source\Modules\Renderer\Public\RendererTypes.h" />
+    <ClInclude Include="Source\HAL\Private\Surface.h" />
+    <!-- Dx11 Renderer -->
+    <ClInclude Include="Source\Private\Dx11Renderer.h" />
   </ItemGroup>
   <!-- Source Files -->
   <ItemGroup>
-	<ClCompile Include="Source\Private\Dx11Renderer.cpp" />
-	<ClCompile Include="Source\Private\Dx11RendererModule.cpp" />
+    <ClCompile Include="Source\Platform\Windows\Private\Surface.cpp" />
+    <ClCompile Include="Source\Private\Dx11Renderer.cpp" />
+    <ClCompile Include="Source\Private\Dx11RendererModule.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

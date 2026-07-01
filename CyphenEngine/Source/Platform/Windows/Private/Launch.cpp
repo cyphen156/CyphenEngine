@@ -87,8 +87,8 @@ LaunchContext Launch::CreateLaunchContext(HWND windowHandle)
 	// Renderer Module 부트스트랩 구성입니다.
 	ModuleDescriptor rendererModule;
 	rendererModule.moduleName = CTEXT("Renderer");
-	rendererModule.implementationName = CTEXT("Dx11");
-	rendererModule.binaryName = CTEXT("CyphenRendererDx11");
+	rendererModule.implementationName = CTEXT("Vulkan");
+	rendererModule.binaryName = CTEXT("CyphenRendererVulkan");
 	rendererModule.isEnabled = true;
 
 	launchContext.moduleDescriptors.push_back(rendererModule);

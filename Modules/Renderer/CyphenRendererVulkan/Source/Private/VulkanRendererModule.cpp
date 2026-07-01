@@ -1,6 +1,6 @@
 #include <new>
 
-#include "VulkanRenderer.h"
+#include "Private/VulkanRenderer.h"
 #include "Modules/Renderer/Public/RendererModule.h"
 
 namespace

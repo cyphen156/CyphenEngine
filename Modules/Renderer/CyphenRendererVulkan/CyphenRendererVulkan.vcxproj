@@ -1,95 +1,119 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <ItemGroup Label="ProjectConfigurations">
-	<ProjectConfiguration Include="Debug|x64">
-	  <Configuration>Debug</Configuration>
-	  <Platform>x64</Platform>
-	</ProjectConfiguration>
-	<ProjectConfiguration Include="Release|x64">
-	  <Configuration>Release</Configuration>
-	  <Platform>x64</Platform>
-	</ProjectConfiguration>
-  </ItemGroup>
-  <PropertyGroup Label="Globals">
-	<VCProjectVersion>17.0</VCProjectVersion>
-	<Keyword>Win32Proj</Keyword>
-	<ProjectGuid>{9f25a0e7-56b5-4252-b47c-cb0b16a539e5}</ProjectGuid>
-	<RootNamespace>CyphenRendererVulkan</RootNamespace>
-	<WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
-  </PropertyGroup>
-  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
-	<ConfigurationType>DynamicLibrary</ConfigurationType>
-	<UseDebugLibraries>true</UseDebugLibraries>
-	<PlatformToolset>v143</PlatformToolset>
-	<CharacterSet>Unicode</CharacterSet>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
-	<ConfigurationType>DynamicLibrary</ConfigurationType>
-	<UseDebugLibraries>false</UseDebugLibraries>
-	<PlatformToolset>v143</PlatformToolset>
-	<WholeProgramOptimization>true</WholeProgramOptimization>
-	<CharacterSet>Unicode</CharacterSet>
-  </PropertyGroup>
-  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
-  <ImportGroup Label="ExtensionSettings">
-  </ImportGroup>
-  <ImportGroup Label="Shared">
-  </ImportGroup>
-  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-	<Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-	<Import Project="..\..\..\CyphenBuild.props" />
-  </ImportGroup>
-  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-	<Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-	<Import Project="..\..\..\CyphenBuild.props" />
-  </ImportGroup>
-  <PropertyGroup Label="UserMacros" />
-  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-	<ClCompile>
-	  <WarningLevel>Level3</WarningLevel>
-	  <SDLCheck>true</SDLCheck>
-	  <PreprocessorDefinitions>_DEBUG;_WINDOWS;TARGET_PLATFORM_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-	  <ConformanceMode>true</ConformanceMode>
-	  <AdditionalIncludeDirectories>$(CyphenRepoRoot)CyphenEngine\Source;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-	  <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
-	</ClCompile>
-	<Link>
-	  <GenerateDebugInformation>true</GenerateDebugInformation>
-	</Link>
-  </ItemDefinitionGroup>
-  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-	<ClCompile>
-	  <WarningLevel>Level3</WarningLevel>
-	  <FunctionLevelLinking>true</FunctionLevelLinking>
-	  <IntrinsicFunctions>true</IntrinsicFunctions>
-	  <SDLCheck>true</SDLCheck>
-	  <PreprocessorDefinitions>NDEBUG;_WINDOWS;TARGET_PLATFORM_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-	  <ConformanceMode>true</ConformanceMode>
-	  <AdditionalIncludeDirectories>$(CyphenRepoRoot)CyphenEngine\Source;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-	  <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
-	</ClCompile>
-	<Link>
-	  <EnableCOMDATFolding>true</EnableCOMDATFolding>
-	  <OptimizeReferences>true</OptimizeReferences>
-	  <GenerateDebugInformation>true</GenerateDebugInformation>
-	</Link>
-  </ItemDefinitionGroup>
-  <!-- Header Files -->
-  <ItemGroup>
-	<!-- Shared Renderer Contract -->
-	<ClInclude Include="..\..\..\CyphenEngine\Source\HAL\Public\NativeWindowInfo.h" />
-	<ClInclude Include="..\..\..\CyphenEngine\Source\Modules\Renderer\Public\RendererModule.h" />
-	<ClInclude Include="..\..\..\CyphenEngine\Source\Modules\Renderer\Public\RendererTypes.h" />
-	<!-- Vulkan Renderer -->
-	<ClInclude Include="Source\Private\VulkanRenderer.h" />
-  </ItemGroup>
-  <!-- Source Files -->
-  <ItemGroup>
-	<ClCompile Include="Source\Private\VulkanRenderer.cpp" />
-	<ClCompile Include="Source\Private\VulkanRendererModule.cpp" />
-  </ItemGroup>
-  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
-  <ImportGroup Label="ExtensionTargets">
-  </ImportGroup>
+	<ItemGroup Label="ProjectConfigurations">
+		<ProjectConfiguration Include="Debug|x64">
+			<Configuration>Debug</Configuration>
+			<Platform>x64</Platform>
+		</ProjectConfiguration>
+		<ProjectConfiguration Include="Release|x64">
+			<Configuration>Release</Configuration>
+			<Platform>x64</Platform>
+		</ProjectConfiguration>
+	</ItemGroup>
+	<PropertyGroup Label="Globals">
+		<VCProjectVersion>17.0</VCProjectVersion>
+		<Keyword>Win32Proj</Keyword>
+		<ProjectGuid>{9f25a0e7-56b5-4252-b47c-cb0b16a539e5}</ProjectGuid>
+		<RootNamespace>CyphenRendererVulkan</RootNamespace>
+		<WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+	</PropertyGroup>
+	<Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+		<ConfigurationType>DynamicLibrary</ConfigurationType>
+		<UseDebugLibraries>true</UseDebugLibraries>
+		<PlatformToolset>v143</PlatformToolset>
+		<CharacterSet>Unicode</CharacterSet>
+	</PropertyGroup>
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+		<ConfigurationType>DynamicLibrary</ConfigurationType>
+		<UseDebugLibraries>false</UseDebugLibraries>
+		<PlatformToolset>v143</PlatformToolset>
+		<WholeProgramOptimization>true</WholeProgramOptimization>
+		<CharacterSet>Unicode</CharacterSet>
+	</PropertyGroup>
+	<Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+	<ImportGroup Label="ExtensionSettings">
+	</ImportGroup>
+	<ImportGroup Label="Shared">
+	</ImportGroup>
+	<ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+		<Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+		<Import Project="..\..\..\CyphenBuild.props" />
+	</ImportGroup>
+	<ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+		<Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+		<Import Project="..\..\..\CyphenBuild.props" />
+	</ImportGroup>
+	<PropertyGroup Label="UserMacros">
+		<VulkanSdkRoot Condition="'$(VulkanSdkRoot)'=='' and '$(VULKAN_SDK)'!=''">$(VULKAN_SDK)</VulkanSdkRoot>
+		<VulkanSdkRoot Condition="'$(VulkanSdkRoot)'=='' and Exists('C:\VulkanSDK\1.4.350.0\Include\vulkan\vulkan.h')">C:\VulkanSDK\1.4.350.0</VulkanSdkRoot>
+	</PropertyGroup>
+	<ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+		<ClCompile>
+			<WarningLevel>Level3</WarningLevel>
+			<SDLCheck>true</SDLCheck>
+			<PreprocessorDefinitions>_DEBUG;_WINDOWS;TARGET_PLATFORM_WINDOWS;CYPHEN_RENDERER_MODULE_EXPORT=__declspec(dllexport);%(PreprocessorDefinitions)</PreprocessorDefinitions>
+			<ConformanceMode>true</ConformanceMode>
+			<AdditionalIncludeDirectories>$(ProjectDir)Source;$(CyphenRepoRoot)CyphenEngine\Source;$(VulkanSdkRoot)\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+			<AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
+		</ClCompile>
+		<Link>
+			<GenerateDebugInformation>true</GenerateDebugInformation>
+			<AdditionalLibraryDirectories>$(VulkanSdkRoot)\Lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+			<AdditionalDependencies>vulkan-1.lib;%(AdditionalDependencies)</AdditionalDependencies>
+		</Link>
+	</ItemDefinitionGroup>
+	<ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+		<ClCompile>
+			<WarningLevel>Level3</WarningLevel>
+			<FunctionLevelLinking>true</FunctionLevelLinking>
+			<IntrinsicFunctions>true</IntrinsicFunctions>
+			<SDLCheck>true</SDLCheck>
+			<PreprocessorDefinitions>NDEBUG;_WINDOWS;TARGET_PLATFORM_WINDOWS;CYPHEN_RENDERER_MODULE_EXPORT=__declspec(dllexport);%(PreprocessorDefinitions)</PreprocessorDefinitions>
+			<ConformanceMode>true</ConformanceMode>
+			<AdditionalIncludeDirectories>$(ProjectDir)Source;$(CyphenRepoRoot)CyphenEngine\Source;$(VulkanSdkRoot)\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+			<AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
+		</ClCompile>
+		<Link>
+			<EnableCOMDATFolding>true</EnableCOMDATFolding>
+			<OptimizeReferences>true</OptimizeReferences>
+			<GenerateDebugInformation>true</GenerateDebugInformation>
+			<AdditionalLibraryDirectories>$(VulkanSdkRoot)\Lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+			<AdditionalDependencies>vulkan-1.lib;%(AdditionalDependencies)</AdditionalDependencies>
+		</Link>
+	</ItemDefinitionGroup>
+	<!-- Header Files -->
+	<ItemGroup>
+		<!-- Shared Renderer Contract -->
+		<ClInclude Include="..\..\..\CyphenEngine\Source\HAL\Public\NativeWindowInfo.h" />
+		<ClInclude Include="..\..\..\CyphenEngine\Source\Modules\Renderer\Public\RendererModule.h" />
+		<ClInclude Include="..\..\..\CyphenEngine\Source\Modules\Renderer\Public\RendererTypes.h" />
+		<ClInclude Include="Source\HAL\Private\Surface.h" />
+		<!-- Vulkan Renderer -->
+		<ClInclude Include="Source\Private\VulkanRenderer.h" />
+	</ItemGroup>
+	<!-- Source Files -->
+	<ItemGroup>
+		<ClCompile Include="Source\Platform\Windows\Private\Surface.cpp" />
+		<ClCompile Include="Source\Private\VulkanRenderer.cpp" />
+		<ClCompile Include="Source\Private\VulkanRendererModule.cpp" />
+	</ItemGroup>
+	<!-- Shader Files -->
+	<ItemGroup>
+		<CustomBuild Include="Source\Private\TexturedQuad.vert">
+			<FileType>Document</FileType>
+			<Command>"$(VulkanSdkRoot)\Bin\glslangValidator.exe" -V "%(FullPath)" -o "$(OutDir)TexturedQuad.vert.spv"</Command>
+			<Message>Compiling Vulkan shader %(Filename)%(Extension)</Message>
+			<Outputs>$(OutDir)TexturedQuad.vert.spv</Outputs>
+		</CustomBuild>
+		<CustomBuild Include="Source\Private\TexturedQuad.frag">
+			<FileType>Document</FileType>
+			<Command>"$(VulkanSdkRoot)\Bin\glslangValidator.exe" -V "%(FullPath)" -o "$(OutDir)TexturedQuad.frag.spv"</Command>
+			<Message>Compiling Vulkan shader %(Filename)%(Extension)</Message>
+			<Outputs>$(OutDir)TexturedQuad.frag.spv</Outputs>
+		</CustomBuild>
+	</ItemGroup>
+	<Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+	<ImportGroup Label="ExtensionTargets">
+	</ImportGroup>
 </Project>
