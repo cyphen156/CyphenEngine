@@ -227,6 +227,7 @@
   </ItemGroup>
   <!-- DevLog -->
   <ItemGroup>
+    <Text Include="DevLog\2026\26.07.01.txt" />
     <Text Include="Resources\Test\CoreIo\ReadAllText_UTF8_LF.txt" />
   </ItemGroup>
   <!-- Other -->
