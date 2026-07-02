@@ -94,7 +94,7 @@ public:
 	VulkanRenderer(VulkanRenderer&& other) = delete;
 	VulkanRenderer& operator=(VulkanRenderer&& other) = delete;
 
-	bool Initialize(const NativeWindowInfo& windowInfo);
+	bool Initialize(void* nativeRenderContextHandle, const NativeWindowInfo& windowInfo);
 	void Shutdown();
 
 	bool ExecuteCommandList(const RenderCommandList& commandList);
@@ -105,7 +105,7 @@ public:
 
 private:
 	bool CreateInstance();
-	bool CreateSurface(const NativeWindowInfo& windowInfo);
+	bool CreateSurface(void* nativeRenderContextHandle, const NativeWindowInfo& windowInfo);
 	bool SelectPhysicalDevice();
 	bool CreateDevice();
 	bool CreateSwapchain(const NativeWindowInfo& windowInfo);

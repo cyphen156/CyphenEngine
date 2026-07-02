@@ -45,7 +45,7 @@ public:
 	Dx11Renderer(Dx11Renderer&& other) = delete;
 	Dx11Renderer& operator=(Dx11Renderer&& other) = delete;
 
-	bool Initialize(const NativeWindowInfo& windowInfo);
+	bool Initialize(void* nativeRenderContextHandle, const NativeWindowInfo& windowInfo);
 	void Shutdown();
 
 	bool ExecuteCommandList(const RenderCommandList& commandList);

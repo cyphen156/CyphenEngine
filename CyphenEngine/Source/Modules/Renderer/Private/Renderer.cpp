@@ -25,7 +25,7 @@ Renderer::~Renderer()
 #endif
 }
 
-bool Renderer::Initialize(const NativeWindowInfo& windowInfo)
+bool Renderer::Initialize(void* nativeRenderContextHandle, const NativeWindowInfo& windowInfo)
 {
 	if (IsInitialized())
 	{
@@ -83,7 +83,7 @@ bool Renderer::Initialize(const NativeWindowInfo& windowInfo)
 	StartFrameInput();
 	SetThreadState(RendererThreadState::Starting);
 
-	if (renderThread.Start(&Renderer::Run, this, windowInfo) == false)
+	if (renderThread.Start(&Renderer::Run, this, nativeRenderContextHandle, windowInfo) == false)
 	{
 		StopFrameInput();
 		SetThreadState(RendererThreadState::Stopped);
@@ -186,12 +186,12 @@ RendererType Renderer::GetRendererType() const
 	return moduleApi.rendererType;
 }
 
-void Renderer::Run(NativeWindowInfo windowInfo)
+void Renderer::Run(void* nativeRenderContextHandle, NativeWindowInfo windowInfo)
 {
 	RendererHandle rendererHandle = nullptr;
 
 	RendererModuleResult createResult =
-		moduleApi.createRenderer(&windowInfo, &rendererHandle);
+		moduleApi.createRenderer(nativeRenderContextHandle, &windowInfo, &rendererHandle);
 
 	if (createResult != RendererModuleResult::Success ||
 		rendererHandle == nullptr)

@@ -70,16 +70,17 @@ const CyphenEngine& Launch::GetEngine()
 LaunchContext Launch::CreateLaunchContext(HWND windowHandle)
 {
 	LaunchContext launchContext;
-	launchContext.windowInfo.nativeWindowHandle = windowHandle;
+	launchContext.nativeRenderContextHandle = hInst;
+	launchContext.mainWindowInfo.nativeWindowHandle = windowHandle;
 
 	RECT clientRect = {};
 
 	if (::GetClientRect(windowHandle, &clientRect) != FALSE)
 	{
-		launchContext.windowInfo.windowWidth =
+		launchContext.mainWindowInfo.windowWidth =
 			static_cast<uint32>(clientRect.right - clientRect.left);
 
-		launchContext.windowInfo.windowHeight =
+		launchContext.mainWindowInfo.windowHeight =
 			static_cast<uint32>(clientRect.bottom - clientRect.top);
 	}
 
@@ -87,8 +88,8 @@ LaunchContext Launch::CreateLaunchContext(HWND windowHandle)
 	// Renderer Module 부트스트랩 구성입니다.
 	ModuleDescriptor rendererModule;
 	rendererModule.moduleName = CTEXT("Renderer");
-	rendererModule.implementationName = CTEXT("Vulkan");
-	rendererModule.binaryName = CTEXT("CyphenRendererVulkan");
+	rendererModule.implementationName = CTEXT("Dx11");
+	rendererModule.binaryName = CTEXT("CyphenRendererDx11");
 	rendererModule.isEnabled = true;
 
 	launchContext.moduleDescriptors.push_back(rendererModule);

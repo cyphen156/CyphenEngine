@@ -76,7 +76,7 @@ bool VulkanQueueFamilySelection::IsComplete() const
 		presentFamily != UINT32_MAX;
 }
 
-bool VulkanRenderer::Initialize(const NativeWindowInfo& windowInfo)
+bool VulkanRenderer::Initialize(void* nativeRenderContextHandle, const NativeWindowInfo& windowInfo)
 {
 	if (windowInfo.nativeWindowHandle == nullptr ||
 		windowInfo.windowWidth == 0 ||
@@ -98,7 +98,7 @@ bool VulkanRenderer::Initialize(const NativeWindowInfo& windowInfo)
 
 	PRINT_DEBUG_OUTPUT("[VulkanRenderer] CreateInstance success\n");
 
-	if (CreateSurface(windowInfo) == false)
+	if (CreateSurface(nativeRenderContextHandle, windowInfo) == false)
 	{
 		PRINT_DEBUG_OUTPUT("[VulkanRenderer] CreateSurface failed\n");
 		Shutdown();
@@ -200,8 +200,8 @@ bool VulkanRenderer::Initialize(const NativeWindowInfo& windowInfo)
 	PRINT_DEBUG_OUTPUT("[VulkanRenderer] Initialize success\n");
 #else
 	if (CreateInstance() == false || 
-		CreateSurface(windowInfo) == false || 
-		SelectPhysicalDevice() == false || 
+		CreateSurface(nativeRenderContextHandle, windowInfo) == false ||
+		SelectPhysicalDevice() == false ||
 		CreateDevice() == false || 
 		CreateSwapchain(windowInfo) == false || 
 		CreateRenderPass() == false || 
@@ -451,9 +451,13 @@ bool VulkanRenderer::CreateInstance()
 		instance != VK_NULL_HANDLE;
 }
 
-bool VulkanRenderer::CreateSurface(const NativeWindowInfo& windowInfo)
+bool VulkanRenderer::CreateSurface(void* nativeRenderContextHandle, const NativeWindowInfo& windowInfo)
 {
-	return CreateVulkanSurface(instance, windowInfo, &surface);
+	return CreateVulkanSurface(
+		instance,
+		nativeRenderContextHandle,
+		windowInfo,
+		&surface);
 }
 
 bool VulkanRenderer::SelectPhysicalDevice()

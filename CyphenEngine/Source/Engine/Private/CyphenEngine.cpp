@@ -12,8 +12,8 @@
 #include "Resource/Public/Texture.h"
 #include "Modules/Resource/Public/ResourceCommand.h"
 
-constexpr CChar DebugProfileTexturePath[] = CTEXT("C:/Project/CyphenEngine/CyphenEngine/Resources/Thumbnail/Profile.jpg");
-constexpr CChar DebugProfile2TexturePath[] = CTEXT("C:/Project/CyphenEngine/CyphenEngine/Resources/Thumbnail/Profile2.jpg");
+constexpr CChar DebugProfileTexturePath[] = CTEXT("Resources/Thumbnail/Profile.jpg");
+constexpr CChar DebugProfile2TexturePath[] = CTEXT("Resources/Thumbnail/Profile2.jpg");
 #endif
 
 std::vector<ResourceId> debugTexturedQuadResourceIds;
@@ -39,14 +39,14 @@ bool CyphenEngine::InitEngine(const LaunchContext& launchContext)
 		return false;
 	}
 
-	engineContext.windowInfo = launchContext.windowInfo;
+	engineContext.windowInfo = launchContext.mainWindowInfo;
 
 	if (Time::Init() == false)
 	{
 		return false;
 	}
 
-	if (renderer.Initialize(engineContext.windowInfo) == false)
+	if (renderer.Initialize(launchContext.nativeRenderContextHandle, engineContext.windowInfo) == false)
 	{
 		return false;
 	}

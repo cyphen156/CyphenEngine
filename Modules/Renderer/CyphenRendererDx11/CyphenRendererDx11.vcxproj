@@ -81,15 +81,14 @@
   <ItemGroup>
     <!-- Shared Renderer Contract -->
     <ClInclude Include="..\..\..\CyphenEngine\Source\HAL\Public\NativeWindowInfo.h" />
+    <ClInclude Include="..\..\..\CyphenEngine\Source\Modules\Public\ModuleExport.h" />
     <ClInclude Include="..\..\..\CyphenEngine\Source\Modules\Renderer\Public\RendererModule.h" />
     <ClInclude Include="..\..\..\CyphenEngine\Source\Modules\Renderer\Public\RendererTypes.h" />
-    <ClInclude Include="Source\HAL\Private\Surface.h" />
     <!-- Dx11 Renderer -->
     <ClInclude Include="Source\Private\Dx11Renderer.h" />
   </ItemGroup>
   <!-- Source Files -->
   <ItemGroup>
-    <ClCompile Include="Source\Platform\Windows\Private\Surface.cpp" />
     <ClCompile Include="Source\Private\Dx11Renderer.cpp" />
     <ClCompile Include="Source\Private\Dx11RendererModule.cpp" />
   </ItemGroup>

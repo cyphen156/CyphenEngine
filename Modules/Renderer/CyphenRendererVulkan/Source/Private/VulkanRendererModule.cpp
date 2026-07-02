@@ -2,10 +2,12 @@
 
 #include "Private/VulkanRenderer.h"
 #include "Modules/Renderer/Public/RendererModule.h"
+#include "Modules/Public/ModuleExport.h"
 
 namespace
 {
 	RendererModuleResult CreateRenderer(
+		void* nativeRenderContextHandle,
 		const NativeWindowInfo* windowInfo,
 		RendererHandle* outRendererHandle)
 	{
@@ -23,7 +25,7 @@ namespace
 			return RendererModuleResult::Failure;
 		}
 
-		if (renderer->Initialize(*windowInfo) == false)
+		if (renderer->Initialize(nativeRenderContextHandle, *windowInfo) == false)
 		{
 			delete renderer;
 			return RendererModuleResult::Failure;
@@ -90,10 +92,9 @@ RendererModuleResult ExecuteDebugResourceCommandList(
 }
 #endif
 
-// dllexport는 Windows 전용입니다(#3_1 Windows 스캐폴드 기준, Dx11과 동일 유지).
-// Linux .so 빌드 시 visibility-default 매크로로 일원화하는 작업은
-// ModuleLoader(dlopen) 단계와 묶어 처리합니다(Q001_002 추적 항목).
-extern "C" __declspec(dllexport)
+// Renderer module entry point입니다.
+// Export 속성은 PlatformDefine.h 기반 CYPHEN_MODULE_EXPORT로 분기합니다.
+extern "C" CYPHEN_MODULE_EXPORT
 RendererModuleResult GetRendererModuleApi(RendererModuleApi* outRendererModuleApi)
 {
 	if (outRendererModuleApi == nullptr)

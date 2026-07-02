@@ -13,15 +13,19 @@ const char* GetVulkanPlatformSurfaceExtensionName()
 
 bool CreateVulkanSurface(
 	VkInstance instance,
+	void* nativeRenderContextHandle,
 	const NativeWindowInfo& windowInfo,
 	VkSurfaceKHR* outSurface)
 {
 	if (instance == VK_NULL_HANDLE ||
+		nativeRenderContextHandle == nullptr ||
 		windowInfo.nativeWindowHandle == nullptr ||
 		outSurface == nullptr)
 	{
 		return false;
 	}
+	
+	const HINSTANCE instanceHandle = static_cast<HINSTANCE>(nativeRenderContextHandle);
 
 	const HWND windowHandle = static_cast<HWND>(windowInfo.nativeWindowHandle);
 
@@ -32,7 +36,7 @@ bool CreateVulkanSurface(
 
 	VkWin32SurfaceCreateInfoKHR surfaceCreateInfo = {};
 	surfaceCreateInfo.sType = VK_STRUCTURE_TYPE_WIN32_SURFACE_CREATE_INFO_KHR;
-	surfaceCreateInfo.hinstance = ::GetModuleHandleW(nullptr);
+	surfaceCreateInfo.hinstance = instanceHandle;
 	surfaceCreateInfo.hwnd = windowHandle;
 
 	return vkCreateWin32SurfaceKHR(

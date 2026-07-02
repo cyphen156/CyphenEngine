@@ -76,21 +76,21 @@ const CyphenEngine& Launch::GetEngine()
 LaunchContext Launch::CreateLaunchContext(Window windowHandle)
 {
 	LaunchContext launchContext;
-
-	launchContext.windowInfo.nativeWindowHandle =
+	launchContext.nativeRenderContextHandle = g_display;
+	launchContext.mainWindowInfo.nativeWindowHandle =
 		reinterpret_cast<void*>(static_cast<std::uintptr_t>(windowHandle));
 
-	launchContext.windowInfo.windowWidth = DEFAULT_WINDOW_WIDTH;
-	launchContext.windowInfo.windowHeight = DEFAULT_WINDOW_HEIGHT;
+	launchContext.mainWindowInfo.windowWidth = DEFAULT_WINDOW_WIDTH;
+	launchContext.mainWindowInfo.windowHeight = DEFAULT_WINDOW_HEIGHT;
 
 	XWindowAttributes windowAttributes = {};
 
 	if (XGetWindowAttributes(g_display, windowHandle, &windowAttributes) != 0)
 	{
-		launchContext.windowInfo.windowWidth =
+		launchContext.mainWindowInfo.windowWidth =
 			static_cast<uint32>(windowAttributes.width);
 
-		launchContext.windowInfo.windowHeight =
+		launchContext.mainWindowInfo.windowHeight =
 			static_cast<uint32>(windowAttributes.height);
 	}
 
@@ -228,11 +228,9 @@ int main(int argc, char** argv)
 	RunCoreIoTests();
 #endif
 
-	const LaunchContext launchContext =
-		Launch::CreateLaunchContext(g_hMainWindow);
+	const LaunchContext launchContext = Launch::CreateLaunchContext(g_hMainWindow);
 
-	const bool isEngineStarted =
-		Launch::StartEngineThread(launchContext);
+	const bool isEngineStarted = Launch::StartEngineThread(launchContext);
 
 	if (isEngineStarted == false)
 	{
@@ -314,6 +312,11 @@ int main(int argc, char** argv)
 	return EXIT_SUCCESS;
 }
 
+//
+//  함수: MyRegisterClass()
+//
+//  용도: 창 클래스를 등록합니다.
+//
 bool MyRegisterClass()
 {
 	if (XInitThreads() == 0)
@@ -326,6 +329,16 @@ bool MyRegisterClass()
 	return g_display != nullptr;
 }
 
+//
+//   함수: InitInstance(int)
+//
+//   용도: 인스턴스 핸들을 저장하고 주 창을 만듭니다.
+//
+//   주석:
+//
+//        이 함수를 통해 인스턴스 핸들을 전역 변수에 저장하고
+//        주 프로그램 창을 만든 다음 표시합니다.
+//
 Window InitInstance(int showCommand)
 {
 	(void)showCommand;

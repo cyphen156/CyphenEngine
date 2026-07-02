@@ -107,6 +107,7 @@
     <ClInclude Include="Source\Modules\Public\Command.h" />
     <ClInclude Include="Source\Modules\Public\CommandBuffer.h" />
     <ClInclude Include="Source\Modules\Public\ModuleDescriptor.h" />
+    <ClInclude Include="Source\Modules\Public\ModuleExport.h" />
     <ClInclude Include="Source\Modules\Public\ModuleManager.h" />
     <ClInclude Include="Source\Core\Public\Path.h" />
     <ClInclude Include="Source\Core\Public\Separator.h" />
@@ -227,7 +228,6 @@
   </ItemGroup>
   <!-- DevLog -->
   <ItemGroup>
-    <Text Include="DevLog\2026\26.07.01.txt" />
     <Text Include="Resources\Test\CoreIo\ReadAllText_UTF8_LF.txt" />
   </ItemGroup>
   <!-- Other -->
@@ -240,10 +240,13 @@
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
-  <Target Name="CopyCoreIoTestResources" AfterTargets="Build" Condition="'$(Configuration)'=='Debug'">
-    <ItemGroup>
-      <CoreIoTestResource Include="$(ProjectDir)Resources\Test\CoreIo\**\*" />
-    </ItemGroup>
-    <Copy SourceFiles="@(CoreIoTestResource)" DestinationFiles="@(CoreIoTestResource->'$(OutDir)Resources\Test\CoreIo\%(RecursiveDir)%(Filename)%(Extension)')" SkipUnchangedFiles="true" />
-  </Target>
+	<Target Name="CopyRuntimeResources" AfterTargets="Build">
+		<ItemGroup>
+			<RuntimeResource Include="$(ProjectDir)Resources\**\*" />
+		</ItemGroup>
+		<Copy
+		  SourceFiles="@(RuntimeResource)"
+		  DestinationFiles="@(RuntimeResource->'$(OutDir)Resources\%(RecursiveDir)%(Filename)%(Extension)')"
+		  SkipUnchangedFiles="true" />
+	</Target>
 </Project>
