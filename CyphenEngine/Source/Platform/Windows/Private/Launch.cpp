@@ -70,16 +70,17 @@ const CyphenEngine& Launch::GetEngine()
 LaunchContext Launch::CreateLaunchContext(HWND windowHandle)
 {
 	LaunchContext launchContext;
-	launchContext.windowInfo.nativeWindowHandle = windowHandle;
+	launchContext.nativeRenderContextHandle = hInst;
+	launchContext.mainWindowInfo.nativeWindowHandle = windowHandle;
 
 	RECT clientRect = {};
 
 	if (::GetClientRect(windowHandle, &clientRect) != FALSE)
 	{
-		launchContext.windowInfo.windowWidth =
+		launchContext.mainWindowInfo.windowWidth =
 			static_cast<uint32>(clientRect.right - clientRect.left);
 
-		launchContext.windowInfo.windowHeight =
+		launchContext.mainWindowInfo.windowHeight =
 			static_cast<uint32>(clientRect.bottom - clientRect.top);
 	}
 

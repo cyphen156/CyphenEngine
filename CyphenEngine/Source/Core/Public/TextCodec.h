@@ -30,6 +30,9 @@
 class TextCodec final
 {
 public:
+	static TextEncoding GetDefaultTextEncoding();
+	static TextEncoding ResolveEncoding(const std::vector<uint8>& bytes, TextEncoding fallbackEncoding);
+
 	static bool Encode(
 		const CString& text,
 		std::vector<uint8>& outBytes,

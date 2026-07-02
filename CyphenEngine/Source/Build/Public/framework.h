@@ -13,44 +13,50 @@
 
 #if PLATFORM_WINDOWS
 
-#ifdef _DEBUG
-#define _CRTDBG_MAP_ALLOC
-#include <crtdbg.h>
-#define new new(_NORMAL_BLOCK, __FILE__, __LINE__)
-#define PRINT_DEBUG_OUTPUT(text)	OutputDebugStringA(text)
-#endif
+	#ifdef _DEBUG
+		#define _CRTDBG_MAP_ALLOC
+		#include <crtdbg.h>
+		#define new new(_NORMAL_BLOCK, __FILE__, __LINE__)
+		#define PRINT_DEBUG_OUTPUT(text) OutputDebugStringA(text)
+	#endif
 
-#define NOMINMAX
-#define WIN32_LEAN_AND_MEAN
+	#define NOMINMAX
+	#define WIN32_LEAN_AND_MEAN
 
-#include "Platform/Windows/Public/targetver.h"
-#include <Windows.h>
+	#include "Platform/Windows/Public/targetver.h"
+	#include <Windows.h>
 
-using LARGEINTEGER = LARGE_INTEGER;
+	using LARGEINTEGER = LARGE_INTEGER;
 
 #elif PLATFORM_LINUX
 
-#ifdef _DEBUG
-#define PRINT_DEBUG_OUTPUT(text) std::fputs((text), stderr)
-#include <cstdio>
-#endif
+	#ifdef _DEBUG
+		#include <cassert>
+		#include <cstdio>
+		
+		#ifndef  _ASSERT
+			#define _ASSERT(expression) assert(expression)
+		#endif
 
-#include <cstdint>
+		#define PRINT_DEBUG_OUTPUT(text) std::fputs((text), stderr)
+	#endif
 
-// Linux 디버그 힙 경계 (crtdbg 등가물 없음 → ASan/valgrind, 추후 Diagnostics)
+	#include <cstdint>
 
-using LARGEINTEGER = int64_t;
+	// Linux 디버그 힙 경계 (crtdbg 등가물 없음 → ASan/valgrind, 추후 Diagnostics)
+
+	using LARGEINTEGER = int64_t;
 
 #elif PLATFORM_ANDROID
 
-#error "Android framework is not implemented."
+	#error "Android framework is not implemented."
 
 #elif PLATFORM_MAC
 
-#error "Mac framework is not implemented."
+	#error "Mac framework is not implemented."
 
 #else
 
-#error "Unsupported platform."
+	#error "Unsupported platform."
 
 #endif

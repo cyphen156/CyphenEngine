@@ -1,11 +1,13 @@
 #include <new>
 
 #include "Dx11Renderer.h"
+#include "Modules/Public/ModuleExport.h"
 #include "Modules/Renderer/Public/RendererModule.h"
 
 namespace
 {
 	RendererModuleResult CreateRenderer(
+		void* nativeRenderContextHandle,
 		const NativeWindowInfo* windowInfo,
 		RendererHandle* outRendererHandle)
 	{
@@ -23,7 +25,7 @@ namespace
 			return RendererModuleResult::Failure;
 		}
 
-		if (renderer->Initialize(*windowInfo) == false)
+		if (renderer->Initialize(nativeRenderContextHandle, *windowInfo) == false)
 		{
 			delete renderer;
 			return RendererModuleResult::Failure;
@@ -90,7 +92,9 @@ RendererModuleResult ExecuteDebugResourceCommandList(
 }
 #endif
 
-extern "C" __declspec(dllexport)
+// Renderer module entry point입니다.
+// Export 속성은 PlatformDefine.h 기반 CYPHEN_MODULE_EXPORT로 분기합니다.
+extern "C" CYPHEN_MODULE_EXPORT
 RendererModuleResult GetRendererModuleApi(RendererModuleApi* outRendererModuleApi)
 {
 	if (outRendererModuleApi == nullptr)

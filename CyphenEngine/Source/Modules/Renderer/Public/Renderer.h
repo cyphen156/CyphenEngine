@@ -54,7 +54,7 @@ public:
 	Renderer(Renderer&& other) = delete;
 	Renderer& operator=(Renderer&& other) = delete;
 
-	bool Initialize(const NativeWindowInfo& windowInfo);
+	bool Initialize(void* nativeRenderContextHandle, const NativeWindowInfo& windowInfo);
 	void Shutdown();
 
 	bool BeginRenderingFrame(const Frame& frame);
@@ -71,7 +71,7 @@ private:
 	RendererType GetRendererType() const;
 
 private:
-	void Run(NativeWindowInfo windowInfo);
+	void Run(void* nativeRenderContextHandle, NativeWindowInfo windowInfo);
 
 	bool EnqueueFrame(const Frame& frame);
 	bool AcquireFrame(Frame& outFrame);

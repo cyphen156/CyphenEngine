@@ -16,6 +16,9 @@
 // 어느 스레드에서 실행할지는 호출자, TaskSystem, ResourceManager가 결정합니다.
 //
 // 책임:
+//     파일을 raw handle로 엽니다.
+//     raw handle을 통해 byte를 읽고 씁니다.
+//     raw handle의 위치 / 크기를 조회합니다.
 //     단일 파일에서 raw byte를 읽습니다.
 //     단일 파일에 raw byte를 씁니다.
 //     단일 파일에 raw byte를 이어 씁니다.
@@ -44,6 +47,26 @@
 class File final
 {
 public:
+	static bool OpenRead(const CString& path, FileHandle& outHandle);
+
+	static bool OpenWrite(const CString& path, bool canReplace, FileHandle& outHandle);
+
+	static bool OpenAppend(const CString& path, FileHandle& outHandle);
+
+	static void Close(FileHandle& handle);
+
+	static bool Read(FileHandle handle, uint8* outBytes, uint64 bytesToRead,
+		uint64& outBytesRead);
+
+	static bool Write(FileHandle handle, const uint8* bytes, uint64 bytesToWrite,
+		uint64& outBytesWritten);
+
+	static bool Seek(FileHandle handle, uint64 position);
+
+	static bool Tell(FileHandle handle, uint64& outPosition);
+
+	static bool GetSize(FileHandle handle, uint64& outSize);
+
 	static bool ReadAllBytes(const CString& path, std::vector<uint8>& outBytes);
 
 	static bool WriteAllBytes(const CString& path, const std::vector<uint8>& bytes);

@@ -42,8 +42,10 @@ namespace
 		"}";
 }
 
-bool Dx11Renderer::Initialize(const NativeWindowInfo& windowInfo)
+bool Dx11Renderer::Initialize(void* nativeRenderContextHandle, const NativeWindowInfo& windowInfo)
 {
+	(void)nativeRenderContextHandle;
+
 	if (windowInfo.nativeWindowHandle == nullptr ||
 		windowInfo.windowWidth == 0 ||
 		windowInfo.windowHeight == 0)

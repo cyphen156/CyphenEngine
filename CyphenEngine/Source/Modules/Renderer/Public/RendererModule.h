@@ -26,7 +26,7 @@
 //   - executeResourceCommandList는 Debug fixture 전용입니다.
 // ============================================================================
 
-constexpr uint32 RENDERER_MODULE_ABI_GENERATION = 4;
+constexpr uint32 RENDERER_MODULE_ABI_GENERATION = 5;
 constexpr uint32 RENDERER_MODULE_API_VERSION = RENDERER_MODULE_ABI_GENERATION;
 
 constexpr const char GET_RENDERER_MODULE_API_NAME[] = "GetRendererModuleApi";
@@ -39,6 +39,7 @@ enum class RendererModuleResult : uint32
 
 using CreateRendererFunction =
 	RendererModuleResult(*)(
+		void* nativeRenderContextHandle,
 		const NativeWindowInfo* windowInfo,
 		RendererHandle* outRendererHandle);
 

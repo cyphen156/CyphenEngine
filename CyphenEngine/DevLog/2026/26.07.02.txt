@@ -1,0 +1,59 @@
+Date: 2026-07-02
+Branch: #3-Linux-빌드-테스트
+
+작업 요약
+	#3_4에서는 Linux에서 CyphenRendererVulkan.so를 독립 shared module로 빌드하고, CyphenEngine 실행 파일이 해당 모듈을 로드해 Vulkan renderer 초기화와 GUI 출력까지 도달하도록 연결했습니다.
+
+	LaunchContext가 플랫폼별 native render context와 main window 정보를 renderer module ABI로 전달하도록 정리했고, Linux X11 Display / Window 조합으로 Vulkan Xlib surface를 생성하는 경로를 구현했습니다.
+
+	이번 단계의 목표는 Linux renderer 전체 완성이 아니라, Linux GUI 환경에서 Renderer 모듈 교체 구조와 Vulkan surface / swapchain / pipeline 초기화가 실제 실행 파일 기준으로 이어지는지 확인하는 것이었습니다.
+
+
+진행한 커밋
+	#3_4 [Renderer] Linux Vulkan 모듈 빌드와 GUI 실행 경로 연결
+
+
+주요 정리 내용
+	1. Linux Vulkan 모듈 빌드 체계 추가
+		루트 CMake 구성과 공통 Cyphen target helper를 추가해 엔진 실행 파일과 렌더러 모듈을 한 configure 안에서 빌드하도록 정리했습니다.
+		CyphenRendererVulkan은 shared module로 빌드하고, Linux 출력 파일명이 ModuleLoader 규칙과 일치하도록 CyphenRendererVulkan.so 형태로 생성되게 했습니다.
+		공통 output directory, build target define, platform define, strict C++17, module export visibility, $ORIGIN RPATH 설정을 모듈 빌드 규격에 반영했습니다.
+
+	2. Renderer 모듈 ABI와 native context 전달 정리
+		Renderer 모듈 생성 함수가 플랫폼별 native render context와 NativeWindowInfo를 함께 받도록 ABI를 갱신했습니다.
+		Windows Launch는 HINSTANCE와 HWND를, Linux Launch는 X11 Display와 Window를 LaunchContext에 구성해 renderer 초기화 경로로 전달하도록 연결했습니다.
+		모듈 export 매크로를 PlatformDefine 기반 공통 헤더로 분리해 Windows와 Linux 모듈 entrypoint export 규칙을 통일했습니다.
+
+	3. Linux Vulkan surface 생성 구현
+		Vulkan surface HAL이 native render context와 main window 정보를 받아 backend 내부에서 platform surface를 생성하도록 정리했습니다.
+		Linux 구현은 Xlib surface 확장을 사용해 Display와 Window로 vkCreateXlibSurfaceKHR를 호출하도록 연결했습니다.
+		Windows 구현도 동일한 입력 계약을 유지해 모듈 내부 surface 생성 seam의 입력 규격을 맞췄습니다.
+
+	4. Shader와 리소스 배치 정리
+		Vulkan shader custom build를 CMake 빌드에 연결해 TexturedQuad vertex / fragment shader가 Linux 출력 디렉터리에 SPIR-V로 배치되도록 구성했습니다.
+		런타임 리소스 경로를 Linux 실행 환경에서도 해석 가능한 상대 경로 기준으로 정리했습니다.
+		엔진 실행 파일 출력 위치에 필요한 Resources와 shader 산출물이 함께 배치되도록 빌드 후 복사 경로를 정리했습니다.
+
+
+정리한 설계 기준
+	- LaunchContext는 빌드 타겟, 플랫폼 Launch, 사용자 선택 결과가 조합된 실행 초기화 입력으로 본다.
+	- EngineContext는 실행 중 엔진이 소유하는 현재 상태의 단일 진실 원천으로 두고, renderer 초기 구성 재료를 새로 조립하는 위치로 쓰지 않는다.
+	- NativeWindowInfo는 주 창의 식별과 크기 정보를 담는 leaf 값으로 유지하고, 플랫폼별 연결 객체는 renderer module 생성 입력의 native render context로 전달한다.
+	- Linux #3_4 범위에서는 X11 windowed 실행을 전제로 하고, Linux Server / headless 빌드 분리는 실제 Server 타겟을 다룰 때 별도 작업으로 남긴다.
+
+
+검증
+	WSL2 / Linux에서 Vulkan 개발 파일과 loader를 확인했습니다.
+	vulkaninfo --summary 기준 Vulkan Instance Version 1.4.341 및 VK_KHR_xlib_surface 지원을 확인했습니다.
+	cmake -S . -B BuildArtifacts/Intermediate/Linux/x64/Debug/Linux_Vulkan_Debug -G Ninja -DCMAKE_BUILD_TYPE=Debug -DCYPHEN_BUILD_TARGET=Editor 구성 성공.
+	cmake --build BuildArtifacts/Intermediate/Linux/x64/Debug/Linux_Vulkan_Debug 빌드 성공.
+	BuildArtifacts/Binaries/Linux/x64/Debug에 CyphenEngine, CyphenRendererVulkan.so, TexturedQuad.vert.spv, TexturedQuad.frag.spv 산출을 확인했습니다.
+	nm -D CyphenRendererVulkan.so | grep GetRendererModuleApi로 GetRendererModuleApi export를 확인했습니다.
+	Linux GUI 실행에서 CoreIoTests PASS=69 FAIL=0, ModuleTests PASS=34 FAIL=0을 확인했습니다.
+	Linux GUI에서 CyphenRendererVulkan.so 로드, Vulkan surface / swapchain / pipeline 초기화, 리소스 출력 정상 동작을 확인했습니다.
+
+
+다음 작업
+	- Linux renderer 경로에서 GPU device 선택, validation layer, swapchain resize 대응을 별도 단계로 정리합니다.
+	- Linux Server / headless 타겟을 실제로 다룰 때 X11 의존성 제거와 Launch 소스 분리를 검토합니다.
+	- Vulkan backend는 Linux first-light 검증 경로로 유지하고, 메인 renderer 방향과 backend별 완성 범위는 다음 브랜치에서 다시 정리합니다.

@@ -38,16 +38,16 @@ namespace Build
 #error "Build target is not defined. Please define BUILD_TARGET_* in build settings."
 #endif
 
-#if defined(PLATFORM_WINDOWS)
+#if PLATFORM_WINDOWS
 	constexpr BuildPlatform Platform = BuildPlatform::Windows;
 
-#elif defined(PLATFORM_LINUX)
+#elif PLATFORM_LINUX
 	constexpr BuildPlatform Platform = BuildPlatform::Linux;
 
-#elif defined(PLATFORM_ANDROID)
+#elif PLATFORM_ANDROID
 	constexpr BuildPlatform Platform = BuildPlatform::Android;
 
-#elif defined(PLATFORM_MAC)
+#elif PLATFORM_MAC
 	constexpr BuildPlatform Platform = BuildPlatform::Mac;
 
 #else

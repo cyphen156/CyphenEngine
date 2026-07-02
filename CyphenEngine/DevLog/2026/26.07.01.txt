@@ -1,0 +1,50 @@
+Date: 2026-07-01
+Branch: #3-Linux-빌드-테스트
+
+작업 요약
+	#3_3에서는 Renderer 모듈 ABI 위에서 CyphenRendererDx11 대신 CyphenRendererVulkan을 로드해도 엔진 상위 렌더링 흐름이 유지되는지 확인했습니다.
+
+	Windows 타겟에서 Vulkan SDK 기반 초기화, Win32 surface, swapchain, render pass, pipeline, descriptor, texture upload 경로를 연결하고 실제 Texture2D 두 장을 번갈아 표시했습니다.
+
+	이번 단계의 목표는 Vulkan 렌더러 완성이 아니라, Linux 포팅을 앞두고 Vulkan backend가 기존 Renderer 모듈 계약 안에서 동작할 수 있는지 검증하는 것이었습니다.
+
+
+진행한 커밋
+	#3_3 [Renderer] Vulkan 렌더러 모듈 텍스처 표시 경로 구현
+
+
+주요 정리 내용
+	1. Vulkan 렌더러 초기화 경로 구현
+		Vulkan SDK 헤더와 vulkan-1.lib 링크를 사용하도록 CyphenRendererVulkan 프로젝트를 정리했습니다.
+		Instance, Surface, PhysicalDevice, LogicalDevice, Queue, Swapchain, RenderPass, Framebuffer, CommandPool, 동기화 객체, Pipeline 생성 경로를 연결했습니다.
+		Win32 surface 생성은 Vulkan 모듈 내부 HAL 계약과 Platform/Windows 구현으로 분리했습니다.
+
+	2. Texture2D 업로드와 DrawTexturedQuad 실행 연결
+		Debug ResourceCommandList의 Texture2D UploadResource를 Vulkan staging buffer와 VkImage 업로드로 변환했습니다.
+		ResourceId 기반 texture table, image view, sampler, descriptor set을 구성하고 DrawTexturedQuad 명령에서 해당 텍스처를 바인딩하도록 구현했습니다.
+		TexturedQuad vertex / fragment shader를 추가하고 SPIR-V shader module을 통해 graphics pipeline을 생성하도록 연결했습니다.
+
+	3. Windows Vulkan 모듈 로드 검증
+		Windows Launch 부트스트랩에서 Renderer 구현체를 Vulkan 모듈로 선택하도록 설정했습니다.
+		CyphenRendererVulkan 프로젝트에 Vulkan SDK 경로, shader custom build, 모듈 export 정의를 반영했습니다.
+		CyphenRendererDx11.dll을 CyphenRendererVulkan.dll로 교체해도 엔진은 Texture2D 로드, ResourceCommand 업로드, DrawTexturedQuad 제출 흐름을 유지했습니다.
+
+
+정리한 설계 기준
+	- Renderer 모듈 ABI는 Dx11 / Vulkan backend 교체 지점으로 유지한다.
+	- Vulkan은 메인 렌더러가 아니라 Linux 포팅과 backend 확장 검증을 위한 경로로 둔다.
+	- Vulkan backend의 플랫폼 surface 생성은 RendererVulkan 모듈 내부 HAL / Platform seam으로 격리한다.
+	- 현재 Vulkan 출력의 상하좌우 반전은 렌더러 흐름 단절이 아니라 좌표계와 UV 매핑 차이에서 나온 문제로 본다.
+
+
+검증
+	CyphenRendererVulkan.vcxproj Debug x64 빌드 성공.
+	CyphenEngine.vcxproj Debug x64 빌드 성공.
+	원본 CyphenEngine.exe 실행 후 3초 이상 생존 및 정상 종료를 확인했습니다.
+	Vulkan 창에서 실제 텍스처 표시를 확인했고, 1.2초 간격 캡처 해시 비교로 두 텍스처 교대 출력도 확인했습니다.
+
+
+다음 작업
+	- Linux #3_4 범위에서 CyphenRendererVulkan.so 빌드와 산출물 배치를 연결합니다.
+	- Linux Vulkan surface 생성 위치와 X11 의존성 소유 경계를 다시 검토합니다.
+	- Linux 서버 / headless 실행과 windowed renderer 실행의 빌드 경계를 분리할지 판단합니다.

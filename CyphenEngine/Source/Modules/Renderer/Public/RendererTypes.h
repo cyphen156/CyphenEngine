@@ -13,7 +13,7 @@ enum class RendererType : uint32
 	Dx11,
 	Dx12,
 	Vulkan,
-	OpenGL,
+	OpenGLES,
 	Metal,
 
 	None
