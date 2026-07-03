@@ -102,6 +102,9 @@
     <ClInclude Include="Source\Core\Public\FileStream.h" />
     <ClInclude Include="Source\Core\Public\FileSystem.h" />
     <ClInclude Include="Source\Core\Public\FileTypes.h" />
+    <ClInclude Include="Source\Core\Public\Math\Mathf.h" />
+    <ClInclude Include="Source\Core\Public\Math\Vector.h" />
+    <ClInclude Include="Source\Core\Public\Math\Vector2D.h" />
     <ClInclude Include="Source\HAL\Private\PlatformPath.h" />
     <ClInclude Include="Source\Modules\Public\ModuleBinder.h" />
     <ClInclude Include="Source\Modules\Public\Command.h" />
@@ -240,13 +243,10 @@
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
-	<Target Name="CopyRuntimeResources" AfterTargets="Build">
-		<ItemGroup>
-			<RuntimeResource Include="$(ProjectDir)Resources\**\*" />
-		</ItemGroup>
-		<Copy
-		  SourceFiles="@(RuntimeResource)"
-		  DestinationFiles="@(RuntimeResource->'$(OutDir)Resources\%(RecursiveDir)%(Filename)%(Extension)')"
-		  SkipUnchangedFiles="true" />
-	</Target>
+  <Target Name="CopyRuntimeResources" AfterTargets="Build">
+    <ItemGroup>
+      <RuntimeResource Include="$(ProjectDir)Resources\**\*" />
+    </ItemGroup>
+    <Copy SourceFiles="@(RuntimeResource)" DestinationFiles="@(RuntimeResource->'$(OutDir)Resources\%(RecursiveDir)%(Filename)%(Extension)')" SkipUnchangedFiles="true" />
+  </Target>
 </Project>
