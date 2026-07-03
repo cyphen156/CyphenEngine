@@ -1,186 +1,138 @@
 # CyphenEngine 구조 시각화
 
-이 문서는 README의 현재 상태를 한눈에 보기 위한 구조 요약입니다. 세부 결정과 작업 이력은 `CyphenEngine/DevLog/`를 기준으로 관리합니다.
+이 문서는 README에서 줄인 구조 설명을 보충하는 시각화 문서입니다.
+세부 결정과 작업 이력은 `CyphenEngine/DevLog/`를 기준으로 관리합니다.
+
+현재 main 기준은 #3 Linux 포팅 검증 이후 상태입니다.
+Windows에서는 Dx11 / Vulkan backend를, Linux에서는 Vulkan backend를 같은 Renderer Module ABI 위에서 실행하는 데까지 확인했습니다.
+
+> 색 규칙: 파란색 = 현재 구현 경로, 노란색 = 다음 단계(#4), 회색 = 예정.
 
 ## 전체 계층 방향
 
 ```mermaid
+%%{init: {'flowchart': {'curve': 'linear'}}}%%
 flowchart TB
-	App["Application / Launch"] --> Engine["Engine"]
-	Engine --> Runtime["Runtime (future)"]
-	Engine --> Modules["Modules"]
-	Engine --> Core["Core"]
-	Modules --> Core
-	Modules --> HAL["HAL"]
-	Core --> HAL
-	HAL --> Platform["Platform"]
-	Editor["Editor (future)"] --> Engine
-	Content["Content"] --> Core
-	Content --> HAL
-	Resource["Resource"] --> Core
-	Resource --> Content
+    Launch["Application / Launch"] --> Engine["Engine"]
+    Engine --> Runtime["Runtime"]
+    Engine --> Modules["Modules"]
+    Engine --> Editor["Editor (예정)"]
+    Runtime --> Core["Core"]
+    Runtime --> Content["Content"]
+    Runtime --> Resource["Resource"]
+    Modules --> Core
+    Core --> HAL["HAL"]
+    Content --> HAL
+    Resource --> HAL
+    HAL --> Platform["Platform"]
+    Platform --> Windows["Platform/Windows"]
+    Platform --> Linux["Platform/Linux"]
 
-	Platform -. "OS concrete" .-> Windows["Platform/Windows"]
-	Platform -. "#3" .-> Linux["Platform/Linux"]
-
-	classDef current fill:#e8f3ff,stroke:#2f6fed,color:#111;
-	classDef future fill:#fff7df,stroke:#c98a00,color:#111;
-	class App,Engine,Modules,Core,HAL,Platform,Windows,Content,Resource current;
-	class Runtime,Editor,Linux future;
+    classDef current fill:#eaf2ff,stroke:#2f6fed,color:#111827;
+    classDef next fill:#fff4d6,stroke:#c98a00,color:#111827;
+    classDef future fill:#f1f3f5,stroke:#9ca3af,color:#111827;
+    class Launch,Engine,Modules,Core,Content,Resource,HAL,Platform,Windows,Linux current;
+    class Runtime next;
+    class Editor future;
 ```
 
 - Core는 OS API를 직접 호출하지 않습니다.
 - Platform은 OS 종속 구현을 담당합니다.
-- HAL은 Core와 Platform 사이의 내부 계약입니다.
+- HAL은 Core / Engine 내부 구현과 Platform 구현 사이의 내부 계약입니다.
 - Content는 파일 바이트를 엔진 중간 표현으로 해석합니다.
-- ResourceManager는 아직 정식화하지 않았고, Resource / Texture2D 기초 타입과 debug upload 경로만 존재합니다.
+- Resource는 CPU-side 리소스 표현을 관리하고, GPU resource 생성은 Renderer backend가 담당합니다.
+- Runtime은 #4에서 2D 월드 표시 흐름을 올리며 구체화할 대상입니다.
 
-## 빌드 타임 플랫폼 선택
+## 플랫폼 / 렌더러 모듈 배치
 
-```mermaid
-flowchart TB
-	Target["Target Build"] --> PlatformDefine["PlatformDefine.h"]
-	PlatformDefine --> Framework["framework.h"]
-	Framework --> PlatformTypes["Platform Type Rules"]
-	Framework --> PlatformHeaders["Platform System Headers"]
-	Framework --> DebugBoundary["Debug Output / CRT Boundary"]
-	Framework --> Concrete["Selected Platform Concrete"]
+![엔진 상위 흐름과 Module ABI는 고정, Windows는 Dx11.dll / Vulkan.dll을 Linux는 Vulkan.so를 같은 ABI로 로드하는 구조](Images/module-layout.png)
 
-	Concrete --> Windows["Platform/Windows"]
-	Concrete --> Linux["Platform/Linux (#3)"]
-	Concrete --> Android["Platform/Android (future)"]
-	Concrete --> Mac["Platform/Mac (future)"]
+- Engine 상위 흐름은 backend 종류를 직접 알지 않습니다.
+- Windows에서는 Dx11과 Vulkan module을 모두 로드할 수 있습니다.
+- Linux에서는 `CyphenRendererVulkan.so`를 로드해 X11 window 위에 Vulkan surface를 생성합니다.
+- Vulkan renderer 내부 흐름은 공유하고, surface 생성만 Win32 / Xlib으로 갈라집니다.
 
-	Pch["pch.h"] --> Framework
-	Pch --> Define["define.h"]
+## Render Loop / Backend 실행
 
-	classDef current fill:#e8f3ff,stroke:#2f6fed,color:#111;
-	classDef future fill:#fff7df,stroke:#c98a00,color:#111;
-	class Target,PlatformDefine,Framework,PlatformTypes,PlatformHeaders,DebugBoundary,Concrete,Windows,Pch,Define current;
-	class Linux,Android,Mac future;
-```
+![Engine이 Frame을 제출하면 Renderer가 Command Buffer로 변환하고 Backend가 순차 디스패치해 present하는 흐름과 CommandIR 바이트 레이아웃](Images/render-loop.png)
 
-- `PlatformDefine.h`는 빌드 타깃을 `PLATFORM_*`로 확정합니다.
-- `framework.h`는 선택된 플랫폼 기준으로 시스템 헤더, OS 타입 규약, 디버그 출력 경계를 준비합니다.
-- `pch.h`는 플랫폼 결정을 직접 수행하지 않고, `framework.h`와 공통 define을 묶는 진입점으로 둡니다.
-- 빌드 시점에 이미 결정 가능한 플랫폼 차이는 런타임 인터페이스가 아니라 빌드 타임 concrete 선택으로 고정합니다.
-
-## Renderer 모듈 기초 구조 (#2)
-
-```mermaid
-flowchart LR
-	Launch["Windows Launch"] --> LaunchContext["LaunchContext"]
-	LaunchContext --> Engine["CyphenEngine"]
-	Engine --> EngineContext["EngineContext"]
-	Launch --> ModuleManager["ModuleManager"]
-	ModuleManager --> ModuleLoader["Platform ModuleLoader"]
-	ModuleLoader --> Dx11Dll["CyphenRendererDx11.dll"]
-	Dx11Dll --> RendererApi["RendererModuleApi"]
-	Engine --> Renderer["Renderer Module Client"]
-	Renderer --> RendererApi
-
-	classDef core fill:#e8f3ff,stroke:#2f6fed,color:#111;
-	classDef dll fill:#eaf8ec,stroke:#2b8a3e,color:#111;
-	class Launch,LaunchContext,Engine,EngineContext,ModuleManager,ModuleLoader,Renderer core;
-	class Dx11Dll,RendererApi dll;
-```
-
-#2에서 닫은 범위는 Renderer 기능 전체 완성이 아니라, Renderer를 모듈로 분리하고 Backend DLL을 통해 실행할 수 있는 기초 구조입니다.
-
-## Render Thread / Command Stream
-
-```mermaid
-sequenceDiagram
-	participant Engine as Engine Thread
-	participant Renderer as Render Thread / Renderer
-	participant Command as RenderCommand Stream
-	participant Backend as DX11 Backend DLL
-	participant GPU as D3D11
-
-	Engine->>Renderer: Frame 제출
-	Renderer->>Command: Frame -> RenderCommand IR
-	Command->>Backend: executeCommandList
-	Backend->>GPU: ClearRenderTarget / DrawTexturedQuad / Present
-	GPU-->>Backend: 실행 결과
-	Backend-->>Renderer: RendererModuleResult
-```
-
-- `Frame`은 렌더링할 월드 상태의 불변 스냅샷입니다.
-- Renderer는 `Frame`을 `RenderCommand` IR로 변환합니다.
-- Backend는 `RenderCommand` / `ResourceCommand`를 실제 그래픽 API 호출로 변환합니다.
-- #2의 최소 표시 검증은 Clear / Present에서 시작해 Texture2D + TexturedQuad까지 확장됐습니다.
+- Engine은 매 프레임 표시할 상태를 `Frame`으로 제출합니다.
+- Renderer는 `Frame`을 `RenderCommand` / `ResourceCommand`로 변환합니다.
+- Backend는 command stream을 순차 파싱하고 command type별 handler로 디스패치합니다.
+- Draw command는 `ResourceId`로 GPU resource table을 조회하고, pipeline을 통해 textured quad를 그립니다.
+- Present 완료는 다음 프레임으로 넘어가는 tick-lock 기준이 됩니다.
 
 ## Texture2D 업로드와 Debug 표시 경로
 
 ```mermaid
+%%{init: {'flowchart': {'curve': 'linear'}}}%%
 flowchart LR
-	FileSystem["FileSystem / File"] --> Bytes["JPG bytes"]
-	Bytes --> Codec["Content Codec"]
-	Codec --> Texture2D["Texture2D RGBA8"]
-	Texture2D --> ResourceCommand["UploadResourceCommand"]
-	ResourceCommand --> Backend["DX11 Backend"]
-	Backend --> TextureTable["ResourceId -> GPU Texture2D"]
-	Frame["Frame DrawItem"] --> ResourceId["ResourceId"]
-	ResourceId --> RenderCommand["DrawTexturedQuad"]
-	RenderCommand --> Backend
-	Backend --> Screen["Profile.jpg / Profile2.jpg 표시"]
+    FileSystem["FileSystem / File"] --> Bytes["JPG bytes"]
+    Bytes --> Codec["Content Codec"]
+    Codec --> Texture2D["Texture2D RGBA8"]
+    Texture2D --> ResourceCommand["UploadResourceCommand"]
+    ResourceCommand --> Backend["Renderer Backend"]
+    Backend --> TextureTable["ResourceId to GPU Texture"]
+    Frame["Frame DrawItem"] --> ResourceId["ResourceId"]
+    ResourceId --> RenderCommand["DrawTexturedQuad"]
+    RenderCommand --> Backend
+    Backend --> Screen["Profile.jpg / Profile2.jpg 표시"]
 
-	classDef data fill:#e8f3ff,stroke:#2f6fed,color:#111;
-	classDef gpu fill:#eaf8ec,stroke:#2b8a3e,color:#111;
-	class FileSystem,Bytes,Codec,Texture2D,ResourceCommand,Frame,ResourceId,RenderCommand data;
-	class Backend,TextureTable,Screen gpu;
+    classDef data fill:#eaf2ff,stroke:#2f6fed,color:#111827;
+    classDef gpu fill:#eaf8ec,stroke:#2b8a3e,color:#111827;
+    class FileSystem,Bytes,Codec,Texture2D,ResourceCommand,Frame,ResourceId,RenderCommand data;
+    class Backend,TextureTable,Screen gpu;
 ```
 
 - `Frame`에는 대용량 픽셀 데이터를 싣지 않습니다.
-- Texture2D는 업로드 시점에 GPU 리소스로 전환됩니다.
+- Texture2D는 upload command를 통해 backend의 GPU resource table로 올라갑니다.
 - 매 프레임 DrawItem은 GPU에 올라간 리소스를 `ResourceId`로 참조합니다.
 - 현재 표시 경로는 정식 ResourceManager가 아니라 debug bootstrap bridge입니다.
 
 ## 빌드 / 플랫폼 경계
 
 ```mermaid
+%%{init: {'flowchart': {'curve': 'linear'}}}%%
 flowchart TB
-	Source["공통 Source"] --> WindowsBuild["Windows build"]
-	Source --> LinuxCompile["Linux compile boundary (#2)"]
-	LinuxCompile --> LinuxBuild["Linux build / integration (#3)"]
+    Source["공통 Source"] --> WindowsBuild["Windows 빌드"]
+    Source --> LinuxBuild["Linux 빌드"]
 
-	WindowsBuild --> VS["Visual Studio .sln / .vcxproj"]
-	WindowsBuild --> WinLeaf["Platform/Windows + DX11 + WIC"]
-	VS --> WinBin["BuildArtifacts/Binaries/Windows/<Config>"]
+    WindowsBuild --> VS["Visual Studio<br/>.sln / .vcxproj"]
+    WindowsBuild --> WinLeaf["Platform/Windows<br/>Win32 · WIC · LoadLibrary"]
+    WindowsBuild --> WinRenderer["Renderer 모듈<br/>Dx11.dll · Vulkan.dll"]
+    VS --> WinBin["Binaries/Windows/&lt;Platform&gt;/&lt;Config&gt;"]
 
-	LinuxCompile --> CMake["CMake"]
-	CMake --> LinuxObject["Common Core compile"]
-	LinuxBuild --> LinuxLeaf["Platform/Linux 구현 예정"]
-	LinuxLeaf --> LinuxTasks["dlopen / POSIX fd / clock_gettime / main"]
-	LinuxBuild --> LinuxBin["BuildArtifacts/Binaries/Linux/<Config>"]
+    LinuxBuild --> CMake["CMake + Ninja"]
+    LinuxBuild --> LinuxLeaf["Platform/Linux<br/>POSIX fd · clock_gettime · dlopen · X11"]
+    LinuxBuild --> LinuxRenderer["Renderer 모듈<br/>Vulkan.so"]
+    CMake --> LinuxBin["Binaries/Linux/x64/&lt;Config&gt;"]
 
-	classDef current fill:#e8f3ff,stroke:#2f6fed,color:#111;
-	classDef future fill:#fff7df,stroke:#c98a00,color:#111;
-	class Source,WindowsBuild,VS,WinLeaf,WinBin,LinuxCompile,CMake,LinuxObject current;
-	class LinuxBuild,LinuxLeaf,LinuxTasks,LinuxBin future;
+    classDef current fill:#eaf2ff,stroke:#2f6fed,color:#111827;
+    class Source,WindowsBuild,LinuxBuild,VS,CMake,WinLeaf,LinuxLeaf,WinRenderer,LinuxRenderer,WinBin,LinuxBin current;
 ```
 
 - Windows 프로덕션 빌드는 `.sln` / `.vcxproj`를 유지합니다.
-- CMake는 Linux 빌드 전용 경로입니다.
-- Windows에서의 CMake 빌드는 Linux 환경 없이 CMake 기술서를 확인하는 프록시 성격입니다.
-- #2와 #3의 경계는 "Linux에서 컴파일된다"입니다.
-- 실제 Linux 빌드, Platform/Linux 구현, Linux Renderer Backend, first-light, 통합 테스트는 #3에서 진행합니다.
+- Linux 빌드는 CMake + Ninja 전용 경로로 운용합니다.
+- Linux main 기준으로 `CyphenEngine`, `CyphenRendererVulkan.so`, SPIR-V shader 산출물을 같은 출력 경로에 배치합니다.
+- module export 규칙은 Windows `__declspec(dllexport)`와 Linux `visibility default`를 공통 매크로 뒤에서 갈라 처리합니다.
 
-## #3 시작점
+## #4 진입점
 
 ```mermaid
+%%{init: {'flowchart': {'curve': 'linear'}}}%%
 flowchart LR
-	Close2["#2: Renderer 모듈 기초 구축 마감"] --> Start3["#3: Linux bring-up"]
-	Start3 --> Build["Linux CMake 실제 빌드"]
-	Start3 --> PlatformLinux["Platform/Linux 구현"]
-	Start3 --> BackendLinux["OpenGL ES / EGL Backend"]
-	Start3 --> DecodeLinux["Linux JPEG leaf"]
-	Start3 --> Integration["first-light + 통합 테스트"]
+    Close3["Linux 포팅 검증 마감"] --> Start4["2D World 개발"]
+    Start4 --> ResourceManager["ResourceManager 정식화"]
+    Start4 --> MeshMaterial["Mesh / Material 기초"]
+    Start4 --> FrameQueue["FrameQueue · 제출 경계"]
+    Start4 --> RuntimeEditor["Runtime / Editor 분리"]
+    Start4 --> RendererStable["Renderer backend 안정화"]
 
-	classDef done fill:#e8f3ff,stroke:#2f6fed,color:#111;
-	classDef next fill:#fff7df,stroke:#c98a00,color:#111;
-	class Close2 done;
-	class Start3,Build,PlatformLinux,BackendLinux,DecodeLinux,Integration next;
+    classDef done fill:#eaf2ff,stroke:#2f6fed,color:#111827;
+    classDef next fill:#fff4d6,stroke:#c98a00,color:#111827;
+    class Close3 done;
+    class Start4,ResourceManager,MeshMaterial,FrameQueue,RuntimeEditor,RendererStable next;
 ```
 
-#3의 목표는 #2에서 만든 Renderer 모듈 기초 위에서 실제 Linux 빌드와 표시 경로를 세우는 것입니다.
+#3(Linux 포팅 검증)을 마감하고 #4로 진입합니다.
+#4의 목표는 debug fixture로 확인한 Texture2D 표시 경로 위에 실제 2D 월드 표시 흐름을 올리는 것입니다.
