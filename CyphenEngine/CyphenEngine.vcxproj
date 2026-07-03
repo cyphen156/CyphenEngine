@@ -103,6 +103,9 @@
     <ClInclude Include="Source\Core\Public\FileSystem.h" />
     <ClInclude Include="Source\Core\Public\FileTypes.h" />
     <ClInclude Include="Source\Core\Public\Math\Mathf.h" />
+    <ClInclude Include="Source\Core\Public\Math\Matrix4x4.h" />
+    <ClInclude Include="Source\Core\Public\Math\Quaternion.h" />
+    <ClInclude Include="Source\Core\Public\Math\Transform.h" />
     <ClInclude Include="Source\Core\Public\Math\Vector.h" />
     <ClInclude Include="Source\Core\Public\Math\Vector2D.h" />
     <ClInclude Include="Source\HAL\Private\PlatformPath.h" />
