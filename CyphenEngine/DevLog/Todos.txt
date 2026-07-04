@@ -5,13 +5,19 @@
 	- Core는 OS API를 직접 호출하지 않고, Platform 구현은 HAL 계약 뒤에 둡니다.
 	- Windows / Linux 양쪽 PlatformFile, PlatformPath, PlatformTime, ModuleLoader 경로를 유지합니다.
 
-2. Renderer / Module
+2. Core Math
+	- Mathf, Vector, Vector2D, Quaternion, Matrix4x4, Transform 기반의 3D-ready 월드 Math 계층을 유지합니다.
+	- 기본 월드 좌표계는 왼손좌표계, +X 오른쪽, +Y 위쪽, +Z 앞쪽입니다.
+	- #4 2D 월드는 XY 평면 제약으로 계산하고, Z는 깊이 / 레이어 / 정렬 값으로 사용합니다.
+	- UI / 스크린 / UV 같은 진짜 2D 개념은 Vector2D를 사용합니다.
+
+3. Renderer / Module
 	- Renderer는 Renderer Module ABI를 통해 런타임 적재되는 선택 모듈로 구성합니다.
 	- CyphenRendererDx11.dll은 Windows DX11 backend입니다.
 	- CyphenRendererVulkan.dll / .so는 Windows에서 먼저 검증한 뒤 Linux X11 + Vulkan 실행까지 연결한 backend입니다.
 	- CyphenRendererOpenGLES는 보류 슬롯으로 유지합니다.
 
-3. Linux Porting
+4. Linux Porting
 	- WSL2 / CMake / Ninja 기반 Linux 빌드 경로는 동작 확인된 상태입니다.
 	- Linux GUI 실행에서 CoreIoTests PASS=69 FAIL=0, ModuleTests PASS=34 FAIL=0을 확인했습니다.
 	- CyphenRendererVulkan.so 로드, Vulkan surface / swapchain / pipeline 초기화, 텍스처 출력까지 확인했습니다.

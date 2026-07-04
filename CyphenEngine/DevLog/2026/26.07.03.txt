@@ -1,0 +1,55 @@
+Date: 2026-07-03
+Branch: #4-2D-월드-개발
+
+작업 요약
+	#4_1에서는 2D 월드 개발의 기반으로 Core Math 계층을 추가하고, CyphenEngine의 기본 월드 좌표계를 왼손좌표계로 고정했습니다.
+	원점과 화면 위치는 뷰/카메라 결정으로 미루되, +X 오른쪽, +Y 위쪽, +Z 화면 안쪽이자 월드 앞쪽이라는 축 기준을 코드와 Decisions 기록에 함께 남겼습니다.
+
+	#4_2에서는 #4 2D 월드를 평면 제약으로 사용하되, #5 3D 확장까지 이어질 수 있도록 저장 타입을 3D-ready로 정리했습니다.
+	위치는 Vector, 회전은 Quaternion, 객체 변환은 Transform(TRS)로 표현하고, Transform::FromPlanar를 통해 #4의 평면 사용 제약을 드러내도록 했습니다.
+
+	이번 단계는 실제 2D 월드 표시 흐름을 구현하기 전, 월드 공간과 객체 변환의 최소 수학 기준을 먼저 고정한 작업입니다.
+	카메라, 투영, parent-child 계층, Runtime / Editor 표시 흐름은 아직 구현 범위에 넣지 않았습니다.
+
+
+진행한 커밋
+	#4_1 [Math] 월드 좌표계 기반 스칼라·벡터 자료형 도입
+	#4_2 [Math] 3D Transform 계층 추가와 월드 공간 규칙 확정
+
+
+주요 정리 내용
+	1. Core Math 스칼라·벡터 계층 추가
+		Core/Public/Math에 Mathf, Vector, Vector2D를 추가했습니다.
+		Mathf는 float 전용 상수와 Abs / Clamp / Lerp / Sqrt / Sin / Atan2 / Floor / Approximately 같은 스칼라 유틸리티를 담당합니다.
+		Vector와 Vector2D는 Dot / Cross / Distance / Lerp / Normalized와 산술 연산자를 자기 타입에 두는 값 타입으로 정리했습니다.
+
+	2. 월드 좌표계와 저장 규칙 고정
+		기본 월드 규칙을 왼손좌표계, +X 오른쪽, +Y 위쪽, +Z 앞쪽으로 정했습니다.
+		Vector::Cross(Vector::Right(), Vector::Up()) == Vector::Forward()를 static_assert로 고정해 좌표계 부호 회귀를 막았습니다.
+		Vector와 Vector2D는 SIMD 정렬 패딩 없이 각각 12바이트 / 8바이트 tight storage를 유지하도록 검증했습니다.
+
+	3. 3D-ready Transform 계층 추가
+		Core/Public/Math에 Quaternion, Matrix4x4, Transform을 추가했습니다.
+		Transform은 position(Vector), rotation(Quaternion), scale(Vector)을 들고 Matrix4x4 월드 행렬을 파생합니다.
+		Matrix4x4는 DirectXMath 규약(row-major, v·M, world=S·R·T)을 따르도록 정리했습니다.
+		#4 평면 사용을 위해 Transform::FromPlanar를 제공하고, z 고정과 Z축 회전 제약을 해당 생성 경로에 담았습니다.
+
+	4. 월드 공간 결정 기록 갱신
+		DevLog/Decisions.txt의 CyphenEngine_World_Rule에 월드 공간, 연산 모델, 좌표 공간 분리, 3D-ready 저장 타입 기준을 정리했습니다.
+		#4 월드 시뮬레이션은 XY 평면의 2차원 연산으로 두고, Z는 깊이 / 레이어 / 정렬 값으로 renderer가 사용하는 기준으로 남겼습니다.
+		스크린 / 픽셀 공간은 월드 공간과 분리하고, 뷰포트 / 투영 경계에서 변환하는 기준을 명시했습니다.
+
+
+정리한 설계 기준
+	- Core Math는 런타임 모듈이 아니라 Build / Core 기반에서 직접 포함되는 컴파일 타임 계층입니다.
+	- 기본 월드 좌표계는 왼손좌표계이며, +X 오른쪽, +Y 위쪽, +Z 앞쪽을 따른다.
+	- #4의 2D 월드는 XY 평면 제약으로 계산하고, Z는 월드 연산 축이 아니라 깊이 / 레이어 / 정렬 값으로 사용한다.
+	- 위치 저장은 Vector(3D), 회전은 Quaternion, 객체 변환은 Transform(TRS)을 기본으로 두어 #5 3D 확장 시 평면 제약만 해제할 수 있게 한다.
+	- UI / 스크린 / UV 같은 진짜 2D 개념은 Vector2D를 사용하고, 월드 공간과 화면 공간 변환은 Core Math 값 타입 밖에서 처리한다.
+	- 카메라, 투영, 계층(parent-child), Runtime / Editor 표시 책임은 이번 Math 기준 정리 범위에 넣지 않는다.
+
+
+다음 작업
+	- debug fixture 수준의 텍스처 표시를 실제 2D 월드 표시 입력으로 옮기는 최소 경로를 설계합니다.
+	- 월드 객체 데이터가 Frame / RenderCommand로 넘어갈 때 필요한 위치 / 회전 / 스케일 / 정렬 입력을 정리합니다.
+	- Runtime / Editor 책임 경계와 카메라 / 투영 도입 시점을 다음 #4 작업에서 다시 확인합니다.
