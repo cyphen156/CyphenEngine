@@ -8,42 +8,9 @@
 
 CyphenEngine World는 순수 ECS가 아닙니다. OOP Object를 기본 정의 표면으로 두고, 다수·균일·hot-path 행동만 런타임에 System으로 enroll해 DOD로 실행합니다.
 
-```mermaid
-flowchart TB
-    O["Object System (OOP)<br/>즉시 반영 · 유니크 · 소수"]
-    ER["Enroll / Register / Unenroll<br/>안전 지점에서만 확정"]
-    S["Enrolled System (DOD)<br/>RuntimeEntry · 다수 · 균일 · hot-path"]
-    C["Command / Event Buffer"]
-    RS["Resolve<br/>배열 순서 아닌 명시 규칙"]
-    AP["Apply<br/>System 결과 write-back"]
-    W["World ComponentStorage<br/>공유 SSOT (Transform, Sprite)"]
-    FE["FrameExtract → Renderer"]
-
-    O --> ER --> S
-    S --> C --> RS --> AP --> W
-    O -. 즉시 write (phase 제한) .-> W
-    S -. 공유 상태는 index read .-> W
-    W --> FE
-
-    classDef current fill:#eaf2ff,stroke:#2f6fed,color:#111827;
-    classDef next fill:#fff4d6,stroke:#c98a00,color:#111827;
-    classDef future fill:#f1f3f5,stroke:#9ca3af,color:#111827;
-    class O current;
-    class ER,S,C,RS,AP next;
-    class W,FE future;
-```
+![World Loop 구조: Object(OOP)와 enroll된 System(DOD)이 World ComponentStorage(공유 SSOT)를 사이에 두고 병존하며, 프레임은 BeginFrame부터 EndFrame까지 이름 붙은 phase로 흐른다](Images/world-loop.svg)
 
 ## Tick Phase
-
-```mermaid
-flowchart LR
-    B["BeginFrame"] --> OU["ObjectUpdate"] --> SS["SystemSync"] --> SC["SystemCompute"] --> R["Resolve"] --> A["Apply"] --> FX["FrameExtract"] --> E["EndFrame"]
-
-    classDef current fill:#eaf2ff,stroke:#2f6fed,color:#111827;
-    classDef next fill:#fff4d6,stroke:#c98a00,color:#111827;
-    class B,OU,FX,E current;
-    class SS,SC,R,A next;
-```
 
 - `SystemSync` = pending Register/Unregister·enroll/unenroll 확정 **안전 지점**.
 - `SystemCompute` = **World/Object 직접 write 금지** (read-only 핸들만 받음).

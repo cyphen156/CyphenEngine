@@ -36,6 +36,12 @@ CyphenEngine은 Unreal Engine처럼 엔진 중심의 저수준 제어와 명확�
 
 현재 화면에 표시되는 것은 아직 debug fixture 수준의 텍스처 출력입니다. 하지만 Windows에서는 Dx11 / Vulkan backend를, Linux에서는 Vulkan backend를 같은 엔진 상위 흐름으로 실행하는 데까지 확인했습니다.
 
+## 월드 실행 구조 (#4)
+
+![World Loop: Object(OOP)와 런타임 enroll된 System(DOD)이 World ComponentStorage(공유 SSOT)를 사이에 두고 병존하며, 프레임은 이름 붙은 phase로 흐른다](Docs/Images/world-loop.svg)
+
+#4 2D 월드의 실행 구조입니다. OOP Object를 기본 정의 표면으로 두고, 다수·균일·hot-path 행동만 런타임에 System으로 enroll해 DOD로 실행합니다. 구조 변경은 안전 지점(SystemSync)에서만, 공유 storage write는 Apply에서만 이뤄집니다. 상세는 [Docs/WorldLoop.md](Docs/WorldLoop.md).
+
 ## 렌더 파이프라인
 
 ![Engine이 Frame을 제출하면 Renderer가 Command Buffer로 변환하고 Backend가 순차 디스패치해 화면에 present하는 흐름](Docs/Images/render-loop.png)
