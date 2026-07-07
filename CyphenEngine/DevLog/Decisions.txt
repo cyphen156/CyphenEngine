@@ -1,27 +1,106 @@
 CyphenEngine_World_Rule
 
-1. 월드 좌표계 축 방향
-	왼손좌표계를 사용한다.
-	X축의 양수 방향은 오른쪽이다.
-	Y축의 양수 방향은 위쪽이다.
-	Z축의 양수 방향은 화면 안쪽이자 월드의 앞쪽이다.
+	1. 월드 좌표계 축 방향
+		왼손좌표계를 사용한다.
+		X축의 양수 방향은 오른쪽이다.
+		Y축의 양수 방향은 위쪽이다.
+		Z축의 양수 방향은 화면 안쪽이자 월드의 앞쪽이다.
 
-2. 월드 공간
-	무한 연속 평면이며 고정 경계를 두지 않는다.
-	원점 (0, 0, 0)은 공간의 정준 기준점이다. (모니터 상 위치는 뷰/카메라 결정으로 미룬다)
-	기본 단위는 1 unit = 1 meter로 한다.
+	2. 월드 공간
+		무한 연속 평면이며 고정 경계를 두지 않는다.
+		원점 (0, 0, 0)은 공간의 정준 기준점이다. (모니터 상 위치는 뷰/카메라 결정으로 미룬다)
+		기본 단위는 1 unit = 1 meter로 한다.
 
-3. 연산 모델 (#4 2D 월드)
-	#4의 월드 시뮬레이션(이동·충돌·질의)은 XY 평면으로 제약해 2차원으로 연산한다.
-	Z는 #4에서 월드 연산 축이 아니라 깊이/레이어/정렬 값이며 렌더러가 사용한다.
+	3. 연산 모델 (#4 2D 월드)
+		#4의 월드 시뮬레이션(이동·충돌·질의)은 XY 평면으로 제약해 2차원으로 연산한다.
+		Z는 #4에서 월드 연산 축이 아니라 깊이/레이어/정렬 값이며 렌더러가 사용한다.
 
-4. 좌표 공간 분리
-	스크린/픽셀 공간은 월드 공간과 별개이며 뷰포트/투영 경계에서 변환한다.
-	Core Math 값 타입은 원점 위치와 화면 flip에 중립이다.
+	4. 좌표 공간 분리
+		스크린/픽셀 공간은 월드 공간과 별개이며 뷰포트/투영 경계에서 변환한다.
+		Core Math 값 타입은 원점 위치와 화면 flip에 중립이다.
 
-5. 저장 타입 (3D-ready)
-	로드맵상 #5가 3D 확장이므로 저장 타입은 처음부터 3D-ready로 둔다.
-	위치는 Vector(3D), 회전은 Quaternion, 객체 변환은 Transform(TRS)로 표현한다.
-	#4는 평면 제약(z 고정, Z축 회전)으로 사용하며 Transform::FromPlanar가 그 제약을 표현한다.
-	#5의 3D 확장은 이 평면 제약을 해제하는 것이다.
-	진짜 2D 개념(UI/스크린/UV)은 Vector2D를 쓴다.
+	5. 저장 타입 (3D-ready)
+		로드맵상 #5가 3D 확장이므로 저장 타입은 처음부터 3D-ready로 둔다.
+		위치는 Vector(3D), 회전은 Quaternion, 객체 변환은 Transform(TRS)로 표현한다.
+		#4는 평면 제약(z 고정, Z축 회전)으로 사용하며 Transform::FromPlanar가 그 제약을 표현한다.
+		#5의 3D 확장은 이 평면 제약을 해제하는 것이다.
+		진짜 2D 개념(UI/스크린/UV)은 Vector2D를 쓴다.
+	
+
+CyphenEngine_World_Loop_Rule
+
+*향후 구현 / 계획 변경에 따라 일부 또는 전체 개정될 수 있습니다.*
+*네이밍은 임시로 두었으며, 구현 시점에 맞게 변경될 수 있습니다.*
+
+	1. 기본 방향
+		CyphenEngine World는 순수 ECS를 기본 모델로 삼지 않는다.
+		OOP Object/Component를 기본 정의·저작 표면으로 둔다.
+		다수·균일·hot-path 행동만 런타임에 System으로 enroll해 DOD 방식으로 실행한다.
+		DOD는 정의 계층이 아니라 런타임 enroll 계층으로만 존재한다.
+		이로써 순수 ECS의 시스템 증식과 엄격한 전역 순서를 피하고, 일회성 행동의 롱테일은 OOP에 남긴다.
+
+	2. 두 실행 체계의 병존
+		World에는 Object System과 Enrolled System이 병존한다.
+		Object System은 OOP식 정의, 즉시 반영, 유니크 행동, 소수 객체 행동을 담당한다.
+		Enrolled System은 RuntimeEntry / ComponentStorage 기반으로 다수·균일·hot-path 행동을 일괄 처리한다.
+		Object System은 즉시성을 기대하는 영역이므로 기본적으로 병렬 compute graph에 넣지 않는다.
+		Enrolled System은 안정된 입력을 기준으로 compute하고, 결과는 정해진 apply point에서만 World에 반영한다.
+
+	3. System (실행 단위)
+		런타임 처리 단위의 정식 명칭은 System이다.
+		Skul: Dimension Rift의 SubSystem은 사용자 정의 최적화 시스템 용어였으며, CyphenEngine에서는 Gameplay 계층에서 같은 사용성을 제공한다.
+		Engine Core는 사용자 System을 직접 하드코딩하지 않고 Register / Enroll / Unenroll / Tick Phase 계약만 제공한다.
+		Gameplay 계층은 System의 구성·등록·정책(어떤 Object를 어떤 RuntimeEntry로 묶을지)을 정의하되, compute 커널은 concrete/native로 유지한다. (스크립트 VM이 도입되어도 hot 루프는 스크립트로 실행하지 않는다)
+		행동의 주체는 Object가 아니라 System이며, System은 자신의 RuntimeEntry 배열 또는 바인딩된 ComponentStorage 범위를 순회한다.
+		System 수명 계약(Initialize / Tick / Shutdown)은 concrete 등록으로 구성하며 vtable/interface에 의존하지 않는다.
+		추상은 System 경계(프레임당 1회 호출)에만 두고, hot 루프 내부는 concrete/monomorphic로 유지한다.
+
+	4. DOD 적용 조건
+		System(DOD)로 뽑는 기준은 다수·균일·hot-path이며, 개별 판정 공정성이 불필요하거나 명시 규칙으로 해결 가능한 경우다.
+		소수·유니크·관계형(계층·공간 질의) 로직은 OOP 소유 또는 스크립트로 남긴다.
+		적용 여부는 호출 횟수가 아니라 위 조건을 만족하는지로 판단한다.
+
+	5. Enroll / Register / Unenroll
+		Enroll은 System 참여를 확정하는 단일 구조 변경 프리미티브이며 안전 지점에서만 수행한다.
+		진입 트리거는 둘이다: authoring-time 직접 Enroll, runtime Register 요청.
+		Register는 Enroll의 대안이 아니라, 런타임에서 Enroll을 요청하는 지연 트리거다.
+		Register는 즉시 System storage를 변경하지 않고 pending queue에 기록되며, 안전 지점에서 Enroll로 확정된다.
+		이탈도 대칭이다. Unregister / 사망 / 범위 이탈은 pending 요청으로 기록되고, 안전 지점에서 Unenroll로 확정된다.
+		RuntimeEntry가 SSOT이던 hot data는 Unenroll 전에 필요한 경우 World storage 또는 OOP Object로 write-back / hand-back한다.
+
+	6. SSOT (단일 진실)
+		Enroll / Register는 구조 변경 타이밍을 다루는 규칙이며, 데이터 소유 문제를 해결하지 않는다.
+		데이터 소유와 stale 방지는 SSOT 규칙이 담당한다.
+		공유·write-back 대상 상태(Transform, Sprite 등)는 World가 연속 storage로 소유하며 이것이 유일한 SSOT다.
+		System이 단독 소유하고 다른 System/Object가 읽지 않는 hot data만 RuntimeEntry에 인라인으로 둘 수 있다.
+		둘 이상이 읽거나 write-back 대상이 되는 데이터는 World ComponentStorage를 SSOT로 둔다.
+		애매하면 공유 storage를 우선한다.
+		OOP 즉시 반영과 System Apply가 같은 공유 컴포넌트를 동시에 쓰지 않도록 write-ownership을 phase 단위로 제한한다.
+
+	7. 데이터 레이아웃 (compute / binding 분리)
+		RuntimeEntry = System 소유 hot data(인라인) + 공유 storage로의 index.
+		compute 패스는 인라인 hot data를 스트림하고, 공유 상태가 필요하면 index로 값만 읽는다. 관리(managed) 참조나 포인터 체인 추적은 하지 않는다.
+		결과 반영(write-back)은 index로 World storage에 수행하며, 흩어진 write는 Apply 단계로 제한한다.
+		저장이 연속이라고 접근이 연속인 것은 아니다.
+		큰 System은 index 정렬·조밀화를 통해 접근 순서가 저장 순서와 가깝게 유지되도록 한다.
+
+	8. 판정과 이벤트 (순서 의존 제거)
+		같은 프레임의 상호작용 판정은 즉시 해결하지 않는다.
+		1패스에서 이벤트/커맨드를 수집하고, 2패스에서 명시적 규칙으로 해결한다.
+		판정 우선순위는 배열 순서가 아니라 문서화된 규칙으로 정한다.
+		이벤트/커맨드 수집은 병렬 compute와 호환되도록 thread-local 또는 System-local buffer를 우선한다.
+
+	9. 실행 순서 (Tick Phase)
+		World loop는 이름 붙은 phase로 구성한다.
+		기본 phase는 BeginFrame / ObjectUpdate / SystemSync / SystemCompute / Resolve / Apply / FrameExtract / EndFrame이다.
+		ObjectUpdate는 OOP 즉시 반영 모델을 유지하되, phase 단위 write-ownership을 따른다.
+		SystemSync는 pending Register/Unregister, dirty sync, enroll/unenroll 확정을 처리하는 안전 지점이다.
+		SystemCompute는 Enrolled System의 compute phase이며 World/Object 직접 write를 금지한다.
+		Resolve는 이벤트/커맨드를 명시 규칙으로 해결한다.
+		Apply는 Enrolled System 결과를 공유 World storage에 write-back하는 유일한 지점이다.
+		System 간 read/write 의존(read-after-write)은 phase 또는 명시적 선행 조건으로 해결하며 암묵적 순서에 기대지 않는다.
+
+	10. 이번에 하지 않는 것
+		DOTS식 기계장치(archetype chunk, Burst/SIMD, Job 자동 스케줄러)는 이번에 도입하지 않는다.
+		지금은 developer-composed(명시적 enroll·Tick)로 두고, 자동 스케줄·병렬은 시스템 수·엔티티 수가 그 비용을 정당화할 때의 후속 과제로 남긴다.
+		분기 압축(플래그화)·캐시라인 패킹은 엔트리 수가 큰 System에만 적용한다.

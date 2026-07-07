@@ -70,6 +70,7 @@ Debug 빌드 기준으로 다음 흐름을 확인합니다.
 ## 문서
 
 - [구조 시각화](Docs/Architecture.md): 계층 구조, Renderer Module ABI, Command Stream, 빌드 / 플랫폼 경계
+- [World Loop 실행 구조](Docs/WorldLoop.md): #4 Object/System 병존·Tick Phase·Enroll/Register와 대표 예시
 - `CyphenEngine/DevLog/`: 작업 단위별 개발 기록
 - `CyphenEngine/DevLog/폴더 기능 정리.txt`: 폴더별 책임 요약
 - `CyphenEngine/DevLog/Todos.txt`: 현재 작업 큐와 남은 설계 항목
@@ -85,6 +86,7 @@ README는 프로젝트 소개와 현재 방향만 다룹니다. 세부 구현 �
 - FrameQueue와 렌더 제출 경계 정리
 - Runtime / Editor 책임 분리
 - Windows / Linux 양쪽에서 유지 가능한 renderer 경계 보강
+- World Loop 실행 구조 도입 — Object(OOP) + 런타임 enroll된 System(DOD) 병존 (설계 확정, 구현 예정)
 
 ## 개발 방식
 
