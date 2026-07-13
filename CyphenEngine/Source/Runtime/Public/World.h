@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Core/Public/CPrimitiveTypes.h"
+#include "Runtime/Public/Chunk.h"
 
 class GameRuntime;
 
@@ -22,8 +23,9 @@ class GameRuntime;
 //   - 자체 Run loop 소유
 //   - delta time 산출과 Tick 호출 정책
 //   - Render Frame 생성과 Renderer 연결
-//   - 아직 구현되지 않은 Object / System / Physics 모델 정의
+//   - Object / Component / System / Physics 타입 정의
 // ============================================================================
+
 class World final
 {
 public:
@@ -37,4 +39,6 @@ private:
 
 	uint64 simulationTick = 0;
 	double simulationTime = 0.0;
+
+	Chunk worldOrigin = {};
 };

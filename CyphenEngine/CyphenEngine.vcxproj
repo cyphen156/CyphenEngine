@@ -102,12 +102,14 @@
     <ClInclude Include="Source\Core\Public\FileStream.h" />
     <ClInclude Include="Source\Core\Public\FileSystem.h" />
     <ClInclude Include="Source\Core\Public\FileTypes.h" />
+    <ClInclude Include="Source\Core\Public\Handle.h" />
+    <ClInclude Include="Source\Core\Public\Math\Coordinate.h" />
     <ClInclude Include="Source\Core\Public\Math\Mathf.h" />
     <ClInclude Include="Source\Core\Public\Math\Matrix4x4.h" />
     <ClInclude Include="Source\Core\Public\Math\Quaternion.h" />
     <ClInclude Include="Source\Core\Public\Math\Transform.h" />
     <ClInclude Include="Source\Core\Public\Math\Vector.h" />
-    <ClInclude Include="Source\Core\Public\Math\Vector2D.h" />
+    <ClInclude Include="Source\Core\Public\Math\Vector2.h" />
     <ClInclude Include="Source\HAL\Private\PlatformPath.h" />
     <ClInclude Include="Source\Modules\Public\ModuleBinder.h" />
     <ClInclude Include="Source\Modules\Public\Command.h" />
@@ -144,7 +146,12 @@
     <ClInclude Include="Source\Platform\Windows\Resource\Resource.h" />
     <ClInclude Include="Source\Resource\Public\Resource.h" />
     <ClInclude Include="Source\Resource\Public\Texture.h" />
+    <ClInclude Include="Source\Runtime\Public\Chunk.h" />
+    <ClInclude Include="Source\Runtime\Public\Component.h" />
+    <ClInclude Include="Source\Runtime\Public\Entity.h" />
+    <ClInclude Include="Source\Runtime\Public\GameObject.h" />
     <ClInclude Include="Source\Runtime\Public\GameRuntime.h" />
+    <ClInclude Include="Source\Runtime\Public\Object.h" />
     <ClInclude Include="Source\Runtime\Public\World.h" />
     <!-- Test -->
     <ClInclude Include="Source\Test\CoreIO\CoreIOTests.h" />
@@ -215,7 +222,10 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="Source\Resource\Private\Texture.cpp" />
+    <ClCompile Include="Source\Runtime\Private\Component.cpp" />
+    <ClCompile Include="Source\Runtime\Private\GameObject.cpp" />
     <ClCompile Include="Source\Runtime\Private\GameRuntime.cpp" />
+    <ClCompile Include="Source\Runtime\Private\Object.cpp" />
     <ClCompile Include="Source\Runtime\Private\World.cpp" />
     <!-- Test -->
     <ClCompile Include="Source\Test\CoreIO\CoreIOTests.cpp" />

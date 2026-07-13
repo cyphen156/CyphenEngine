@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Core/Public/Math/Vector.h"
-#include "Core/Public/Math/Vector2D.h"
+#include "Core/Public/Math/Vector2.h"
 #include "Core/Public/Math/Quaternion.h"
 #include "Core/Public/Math/Matrix4x4.h"
 
@@ -38,7 +38,7 @@ struct Transform
 	}
 
 	// #4 평면 편의 생성자입니다. XY 평면 위치 + Z축 회전 + XY 스케일.
-	static Transform FromPlanar(const Vector2D& planarPosition, float rotationZ, const Vector2D& planarScale)
+	static Transform FromPlanar(const Vector2& planarPosition, float rotationZ, const Vector2& planarScale)
 	{
 		return Transform(
 			Vector(planarPosition.x, planarPosition.y, 0.0f),

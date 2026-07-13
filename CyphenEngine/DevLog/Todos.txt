@@ -6,10 +6,10 @@
 	- Windows / Linux 양쪽 PlatformFile, PlatformPath, PlatformTime, ModuleLoader 경로를 유지합니다.
 
 2. Core Math
-	- Mathf, Vector, Vector2D, Quaternion, Matrix4x4, Transform 기반의 3D-ready 월드 Math 계층을 유지합니다.
+	- Mathf, Vector, Vector2, Quaternion, Matrix4x4, Transform 기반의 3D-ready 월드 Math 계층을 유지합니다.
 	- 기본 월드 좌표계는 왼손좌표계, +X 오른쪽, +Y 위쪽, +Z 앞쪽입니다.
 	- #4 2D 월드는 XY 평면 제약으로 계산하고, Z는 깊이 / 레이어 / 정렬 값으로 사용합니다.
-	- UI / 스크린 / UV 같은 진짜 2D 개념은 Vector2D를 사용합니다.
+	- UI / 스크린 / UV 같은 진짜 2D 개념은 Vector2를 사용합니다.
 
 3. Renderer / Module
 	- Renderer는 Renderer Module ABI를 통해 런타임 적재되는 선택 모듈로 구성합니다.

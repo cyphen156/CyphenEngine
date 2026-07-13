@@ -24,7 +24,7 @@ CyphenEngine_World_Rule
 		위치는 Vector(3D), 회전은 Quaternion, 객체 변환은 Transform(TRS)로 표현한다.
 		#4는 평면 제약(z 고정, Z축 회전)으로 사용하며 Transform::FromPlanar가 그 제약을 표현한다.
 		#5의 3D 확장은 이 평면 제약을 해제하는 것이다.
-		진짜 2D 개념(UI/스크린/UV)은 Vector2D를 쓴다.
+		진짜 2D 개념(UI/스크린/UV)은 Vector2를 쓴다.
 	
 
 CyphenEngine_World_Loop_Rule
@@ -119,9 +119,10 @@ CyphenEngine_Runtime_World_Snapshot_Rule
 		따라서 Runtime 조율과 World::Tick은 대안 관계가 아니다. Runtime이 호출 정책을 소유하고 World가 자신의 상태 전진을 수행한다.
 
 	2. 현재 최소 상태
-		현재 World가 실제로 소유하는 상태는 simulationTick과 simulationTime뿐이다.
-		Object, Object reference, ObjectStorage, ComponentStorage, WorldTransformStorage, Physics, System은 후속 작업에서 결정하고 구현한다.
-		아직 존재하지 않는 Object/GameObject 모델이나 표현 상태를 현재 구현에 미리 추가하지 않는다.
+		현재 World가 실제로 소유하는 상태는 simulationTick, simulationTime, 원점 Chunk다.
+		Handle, Object, GameObject, Component, Entity의 최소 기반 타입은 현재 구현에 포함한다.
+		Object reference, ObjectStorage, ComponentStorage, WorldTransformStorage, Physics, System은 후속 작업에서 결정하고 구현한다.
+		현재 최소 구현은 좌표 도메인과 OOP/DOD 정체성 경계만 정의하며, 저장소·부착·실행 기계장치는 미리 추가하지 않는다.
 
 	3. Live World, Snapshot, Render Frame
 		World는 여러 tick에 걸쳐 유지되는 현재의 가변 simulation state다.
