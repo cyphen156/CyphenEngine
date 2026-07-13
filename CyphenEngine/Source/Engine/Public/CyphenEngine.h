@@ -5,6 +5,7 @@
 #include "Core/Public/types.h"
 #include "Engine/Public/EngineContext.h"
 #include "Modules/Renderer/Public/Renderer.h"
+#include "Runtime/Public/GameRuntime.h"
 
 /**
  * 플랫폼 독립 애플리케이션 호스트입니다.
@@ -45,6 +46,7 @@ private:
 
 private:
 	std::atomic<EngineStatus> engineStatus;
+	GameRuntime gameRuntime;
 	EngineContext engineContext;
 	Renderer renderer;
 };

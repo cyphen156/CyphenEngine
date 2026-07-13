@@ -46,6 +46,9 @@ set(CYPHEN_COMMON_SOURCES
 
 	Source/Resource/Private/Texture.cpp
 
+	Source/Runtime/Private/GameRuntime.cpp
+	Source/Runtime/Private/World.cpp
+
 	Source/Test/CoreIO/CoreIOTests.cpp
 	Source/Test/Module/ModuleTest.cpp
 )

@@ -46,6 +46,11 @@ bool CyphenEngine::InitEngine(const LaunchContext& launchContext)
 		return false;
 	}
 
+	if (gameRuntime.Initialize() == false)
+	{
+		return false;
+	}
+
 	if (renderer.Initialize(launchContext.nativeRenderContextHandle, engineContext.windowInfo) == false)
 	{
 		return false;
@@ -150,7 +155,7 @@ void CyphenEngine::Run()
 		Time::Tick();
 
 		// TODO:
-		// BUILD_TARGET 기준 Runtime Tick
+		// gameRuntime.Tick(Time::DeltaTime())
 
 		// 렌더링을 위한 프레임 생산
 		Frame frame = {};
@@ -226,8 +231,12 @@ void CyphenEngine::ShutdownEngine()
 		return;
 	}
 
+
 	// Renderer 내부에서 Render Thread와 GPU 인스턴스를 먼저 종료합니다.
 	renderer.Shutdown();
+	
+	// GameRuntime 내부에서 World를 초기 상태로 되돌립니다.
+	gameRuntime.Shutdown();
 
 	engineStatus.store(Terminated);
 }

@@ -104,3 +104,54 @@ CyphenEngine_World_Loop_Rule
 		DOTS식 기계장치(archetype chunk, Burst/SIMD, Job 자동 스케줄러)는 이번에 도입하지 않는다.
 		지금은 developer-composed(명시적 enroll·Tick)로 두고, 자동 스케줄·병렬은 시스템 수·엔티티 수가 그 비용을 정당화할 때의 후속 과제로 남긴다.
 		분기 압축(플래그화)·캐시라인 패킹은 엔트리 수가 큰 System에만 적용한다.
+
+CyphenEngine_Runtime_World_Snapshot_Rule
+
+*현재 #4 최소 구현에서 책임 경계를 검증하기 위한 선행 결정입니다.*
+*Object/System/Physics 구현 결과에 따라 Snapshot의 데이터 구성, 보관 용량, 복원 정책, 네이밍은 변경될 가능성이 높습니다.*
+
+	1. 책임과 실행 계층
+		CyphenEngine은 프로세스 호스트이자 최상위 프레임 펌프다.
+		GameRuntime은 하나의 실행 컨텍스트로서 World를 소유하고 World의 실행 여부, delta time 전달, snapshot 보관 정책을 조율한다.
+		World는 Object와 System이 살아가는 하나의 논리 시뮬레이션 공간이자 현재 상태 컨테이너다.
+		World::Tick은 자체 Run loop가 아니라 Runtime이 호출하는 한 번의 simulation step이다.
+		실행 호출은 CyphenEngine::Run -> GameRuntime::Tick -> World::Tick -> 향후 System 순서로 중첩된다.
+		따라서 Runtime 조율과 World::Tick은 대안 관계가 아니다. Runtime이 호출 정책을 소유하고 World가 자신의 상태 전진을 수행한다.
+
+	2. 현재 최소 상태
+		현재 World가 실제로 소유하는 상태는 simulationTick과 simulationTime뿐이다.
+		Object, Object reference, ObjectStorage, ComponentStorage, WorldTransformStorage, Physics, System은 후속 작업에서 결정하고 구현한다.
+		아직 존재하지 않는 Object/GameObject 모델이나 표현 상태를 현재 구현에 미리 추가하지 않는다.
+
+	3. Live World, Snapshot, Render Frame
+		World는 여러 tick에 걸쳐 유지되는 현재의 가변 simulation state다.
+		WorldSnapshot은 특정 simulation tick으로 복구하기 위한 값 데이터다.
+		Frame은 Renderer가 소비하는 표현 전용 입력이며 WorldSnapshot과 목적과 수명이 다르다.
+		World는 WorldSnapshot을 capture/restore할 수 있지만 snapshot history 자체는 소유하지 않는다.
+
+	4. Snapshot History
+		GameRuntime은 초기 World 상태와 매 World::Tick 이후 상태를 고정 용량 원형 큐에 기록한다.
+		현재 #4의 history 용량은 32개다.
+		32개는 현재 경계와 원형 큐 동작을 검증하기 위한 초기값이며 실제 World 상태 크기와 목표 rollback 범위를 측정한 뒤 조정한다.
+		0 ticksAgo는 가장 최근 snapshot이며 용량을 넘은 가장 오래된 snapshot은 덮어쓴다.
+		과거 snapshot을 복원하면 기존 미래 history를 폐기하고 복원한 상태를 새 기준점으로 남긴다.
+		60Hz 기준 32개 snapshot은 약 0.53초의 상태 범위다.
+
+	5. Physics Snapshot 방향
+		Physics가 추가되면 복구와 재시뮬레이션에 필요한 World-local persistent 상태를 WorldSnapshot에 포함한다.
+		Body transform, velocity, sleep/activation, collider/constraint persistent state, World physics configuration은 포함 후보다.
+		solver scratch memory, thread-local buffer, 재구축 가능한 broadphase cache, 일회성 contact buffer는 기본 제외 후보다.
+		최종 포함 기준은 snapshot 복원 후 동일한 입력으로 시뮬레이션을 계속할 수 있는가이다.
+
+	6. Rollback, Replay, Render Queue
+		최근 snapshot history는 rollback/rewind의 상태 복구 기반이다.
+		복원 이후 input 재실행, deterministic simulation 검증, network rollback은 후속 작업이다.
+		장기 replay는 모든 full snapshot의 무기한 보관보다 초기 또는 주기적 keyframe snapshot과 input/event log 조합을 우선 검토한다.
+		Render Frame Queue와 World Snapshot History는 데이터 목적, 용량, 수명 정책이 다르므로 통합하지 않는다.
+		Rollback과 Replay는 현재 확정 기능이 아니라 Snapshot 구조가 열어 두는 미래 방향이며 실제 요구와 비용을 확인한 뒤 확정한다.
+
+	7. Runtime과 World의 다중성
+		현재 구현은 CyphenEngine 하나가 GameRuntime 하나를 구성하고, GameRuntime 하나가 World 하나를 소유한다.
+		Editor MultiPlay를 위해 프로세스당 Runtime 0..N과 Runtime당 독립 World 가능성을 막지 않는다.
+		Runtime과 World 상태는 전역/싱글턴으로 두지 않고 인스턴스 범위에 둔다.
+		Runtime 컨테이너, EditorRuntime, PIE, 단일 프로세스/다중 프로세스 구성은 해당 기능 구현 시 결정한다.
