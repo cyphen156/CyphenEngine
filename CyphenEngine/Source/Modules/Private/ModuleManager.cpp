@@ -45,10 +45,9 @@ bool ModuleManager::Refresh(const std::vector<ModuleDescriptor>& moduleDescripto
 			continue;
 		}
 
-		auto discoveredResult =
-			discoveredModuleNames.emplace(moduleDescriptor.moduleName);
+		const bool isDiscovered = discoveredModuleNames.emplace(moduleDescriptor.moduleName).second;
 
-		if (discoveredResult.second == false)
+		if (isDiscovered == false)
 		{
 			refreshedDescriptors.erase(moduleDescriptor.moduleName);
 			rejectedModuleNames.emplace(moduleDescriptor.moduleName);
@@ -108,7 +107,7 @@ bool ModuleManager::Acquire(const CString& moduleName)
 		return false;
 	}
 
-	auto descriptorIterator = gModuleDescriptors.find(moduleName);
+	std::map<CString, ModuleDescriptor>::iterator descriptorIterator = gModuleDescriptors.find(moduleName);
 
 	if (descriptorIterator == gModuleDescriptors.end())
 	{
@@ -124,7 +123,7 @@ bool ModuleManager::Acquire(const CString& moduleName)
 		return false;
 	}
 
-	auto moduleIterator = gModuleRecords.find(moduleName);
+	std::map<CString, ModuleRecord>::iterator moduleIterator = gModuleRecords.find(moduleName);
 
 	if (moduleIterator != gModuleRecords.end())
 	{
@@ -156,9 +155,9 @@ bool ModuleManager::Acquire(const CString& moduleName)
 	moduleRecord.nativeHandle = nativeHandle;
 	moduleRecord.referenceCount = 1;
 
-	auto insertResult = gModuleRecords.emplace(moduleName, moduleRecord);
+	const bool isInserted = gModuleRecords.emplace(moduleName, moduleRecord).second;
 
-	if (insertResult.second == false)
+	if (isInserted == false)
 	{
 		ModuleLoader::Unload(nativeHandle);
 		return false;
@@ -176,14 +175,14 @@ bool ModuleManager::Release(const CString& moduleName)
 		return false;
 	}
 
-	auto moduleIterator = gModuleRecords.find(moduleName);
+	std::map<CString, ModuleRecord>::iterator iterator = gModuleRecords.find(moduleName);
 
-	if (moduleIterator == gModuleRecords.end())
+	if (iterator == gModuleRecords.end())
 	{
 		return false;
 	}
 
-	ModuleRecord& moduleRecord = moduleIterator->second;
+	ModuleRecord& moduleRecord = iterator->second;
 
 	if (moduleRecord.referenceCount == 0)
 	{
@@ -212,15 +211,15 @@ ModuleSymbol ModuleManager::FindSymbol(const CString& moduleName, const char* sy
 		return nullptr;
 	}
 
-	auto moduleIterator = gModuleRecords.find(moduleName);
+	std::map<CString, ModuleRecord>::iterator iterator = gModuleRecords.find(moduleName);
 
-	if (moduleIterator == gModuleRecords.end())
+	if (iterator == gModuleRecords.end())
 	{
 		return nullptr;
 	}
 
 	return ModuleLoader::FindSymbol(
-		moduleIterator->second.nativeHandle,
+		iterator->second.nativeHandle,
 		symbolName);
 }
 
@@ -241,7 +240,7 @@ void ModuleManager::GetLoadedModuleNames(std::vector<CString>& outModuleNames)
 
 bool ModuleManager::RemoveModuleRecord(const CString& moduleName)
 {
-	auto moduleIterator = gModuleRecords.find(moduleName);
+	std::map<CString, ModuleRecord>::iterator moduleIterator = gModuleRecords.find(moduleName);
 
 	if (moduleIterator == gModuleRecords.end())
 	{
@@ -255,7 +254,8 @@ bool ModuleManager::RemoveModuleRecord(const CString& moduleName)
 
 	gModuleRecords.erase(moduleIterator);
 
-	for (auto loadOrderIterator = gModuleLoadOrder.begin();
+	std::vector<CString>::iterator loadOrderIterator;
+	for (loadOrderIterator = gModuleLoadOrder.begin();
 		loadOrderIterator != gModuleLoadOrder.end();
 		++loadOrderIterator)
 	{
@@ -277,11 +277,10 @@ bool ModuleManager::UnloadAll()
 	bool isAllUnloaded = true;
 
 	// Module이 적재된 순서의 역순으로 종료합니다.
-	for (auto moduleIterator = loadedModuleNames.rbegin();
-		moduleIterator != loadedModuleNames.rend();
-		++moduleIterator)
+	std::vector<CString>::reverse_iterator iterator;
+	for (iterator = loadedModuleNames.rbegin(); iterator != loadedModuleNames.rend(); ++iterator)
 	{
-		if (RemoveModuleRecord(*moduleIterator) == false)
+		if (RemoveModuleRecord(*iterator) == false)
 		{
 			isAllUnloaded = false;
 		}

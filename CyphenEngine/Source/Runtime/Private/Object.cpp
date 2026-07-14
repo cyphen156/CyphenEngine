@@ -2,8 +2,8 @@
 
 #include "Runtime/Public/Object.h"
 
-Object::Object(ObjectHandle inHandle)
-	: handle(inHandle)
+Object::Object(ObjectHandle objectHandle)
+	: handle(objectHandle)
 {
 }
 
