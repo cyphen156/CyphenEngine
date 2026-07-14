@@ -1,0 +1,50 @@
+Date: 2026-07-07~13
+Branch: #4-2D-월드-개발
+
+작업 요약
+	#4_3에서는 OOP Object와 DOD System이 병존하는 World Loop 실행 구조를 설계로 확정했습니다.
+	공유 상태는 World Storage를 SSOT로 두고, ObjectUpdate와 System Apply의 쓰기 시점을 phase 단위로 분리했습니다.
+
+	#4_4에서는 CyphenEngine -> GameRuntime -> World로 이어지는 최소 실행 경계를 구현했습니다.
+	GameRuntime이 World 수명과 Tick 호출을 조율하고, World가 simulation tick과 시간을 전진하도록 구성했습니다.
+
+	#4_5에서는 Coordinate / Chunk 월드 좌표 도메인과 Object / GameObject / Component / Entity의 최소 정체성 계층을 추가했습니다.
+	Storage 슬롯을 타입 안전하게 참조할 수 있도록 index와 generation 기반 Handle을 구성했습니다.
+
+	#4_6에서는 ComponentDataType 원소를 연속 슬롯에 저장하는 ComponentDataStorage를 추가했습니다.
+	World는 ComponentDataStorage<Transform>을 소유하되, WorldObject 연결과 타입별 접근 API는 후속 작업으로 남겼습니다.
+
+
+진행한 커밋
+	#4_3 [Design] 월드 루프 Object·System 병존 실행 구조 확정
+	#4_4 [Runtime] GameRuntime과 World 최소 실행 경계 구현
+	#4_5 [Add:World] 월드 좌표 도메인과 객체 기반 타입 구현
+	#4_6 [Add:World] 세대형 ComponentData 저장소와 World SSOT 배치
+
+
+주요 정리 내용
+	1. World Loop 실행 구조 확정
+		Object System과 Enrolled System이 World의 공유 ComponentData를 사이에 두고 병존하도록 구성했습니다.
+		Register / Enroll / Unenroll 안전 지점과 BeginFrame부터 EndFrame까지의 Tick Phase 책임을 정리했습니다.
+
+	2. Runtime / World 최소 실행 경계 구현
+		CyphenEngine이 GameRuntime을 소유하고, GameRuntime이 World에 delta time을 전달하도록 연결했습니다.
+		World는 자체 Run loop나 플랫폼 시간 조회 없이 한 번의 simulation step만 수행합니다.
+
+	3. 월드 좌표와 객체 정체성 기반 추가
+		Coordinate와 Chunk로 확장 가능한 월드 좌표 도메인을 구성했습니다.
+		OOP Object 계층과 DOD Entity를 분리하고, Storage 유효성 검증에 사용할 세대형 Handle을 추가했습니다.
+
+	4. ComponentDataStorage 추가
+		원소 배열, 슬롯 generation, occupied 상태와 free-list를 분리해 슬롯 등록·제거·재사용을 구현했습니다.
+		Insert / Remove / TryGet / Set / Clear를 제공하고 오래된 Handle의 슬롯 접근을 차단했습니다.
+		World는 Transform Storage의 소유 위치만 확정하고 ObjectStorage / WorldObject 수명 결합은 추가하지 않았습니다.
+
+
+정리한 설계 기준
+	- OOP Object는 기본 정의 표면으로 두고, 다수·균일·hot-path 행동만 System으로 enroll합니다.
+	- 공유·write-back 대상 상태는 World의 ComponentDataStorage를 SSOT로 둡니다.
+	- Object와 ComponentData의 연결에는 세대형 Handle을 사용합니다.
+	- World는 Storage를 소유하지만 ComponentData 타입별 CRUD를 반복해서 중개하지 않습니다.
+	- ComponentDataStorage는 원소 배열의 연속성과 슬롯 수명을 보장하며 실제 접근 성능은 사용 방식에 따라 결정됩니다.
+	- ObjectStorage, WorldObject의 Transform 접근과 System 실행 기계장치는 이번 범위에 포함하지 않습니다.
