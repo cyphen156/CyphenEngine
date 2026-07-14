@@ -42,7 +42,7 @@ CyphenEngine_World_Loop_Rule
 	2. 두 실행 체계의 병존
 		World에는 Object System과 Enrolled System이 병존한다.
 		Object System은 OOP식 정의, 즉시 반영, 유니크 행동, 소수 객체 행동을 담당한다.
-		Enrolled System은 RuntimeEntry / ComponentStorage 기반으로 다수·균일·hot-path 행동을 일괄 처리한다.
+		Enrolled System은 RuntimeEntry / ComponentDataStorage 기반으로 다수·균일·hot-path 행동을 일괄 처리한다.
 		Object System은 즉시성을 기대하는 영역이므로 기본적으로 병렬 compute graph에 넣지 않는다.
 		Enrolled System은 안정된 입력을 기준으로 compute하고, 결과는 정해진 apply point에서만 World에 반영한다.
 
@@ -51,7 +51,7 @@ CyphenEngine_World_Loop_Rule
 		Skul: Dimension Rift의 SubSystem은 사용자 정의 최적화 시스템 용어였으며, CyphenEngine에서는 Gameplay 계층에서 같은 사용성을 제공한다.
 		Engine Core는 사용자 System을 직접 하드코딩하지 않고 Register / Enroll / Unenroll / Tick Phase 계약만 제공한다.
 		Gameplay 계층은 System의 구성·등록·정책(어떤 Object를 어떤 RuntimeEntry로 묶을지)을 정의하되, compute 커널은 concrete/native로 유지한다. (스크립트 VM이 도입되어도 hot 루프는 스크립트로 실행하지 않는다)
-		행동의 주체는 Object가 아니라 System이며, System은 자신의 RuntimeEntry 배열 또는 바인딩된 ComponentStorage 범위를 순회한다.
+		행동의 주체는 Object가 아니라 System이며, System은 자신의 RuntimeEntry 배열 또는 바인딩된 ComponentDataStorage 범위를 순회한다.
 		System 수명 계약(Initialize / Tick / Shutdown)은 concrete 등록으로 구성하며 vtable/interface에 의존하지 않는다.
 		추상은 System 경계(프레임당 1회 호출)에만 두고, hot 루프 내부는 concrete/monomorphic로 유지한다.
 
@@ -73,7 +73,7 @@ CyphenEngine_World_Loop_Rule
 		데이터 소유와 stale 방지는 SSOT 규칙이 담당한다.
 		공유·write-back 대상 상태(Transform, Sprite 등)는 World가 연속 storage로 소유하며 이것이 유일한 SSOT다.
 		System이 단독 소유하고 다른 System/Object가 읽지 않는 hot data만 RuntimeEntry에 인라인으로 둘 수 있다.
-		둘 이상이 읽거나 write-back 대상이 되는 데이터는 World ComponentStorage를 SSOT로 둔다.
+		둘 이상이 읽거나 write-back 대상이 되는 데이터는 World ComponentDataStorage를 SSOT로 둔다.
 		애매하면 공유 storage를 우선한다.
 		OOP 즉시 반영과 System Apply가 같은 공유 컴포넌트를 동시에 쓰지 않도록 write-ownership을 phase 단위로 제한한다.
 
@@ -121,8 +121,10 @@ CyphenEngine_Runtime_World_Snapshot_Rule
 	2. 현재 최소 상태
 		현재 World가 실제로 소유하는 상태는 simulationTick, simulationTime, 원점 Chunk다.
 		Handle, Object, GameObject, Component, Entity의 최소 기반 타입은 현재 구현에 포함한다.
-		Object reference, ObjectStorage, ComponentStorage, WorldTransformStorage, Physics, System은 후속 작업에서 결정하고 구현한다.
-		현재 최소 구현은 좌표 도메인과 OOP/DOD 정체성 경계만 정의하며, 저장소·부착·실행 기계장치는 미리 추가하지 않는다.
+		현재 World는 공유 ComponentData의 정본을 둘 ComponentDataStorage<Transform>을 소유한다.
+		Object reference, ObjectStorage, WorldTransformStorage, Physics, System과 실제 Transform 접근·부착 경로는 후속 작업에서 결정하고 구현한다.
+		현재 최소 구현은 좌표 도메인, OOP/DOD 정체성 경계와 공유 ComponentData 저장 위치까지 정의한다.
+		Object 부착·접근과 System 실행 기계장치는 미리 추가하지 않는다.
 
 	3. Live World, Snapshot, Render Frame
 		World는 여러 tick에 걸쳐 유지되는 현재의 가변 simulation state다.

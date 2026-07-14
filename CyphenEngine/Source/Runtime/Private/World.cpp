@@ -2,6 +2,14 @@
 
 #include "Runtime/Public/World.h"
 
+void World::Reset()
+{
+	simulationTick = 0;
+	simulationTime = 0.0;
+	worldOrigin = {};
+	transforms.Clear();
+}
+
 void World::Tick(double deltaSeconds)
 {
 	if (deltaSeconds < 0.0)

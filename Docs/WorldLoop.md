@@ -8,7 +8,7 @@
 
 CyphenEngine World는 순수 ECS가 아닙니다. OOP Object를 기본 정의 표면으로 두고, 다수·균일·hot-path 행동만 런타임에 System으로 enroll해 DOD로 실행합니다.
 
-![World Loop 구조: Object(OOP)와 enroll된 System(DOD)이 World ComponentStorage(공유 SSOT)를 사이에 두고 병존하며, 프레임은 BeginFrame부터 EndFrame까지 이름 붙은 phase로 흐른다](Images/world-loop.svg)
+![World Loop 구조: Object(OOP)와 enroll된 System(DOD)이 World ComponentDataStorage(공유 SSOT)를 사이에 두고 병존하며, 프레임은 BeginFrame부터 EndFrame까지 이름 붙은 phase로 흐른다](Images/world-loop.svg)
 
 ## Tick Phase
 

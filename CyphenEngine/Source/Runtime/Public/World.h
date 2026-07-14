@@ -1,7 +1,9 @@
 #pragma once
 
 #include "Core/Public/CPrimitiveTypes.h"
+#include "Core/Public/Math/Transform.h"
 #include "Runtime/Public/Chunk.h"
+#include "Runtime/Public/ComponentDataStorage.h"
 
 class GameRuntime;
 
@@ -17,28 +19,40 @@ class GameRuntime;
 //
 // 책임:
 //   - 현재 World-local simulation 상태 소유
+//   - 공유 ComponentData 정본 소유
 //   - Runtime이 요청한 한 번의 simulation step 수행
 //
 // 비책임:
 //   - 자체 Run loop 소유
 //   - delta time 산출과 Tick 호출 정책
 //   - Render Frame 생성과 Renderer 연결
-//   - Object / Component / System / Physics 타입 정의
+//   - WorldObject 생성과 수명 관리
+//   - Component 부착과 System enroll 정책
 // ============================================================================
 
 class World final
 {
 public:
+	World() = default;
+	~World() = default;
+
+	World(const World&) = delete;
+	World& operator=(const World&) = delete;
+	World(World&&) = delete;
+	World& operator=(World&&) = delete;
+
 	uint64 GetSimulationTick() const;
 	double GetSimulationTime() const;
 
 private:
 	friend class GameRuntime;
 
+	void Reset();
 	void Tick(double deltaSeconds);
 
 	uint64 simulationTick = 0;
 	double simulationTime = 0.0;
 
 	Chunk worldOrigin = {};
+	ComponentDataStorage<Transform> transforms;
 };

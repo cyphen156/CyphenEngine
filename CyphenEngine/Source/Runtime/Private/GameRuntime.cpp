@@ -9,7 +9,7 @@ bool GameRuntime::Initialize()
 		return false;
 	}
 
-	world = {};
+	world.Reset();
 	isInitialized = true;
 	return true;
 }
@@ -31,7 +31,7 @@ void GameRuntime::Shutdown()
 		return;
 	}
 
-	world = {};
+	world.Reset();
 	isInitialized = false;
 }
 
