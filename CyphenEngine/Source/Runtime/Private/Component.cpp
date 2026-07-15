@@ -1,13 +1,7 @@
 #include "pch.h"
 
 #include "Runtime/Public/Component.h"
-
-Component::Component(ObjectHandle objectHandle)
-	: Object(objectHandle)
-{
-}
-
-Component::~Component() = default;
+#include "Runtime/Public/GameObject.h"
 
 GameObject* Component::GetOwner()
 {
@@ -19,7 +13,21 @@ const GameObject* Component::GetOwner() const
 	return owner;
 }
 
-void Component::BindOwner(GameObject* newOwner)
+Component::Component(ObjectHandle objectHandle, GameObject& newOwner)
+	: Object(objectHandle)
+	, owner(&newOwner)
 {
-	owner = newOwner;
+}
+
+Component::~Component()
+{
+	if (owner == nullptr)
+	{
+		return;
+	}
+
+	GameObject* previousOwner = owner;
+
+	owner = nullptr;
+	previousOwner->DetachComponent(this);
 }

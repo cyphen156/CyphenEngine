@@ -1,9 +1,11 @@
 #pragma once
 
+#include <vector>
 #include "Core/Public/CPrimitiveTypes.h"
 #include "Core/Public/Math/Transform.h"
 #include "Runtime/Public/Chunk.h"
 #include "Runtime/Public/ComponentDataStorage.h"
+#include "Runtime/Public/WorldObject.h"
 
 class GameRuntime;
 
@@ -21,6 +23,7 @@ class GameRuntime;
 //   - 현재 World-local simulation 상태 소유
 //   - 공유 ComponentData 정본 소유
 //   - Runtime이 요청한 한 번의 simulation step 수행
+//	 - 소속 Object에 대한 Transform 접근 제공
 //
 // 비책임:
 //   - 자체 Run loop 소유

@@ -3,21 +3,21 @@
 #include <vector>
 
 #include "Core/Public/CPrimitiveTypes.h"
-#include "Core/Public/Handle.h"
+#include "Core/Public/StorageSlot.h"
 
 // ============================================================================
 // ComponentDataStorage
 // ----------------------------------------------------------------------------
-// ComponentDataType 요소를 연속된 슬롯에 저장하고 Handle을 통해 슬롯의
+// ComponentDataType 요소를 연속된 슬롯에 저장하고 StorageSlot을 통해 슬롯의
 // 유효성과 세대를 검증합니다.
 //
 // Storage는 전달받은 요소 자체를 값으로 보관합니다.
-// 포인터나 Handle이 가리키는 외부 대상의 수명은 관리하지 않습니다.
+// 포인터나 StorageSlot이 가리키는 외부 대상의 수명은 관리하지 않습니다.
 //
-// 요소 배열의 물리적 연속성은 보장하지만 생존 요소의 조밀한 배치,
-// 순회 순서, 요소 주소의 안정성과 성능 향상은 보장하지 않습니다.
+// 요소 배열의 물리적 연속성은 보장하지만 생존 요소의 조밀한 배치, 순회 순서,
+// 요소 주소의 안정성과 성능 특성은 보장하지 않습니다.
 //
-// Remove와 Clear는 슬롯의 논리적 등록을 제거합니다.
+// Remove와 Clear는 슬롯을 논리적으로 미사용 상태로 전환합니다.
 // 요소의 즉시 소멸이나 외부 자원의 즉시 해제를 보장하지 않습니다.
 // ============================================================================
 
@@ -33,22 +33,22 @@ public:
 	ComponentDataStorage(ComponentDataStorage&&) = delete;
 	ComponentDataStorage& operator=(ComponentDataStorage&&) = delete;
 
-	Handle<ComponentDataType> Insert(const ComponentDataType& element);
+	StorageSlot<ComponentDataType> Insert(const ComponentDataType& element);
 
-	bool Remove(Handle<ComponentDataType> handle);
+	bool Remove(StorageSlot<ComponentDataType> slot);
 
-	bool IsValid(Handle<ComponentDataType> handle) const;
+	bool IsValid(StorageSlot<ComponentDataType> slot) const;
 
-	bool TryGet(Handle<ComponentDataType> handle, ComponentDataType& outElement) const;
+	bool TryGet(StorageSlot<ComponentDataType> slot, ComponentDataType& outElement) const;
 
-	bool Set(Handle<ComponentDataType> handle, const ComponentDataType& element);
+	bool Set(StorageSlot<ComponentDataType> slot, const ComponentDataType& element);
 
 	void Clear();
 
 	uint32 Count() const;
 
 private:
-	bool ResolveIndex(Handle<ComponentDataType> handle, uint32& outIndex) const;
+	bool ResolveIndex(StorageSlot<ComponentDataType> slot, uint32& outIndex) const;
 
 	void AdvanceGeneration(uint32 index);
 
@@ -61,7 +61,7 @@ private:
 };
 
 template<typename ComponentDataType>
-Handle<ComponentDataType>
+StorageSlot<ComponentDataType>
 ComponentDataStorage<ComponentDataType>::Insert(const ComponentDataType& element)
 {
 	uint32 index = 0;
@@ -78,7 +78,7 @@ ComponentDataStorage<ComponentDataType>::Insert(const ComponentDataType& element
 	}
 	else
 	{
-		if (elements.size() >= Handle<ComponentDataType>::InvalidIndex)
+		if (elements.size() >= StorageSlot<ComponentDataType>::InvalidIndex)
 		{
 			return {};
 		}
@@ -92,18 +92,18 @@ ComponentDataStorage<ComponentDataType>::Insert(const ComponentDataType& element
 
 	++activeCount;
 
-	Handle<ComponentDataType> handle;
-	handle.index = index;
-	handle.generation = slotGenerations[index];
-	return handle;
+	StorageSlot<ComponentDataType> slot;
+	slot.index = index;
+	slot.generation = slotGenerations[index];
+	return slot;
 }
 
 template<typename ComponentDataType>
-bool ComponentDataStorage<ComponentDataType>::Remove(Handle<ComponentDataType> handle)
+bool ComponentDataStorage<ComponentDataType>::Remove(StorageSlot<ComponentDataType> slot)
 {
 	uint32 index = 0;
 
-	if (ResolveIndex(handle, index) == false)
+	if (ResolveIndex(slot, index) == false)
 	{
 		return false;
 	}
@@ -118,18 +118,20 @@ bool ComponentDataStorage<ComponentDataType>::Remove(Handle<ComponentDataType> h
 }
 
 template<typename ComponentDataType>
-bool ComponentDataStorage<ComponentDataType>::IsValid(Handle<ComponentDataType> handle) const
+bool ComponentDataStorage<ComponentDataType>::IsValid(StorageSlot<ComponentDataType> slot) const
 {
 	uint32 index = 0;
-	return ResolveIndex(handle, index);
+	return ResolveIndex(slot, index);
 }
 
 template<typename ComponentDataType>
-bool ComponentDataStorage<ComponentDataType>::TryGet(Handle<ComponentDataType> handle, ComponentDataType& outElement) const
+bool ComponentDataStorage<ComponentDataType>::TryGet(
+	StorageSlot<ComponentDataType> slot,
+	ComponentDataType& outElement) const
 {
 	uint32 index = 0;
 
-	if (ResolveIndex(handle, index) == false)
+	if (ResolveIndex(slot, index) == false)
 	{
 		return false;
 	}
@@ -139,11 +141,13 @@ bool ComponentDataStorage<ComponentDataType>::TryGet(Handle<ComponentDataType> h
 }
 
 template<typename ComponentDataType>
-bool ComponentDataStorage<ComponentDataType>::Set(Handle<ComponentDataType> handle, const ComponentDataType& element)
+bool ComponentDataStorage<ComponentDataType>::Set(
+	StorageSlot<ComponentDataType> slot,
+	const ComponentDataType& element)
 {
 	uint32 index = 0;
 
-	if (ResolveIndex(handle, index) == false)
+	if (ResolveIndex(slot, index) == false)
 	{
 		return false;
 	}
@@ -155,7 +159,7 @@ bool ComponentDataStorage<ComponentDataType>::Set(Handle<ComponentDataType> hand
 template<typename ComponentDataType>
 void ComponentDataStorage<ComponentDataType>::Clear()
 {
-	// reserve에 실패하면 기존 슬롯 상태와 free-list를 유지합니다.
+	// reserve가 실패하면 기존 슬롯 상태와 free-list를 유지합니다.
 	freeSlotIndices.reserve(elements.size());
 	freeSlotIndices.clear();
 
@@ -180,29 +184,31 @@ uint32 ComponentDataStorage<ComponentDataType>::Count() const
 }
 
 template<typename ComponentDataType>
-bool ComponentDataStorage<ComponentDataType>::ResolveIndex(Handle<ComponentDataType> handle, uint32& outIndex) const
+bool ComponentDataStorage<ComponentDataType>::ResolveIndex(
+	StorageSlot<ComponentDataType> slot,
+	uint32& outIndex) const
 {
-	if (handle.IsSet() == false)
+	if (slot.IsSet() == false)
 	{
 		return false;
 	}
 
-	if (handle.index >= elements.size())
+	if (slot.index >= elements.size())
 	{
 		return false;
 	}
 
-	if (slotOccupied[handle.index] == 0)
+	if (slotOccupied[slot.index] == 0)
 	{
 		return false;
 	}
 
-	if (slotGenerations[handle.index] != handle.generation)
+	if (slotGenerations[slot.index] != slot.generation)
 	{
 		return false;
 	}
 
-	outIndex = handle.index;
+	outIndex = slot.index;
 	return true;
 }
 

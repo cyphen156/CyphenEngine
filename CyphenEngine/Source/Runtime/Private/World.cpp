@@ -2,6 +2,11 @@
 
 #include "Runtime/Public/World.h"
 
+World::~World()
+{
+	Reset();
+}
+
 void World::Reset()
 {
 	simulationTick = 0;

@@ -7,33 +7,47 @@
 // ============================================================================
 // Handle
 // ----------------------------------------------------------------------------
-// Storage 슬롯을 타입 안전하게 참조하는 세대형 핸들입니다.
+// 런타임 인스턴스의 UID를 타입 안전하게 전달하는 강타입 래퍼입니다.
 //
-// index는 Storage의 슬롯 위치이고, generation은 슬롯 재사용 전의 오래된
-// 참조를 구분합니다.
-//
-// Handle은 값의 설정 여부만 판단합니다.
-// 실제 유효성은 소유 Storage가 index와 generation을 함께 검증합니다.
+// Type은 서로 다른 도메인의 Handle을 컴파일 시점에 구분합니다.
+// Handle은 저장 위치나 재사용 세대를 표현하지 않으며, 실제 조회와 수명 검증은
+// 해당 인스턴스를 관리하는 경계가 담당합니다.
 // ============================================================================
 
 template<typename Type>
 struct Handle
 {
-	static constexpr uint32 InvalidIndex = std::numeric_limits<uint32>::max();
+	static constexpr uint32 InvalidUID = std::numeric_limits<uint32>::max();
 
-	uint32 index = InvalidIndex;
-	uint32 generation = 0;
+	uint32 uid = InvalidUID;
+
+	constexpr Handle() = default;
+
+	explicit constexpr Handle(uint32 uidValue)
+		: uid(uidValue)
+	{
+	}
 
 	constexpr bool IsSet() const
 	{
-		return index != InvalidIndex;
+		return uid != InvalidUID;
+	}
+
+	constexpr uint32 GetUID() const
+	{
+		return uid;
+	}
+
+	constexpr void Release()
+	{
+		uid = InvalidUID;
 	}
 };
 
 template<typename Type>
 constexpr bool operator==(const Handle<Type>& left, const Handle<Type>& right)
 {
-	return left.index == right.index && left.generation == right.generation;
+	return left.uid == right.uid;
 }
 
 template<typename Type>
@@ -42,5 +56,5 @@ constexpr bool operator!=(const Handle<Type>& left, const Handle<Type>& right)
 	return !(left == right);
 }
 
-static_assert(sizeof(Handle<void>) == sizeof(uint32) * 2,
-	"Handle must remain tight index and generation storage.");
+static_assert(sizeof(Handle<void>) == sizeof(uint32),
+	"Handle must remain a tight 32-bit UID wrapper.");

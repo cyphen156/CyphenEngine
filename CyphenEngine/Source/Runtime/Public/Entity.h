@@ -5,11 +5,14 @@
 // ============================================================================
 // Entity
 // ----------------------------------------------------------------------------
-// DOD Storage의 Entity를 참조하는 세대형 핸들입니다.
+// DOD Component composition의 논리적 정체성을 참조하는 typed UID입니다.
 //
-// Object를 상속하지 않으며 vtable과 OOP 수명 계약을 갖지 않습니다.
-// Entity의 데이터와 행동은 각각 Storage와 System이 소유합니다.
+// Entity를 무명의 하나의 타입으로 소거하지 않고 composition 타입을 그대로 보존합니다. 
+//
+// Object는 자신의 Component composition을 대표하는 primary Entity이기도 합니다.
+// ObjectHandle은 EntityHandle<Object>이며, 두 관점은 별도 UID나 변환 매핑을
+// 필요로 하지 않습니다.
 // ============================================================================
 
-struct EntityTag;
-using Entity = Handle<EntityTag>;
+template<typename CompositionType>
+using EntityHandle = Handle<CompositionType>;
