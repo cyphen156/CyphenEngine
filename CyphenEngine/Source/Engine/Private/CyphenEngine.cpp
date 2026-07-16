@@ -81,11 +81,7 @@ void CyphenEngine::Run()
 		ResourceCommandBuffer resourceCommands;
 		ResourceId nextResourceId = 1;
 
-		const CChar* fixturePaths[] =
-		{
-			DebugProfileTexturePath,
-			DebugProfile2TexturePath
-		};
+		const CChar* fixturePaths[] = {DebugProfileTexturePath, DebugProfile2TexturePath};
 
 		for (const CChar* path : fixturePaths)
 		{
@@ -103,11 +99,11 @@ void CyphenEngine::Run()
 				continue;
 			}
 
-			const uint64 pixelBytes =
-				static_cast<uint64>(texture.width) * texture.height * 4;
+			const uint64 pixelBytes = static_cast<uint64>(texture.width) * texture.height * 4;
 
 			if (texture.format != TextureFormat::Rgba8 ||
-				texture.width == 0 || texture.height == 0 ||
+				texture.width == 0 ||
+				texture.height == 0 ||
 				static_cast<uint64>(texture.pixels.size()) != pixelBytes)
 			{
 				PRINT_DEBUG_OUTPUT("[Resource] texture invalid.\n");
@@ -125,10 +121,20 @@ void CyphenEngine::Run()
 			command.payloadByteCount = sizeof(texturePayload) + pixelBytes;
 
 			std::vector<uint8> payload(sizeof(command) + static_cast<size_t>(command.payloadByteCount));
+
 			uint8* cursor = payload.data();
-			std::memcpy(cursor, &command, sizeof(command));                cursor += sizeof(command);
-			std::memcpy(cursor, &texturePayload, sizeof(texturePayload));   cursor += sizeof(texturePayload);
-			std::memcpy(cursor, texture.pixels.data(), texture.pixels.size());
+
+			std::memcpy(cursor, &command, sizeof(command));
+			cursor += sizeof(command);
+
+			std::memcpy(cursor, &texturePayload, sizeof(texturePayload));
+
+			cursor += sizeof(texturePayload);
+
+			std::memcpy(
+				cursor,
+				texture.pixels.data(),
+				texture.pixels.size());
 
 			if (resourceCommands.AppendCommand(
 				ResourceCommandType::UploadResource,
@@ -140,6 +146,7 @@ void CyphenEngine::Run()
 
 			debugTexturedQuadResourceIds.push_back(textureId);
 		}
+
 		renderer.ExecuteDebugResourceCommandList(resourceCommands);
 	}
 
@@ -155,7 +162,8 @@ void CyphenEngine::Run()
 		Time::Tick();
 
 		// TODO:
-		// gameRuntime.Tick(Time::DeltaTime())
+		gameRuntime.Tick(Time::DeltaTime());
+		ObjectManager::CollectDestroyedObjects();
 
 		// 렌더링을 위한 프레임 생산
 		Frame frame = {};
@@ -163,12 +171,12 @@ void CyphenEngine::Run()
 		
 		if (debugTexturedQuadResourceIds.empty() == false)
 		{
-			const uint64 textureIndex = static_cast<uint64>(Time::ElapsedTime()) %
+			const uint64 textureIndex =
+				static_cast<uint64>(Time::ElapsedTime()) %
 				static_cast<uint64>(debugTexturedQuadResourceIds.size());
 
 			TexturedQuadDrawItem drawItem = {};
-			drawItem.textureId =
-				debugTexturedQuadResourceIds[static_cast<size_t>(textureIndex)];
+			drawItem.textureId = debugTexturedQuadResourceIds[static_cast<size_t>(textureIndex)];
 
 			frame.texturedQuadDrawItems.push_back(drawItem);
 		}
@@ -182,35 +190,40 @@ void CyphenEngine::Run()
 		}
 
 #ifdef _DEBUG
-		//// Debug Log Per 1000 FPS 
+		//// Debug Log Per 1000 FPS
 		//if ((frame.frameNumber % 1000) == 0)
 		//{
 		//	char message[128] = {};
 		//	std::snprintf(
 		//		message,
 		//		sizeof(message),
-		//		"[Renderer] Frame submitted: %llu\n[Time] ElapsedTime: %.6f\n",
-		//		static_cast<unsigned long long>(frame.frameNumber),
+		//		"[Renderer] Frame submitted: %llu\n"
+		//		"[Time] ElapsedTime: %.6f\n",
+		//		static_cast<unsigned long long>(
+		//			frame.frameNumber),
 		//		Time::ElapsedTime());
 		//	PRINT_DEBUG_OUTPUT(message);
 		//}
-		
+
 		// Debug Log Per sec(FPS)
 		const double currentEngineLogTime = Time::ElapsedTime();
-		const double engineLogDeltaTime = currentEngineLogTime - lastEngineLogTime;
+		const double engineLogDeltaTime =
+			currentEngineLogTime - lastEngineLogTime;
 
 		if (engineLogDeltaTime >= 1.0)
 		{
 			const uint64 submittedFrameCount = frameNumber - lastEngineLogFrameNumber;
-			const double engineFrameRate =
-				static_cast<double>(submittedFrameCount) / engineLogDeltaTime;
+
+			const double engineFrameRate = static_cast<double>(submittedFrameCount) / engineLogDeltaTime;
 
 			char message[160] = {};
 			std::snprintf(
 				message,
 				sizeof(message),
-				"[Engine] SubmittedFrames=%llu FPS=%.2f ElapsedTime=%.6f\n",
-				static_cast<unsigned long long>(submittedFrameCount),
+				"[Engine] SubmittedFrames=%llu "
+				"FPS=%.2f ElapsedTime=%.6f\n",
+				static_cast<unsigned long long>(
+					submittedFrameCount),
 				engineFrameRate,
 				currentEngineLogTime);
 
@@ -221,6 +234,7 @@ void CyphenEngine::Run()
 		}
 #endif
 	}
+
 	ShutdownEngine();
 }
 
@@ -231,12 +245,13 @@ void CyphenEngine::ShutdownEngine()
 		return;
 	}
 
-
 	// Renderer 내부에서 Render Thread와 GPU 인스턴스를 먼저 종료합니다.
 	renderer.Shutdown();
-	
+
 	// GameRuntime 내부에서 World를 초기 상태로 되돌립니다.
 	gameRuntime.Shutdown();
+
+	ObjectManager::Shutdown();
 
 	engineStatus.store(Terminated);
 }

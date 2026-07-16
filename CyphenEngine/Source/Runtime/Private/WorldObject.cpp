@@ -1,53 +1,99 @@
 #include "pch.h"
 
+#ifdef _DEBUG
+#include <cassert>
+#endif
+
+#include "Runtime/Public/GameRuntime.h"
+#include "Runtime/Public/World.h"
 #include "Runtime/Public/WorldObject.h"
+
+WorldObjectInstantiateParams WorldObjectInstantiateParams::DefaultWorld(
+	GameRuntime& runtime,
+	const Transform& initialTransform)
+{
+	WorldObjectInstantiateParams parameters;
+	parameters.runtime = &runtime;
+	parameters.initialTransform = initialTransform;
+	return parameters;
+}
+
+WorldObjectInstantiateParams WorldObjectInstantiateParams::TargetWorld(
+	World& targetWorld,
+	const Transform& initialTransform)
+{
+	WorldObjectInstantiateParams parameters;
+	parameters.targetWorld = &targetWorld;
+	parameters.initialTransform = initialTransform;
+	return parameters;
+}
+
+bool WorldObject::Instantiate(const WorldObjectInstantiateParams& parameters)
+{
+	if (world != nullptr)
+	{
+		return false;
+	}
+
+	World* targetWorld = parameters.targetWorld;
+
+	if (targetWorld == nullptr)
+	{
+		if (parameters.runtime == nullptr ||
+			parameters.runtime->IsInitialized() == false)
+		{
+			return false;
+		}
+
+		targetWorld = &parameters.runtime->world;
+	}
+
+	return targetWorld->Enroll(*this, parameters.initialTransform);
+}
+
+Transform WorldObject::GetTransform() const
+{
+	Transform transform = Transform::Identity();
+
+	if (world == nullptr)
+	{
+#ifdef _DEBUG
+		PRINT_DEBUG_OUTPUT(
+			"[WorldObject] World에 소속된 이후에 Transform을 조회해야 합니다.\n");
+		assert(world != nullptr);
+#endif
+		return transform;
+	}
+
+	if (world->TryGetTransform(GetHandle(), transform) == false)
+	{
+#ifdef _DEBUG
+		PRINT_DEBUG_OUTPUT(
+			"[WorldObject] World에서 Transform을 찾을 수 없습니다.\n");
+		assert(false);
+#endif
+	}
+
+	return transform;
+}
+
+const World* WorldObject::GetWorld() const
+{
+	return world;
+}
 
 WorldObject::WorldObject(
 	ObjectHandle objectHandle,
-	ComponentDataStorage<Transform>& transformDataStorage,
-	Handle<Transform> transformDataHandle)
+	bool newParticipatesInWorldUpdate)
 	: GameObject(objectHandle)
-	, transformStorage(&transformDataStorage)
-	, transformHandle(transformDataHandle)
+	, participatesInWorldUpdate(newParticipatesInWorldUpdate)
 {
 }
 
 WorldObject::~WorldObject()
 {
-	// 부착 Component가 소멸 과정에서 Transform을 사용할 수 있도록
-	// Component를 먼저 파괴한 뒤 Transform 슬롯을 반환합니다.
-	ClearComponents();
-
-	if (transformStorage != nullptr && transformHandle.IsSet())
+	if (world != nullptr)
 	{
-		transformStorage->Remove(transformHandle);
+		world->Unroll(*this);
 	}
-
-	transformStorage = nullptr;
-	transformHandle = {};
-}
-
-bool WorldObject::TryGetTransform(Transform& outTransform) const
-{
-	if (transformStorage == nullptr)
-	{
-		return false;
-	}
-
-	return transformStorage->TryGet(transformHandle, outTransform);
-}
-
-bool WorldObject::SetTransform(const Transform& transform)
-{
-	if (transformStorage == nullptr)
-	{
-		return false;
-	}
-
-	return transformStorage->Set(transformHandle, transform);
-}
-
-Handle<Transform> WorldObject::GetTransformHandle() const
-{
-	return transformHandle;
 }

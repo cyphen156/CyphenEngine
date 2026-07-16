@@ -21,7 +21,19 @@ void GameRuntime::Tick(double deltaSeconds)
 		return;
 	}
 
+	GlobalPreUpdate(deltaSeconds);
 	world.Tick(deltaSeconds);
+	GlobalFinalUpdate(deltaSeconds);
+}
+
+void GameRuntime::GlobalPreUpdate(double deltaSeconds)
+{
+	static_cast<void>(deltaSeconds);
+}
+
+void GameRuntime::GlobalFinalUpdate(double deltaSeconds)
+{
+	static_cast<void>(deltaSeconds);
 }
 
 void GameRuntime::Shutdown()

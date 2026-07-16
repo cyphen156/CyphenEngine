@@ -110,6 +110,7 @@
     <ClInclude Include="Source\Core\Public\Math\Transform.h" />
     <ClInclude Include="Source\Core\Public\Math\Vector.h" />
     <ClInclude Include="Source\Core\Public\Math\Vector2.h" />
+    <ClInclude Include="Source\Core\Public\StorageSlot.h" />
     <ClInclude Include="Source\HAL\Private\PlatformPath.h" />
     <ClInclude Include="Source\Modules\Public\ModuleBinder.h" />
     <ClInclude Include="Source\Modules\Public\Command.h" />
@@ -153,6 +154,7 @@
     <ClInclude Include="Source\Runtime\Public\GameObject.h" />
     <ClInclude Include="Source\Runtime\Public\GameRuntime.h" />
     <ClInclude Include="Source\Runtime\Public\Object.h" />
+    <ClInclude Include="Source\Runtime\Public\ObjectManager.h" />
     <ClInclude Include="Source\Runtime\Public\World.h" />
     <ClInclude Include="Source\Runtime\Public\WorldObject.h" />
     <!-- Test -->
@@ -228,6 +230,7 @@
     <ClCompile Include="Source\Runtime\Private\GameObject.cpp" />
     <ClCompile Include="Source\Runtime\Private\GameRuntime.cpp" />
     <ClCompile Include="Source\Runtime\Private\Object.cpp" />
+    <ClCompile Include="Source\Runtime\Private\ObjectManager.cpp" />
     <ClCompile Include="Source\Runtime\Private\World.cpp" />
     <ClCompile Include="Source\Runtime\Private\WorldObject.cpp" />
     <!-- Test -->

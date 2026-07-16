@@ -50,6 +50,7 @@ set(CYPHEN_COMMON_SOURCES
 	Source/Runtime/Private/GameRuntime.cpp
 	Source/Runtime/Private/GameObject.cpp
 	Source/Runtime/Private/Object.cpp
+	Source/Runtime/Private/ObjectManager.cpp
 	Source/Runtime/Private/World.cpp
 	Source/Runtime/Private/WorldObject.cpp
 

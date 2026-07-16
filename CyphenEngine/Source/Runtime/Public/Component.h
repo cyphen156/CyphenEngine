@@ -3,6 +3,7 @@
 #include "Runtime/Public/Object.h"
 
 class GameObject;
+class ObjectManager;
 
 // ============================================================================
 // Component
@@ -10,7 +11,8 @@ class GameObject;
 // GameObject에 부착되는 OOP 기능 구성요소의 기반입니다.
 //
 // Component는 Object 정체성과 ObjectHandle을 유지합니다.
-// 다만 부착된 Component의 실제 소유와 수명은 GameObject에 귀속됩니다.
+// 부착 관계는 GameObject composition에 귀속되며, 실제 메모리 수명과 UID는
+// 엔진 공통 ObjectManager가 관리합니다.
 //
 // DOD Storage의 데이터와 RuntimeEntry는 Component 계층에 포함하지 않습니다.
 // ============================================================================
@@ -18,18 +20,16 @@ class GameObject;
 class Component : public Object
 {
 public:
-	~Component() override;
-
 	GameObject* GetOwner();
 	const GameObject* GetOwner() const;
 
 protected:
-	explicit Component(ObjectHandle objectHandle);
+	Component(ObjectHandle objectHandle, GameObject& owner);
+	~Component() override;
 
 private:
+	friend class ObjectManager;
 	friend class GameObject;
 
-	void BindOwner(GameObject* newOwner);
-
-	GameObject* owner = nullptr;
+	GameObject* owner;
 };
