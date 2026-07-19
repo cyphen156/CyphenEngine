@@ -14,22 +14,7 @@ ObjectHandle Object::GetHandle() const
 
 void Object::Destroy()
 {
-	std::vector<Object*>::iterator iterator;
-
-	for (iterator = ObjectManager::objects.begin();
-		iterator != ObjectManager::objects.end();
-		++iterator)
-	{
-		if (*iterator != this)
-		{
-			continue;
-		}
-
-		ObjectManager::objects.erase(iterator);
-		ObjectManager::destroyQueue.push(this);
-
-		return;
-	}
+	ObjectManager::DestroyObject(this);
 }
 
 Object::Object(ObjectHandle objectHandle)
@@ -44,7 +29,4 @@ Object::Object(ObjectHandle objectHandle)
 #endif
 }
 
-Object::~Object()
-{
-	handle.Release();
-}
+Object::~Object() = default;

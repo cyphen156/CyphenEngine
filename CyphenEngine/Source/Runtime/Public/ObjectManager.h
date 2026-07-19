@@ -1,30 +1,45 @@
 #pragma once
 
 #include <queue>
+#include <unordered_map>
 #include <utility>
-#include <vector>
 
-#include "Runtime/Public/Entity.h"
+#include "Core/Public/Handle.h"
+#include "Core/Public/HandleAllocator.h"
 
 class CyphenEngine;
 class Object;
 
-using ObjectHandle = EntityHandle<Object>;
+using ObjectHandle = Handle<Object>;
 
 // ============================================================================
 // ObjectManager
 // ----------------------------------------------------------------------------
-// 엔진 Object의 UID 발급, 메모리 소유, Registry와 지연 파괴를 관리하는
+// 엔진 Object의 Handle 발급, 메모리 소유, Registry와 지연 파괴를 관리하는
 // 정적 전역 관리 경계입니다.
 //
 // NewObject:
-//   - ObjectHandle을 발급하고 구체 Object를 생성합니다.
-//   - 생성된 Object의 실제 메모리와 Registry record를 소유합니다.
+//   - HandleAllocator를 통해 ObjectHandle을 발급합니다.
+//   - 발급한 ObjectHandle을 주입하여 구체 Object를 생성합니다.
+//   - 생성된 Object의 실제 메모리와 Registry 관계를 소유합니다.
+//
+// FindObject:
+//   - ObjectHandle을 통해 활성 Registry의 Object를 단건 조회합니다.
+//   - Object 내부의 Handle을 역참조하여 순차 탐색하지 않습니다.
 //
 // Destroy:
 //   - Object::Destroy 요청 시 Object를 활성 Registry에서 즉시 제거합니다.
 //   - Registry에서 제거된 Object를 Destroy Queue에 보관합니다.
-//   - CollectDestroyedObjects 안전 지점에서 실제 소멸자를 호출합니다.
+//   - Collect 안전 지점에서 실제 소멸자를 호출합니다.
+//
+// Collect:
+//   - ObjectManager가 스스로 호출 시점을 결정하지 않습니다.
+//   - 엔진이 선택한 안전 지점에서 Destroy Queue의 Object를 실제로 파괴합니다.
+//   - 실제 파괴가 끝난 ObjectHandle을 HandleAllocator에 반환합니다.
+//
+// Clear:
+//   - 활성 Registry에 남아 있는 모든 Object를 Destroy Queue로 이동합니다.
+//   - Collect를 호출하여 활성 객체와 파괴 대기 객체를 모두 정리합니다.
 //
 // PendingDestroy 정책:
 //   - 현재는 별도의 PendingDestroy 상태와 공개 조회 API를 두지 않습니다.
@@ -34,11 +49,15 @@ using ObjectHandle = EntityHandle<Object>;
 //     추가할 수 있도록 Destroy Queue 경계를 유지합니다.
 //
 // ObjectManager는 인스턴스화되지 않으며 특정 GameRuntime이나 World가 소유하지 않습니다.
-// Runtime, Editor와 Asset 등 Object가 필요한 모든 엔진 도메인이 같은 UID 원천과
-// Registry를 공유합니다.
+// Runtime, Editor와 Asset 등 Object가 필요한 엔진 도메인은 같은 Object Registry를
+// 공유합니다.
 //
-// 소멸된 UID는 retired Queue에 수집합니다. 단조 UID 공간이 남아 있는 동안에는
-// 새 UID를 우선 발급하고, 공간이 소진된 경우에만 retired UID를 재사용합니다.
+// ObjectHandle은 ObjectManager Registry 안에서만 의미를 가집니다.
+// ObjectHandle의 실제 조회와 수명 검증은 ObjectManager가 담당합니다.
+//
+// ObjectManager는 참조 관계나 도달 가능성을 추적하지 않습니다.
+// 따라서 자동 수집 GC가 아니며, 명시적인 Destroy 요청을 안전 지점까지 지연하여
+// 처리하는 Object 수명 관리 경계입니다.
 // ============================================================================
 
 class ObjectManager final
@@ -56,48 +75,30 @@ private:
 	template<typename ObjectType, typename... ArgumentTypes>
 	static ObjectType* NewObject(ArgumentTypes&&... arguments);
 
-	static void CollectDestroyedObjects();
-	static void Shutdown();
+	static void DestroyObject(Object* object);
 
-	static std::vector<Object*> objects;
+	static void Collect();
+	static void Clear();
+
+	static HandleAllocator<ObjectHandle> handleAllocator;
+
+	static std::unordered_map<uint32, Object*> objects;
 	static std::queue<Object*> destroyQueue;
-	static std::queue<uint32> retiredUIDs;
-
-	static uint32 nextUID;
 };
 
 template<typename ObjectType, typename... ArgumentTypes>
 ObjectType* ObjectManager::NewObject(ArgumentTypes&&... arguments)
 {
-	uint32 uid = ObjectHandle::InvalidUID;
-
-	if (nextUID != ObjectHandle::InvalidUID)
-	{
-		uid = nextUID++;
-	}
-	else
-	{
-		if (retiredUIDs.empty())
-		{
-			return nullptr;
-		}
-
-		uid = retiredUIDs.front();
-		retiredUIDs.pop();
-	}
-
-	const ObjectHandle objectHandle(uid);
+	const ObjectHandle objectHandle = handleAllocator.Allocate();
 
 	if (objectHandle.IsSet() == false)
 	{
 		return nullptr;
 	}
 
-	ObjectType* object = new ObjectType(
-		objectHandle,
-		std::forward<ArgumentTypes>(arguments)...);
+	ObjectType* object = new ObjectType(objectHandle, std::forward<ArgumentTypes>(arguments)...);
 
-	objects.push_back(object);
+	objects.emplace(objectHandle.GetValue(), object);
 
 	return object;
 }

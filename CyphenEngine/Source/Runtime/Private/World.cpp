@@ -18,7 +18,6 @@ void World::Reset()
 		}
 	}
 
-	worldUpdates.clear();
 	worldObjects.clear();
 	transforms.Clear();
 
@@ -34,51 +33,31 @@ void World::Tick(double deltaSeconds)
 		return;
 	}
 
-	PreUpdate(deltaSeconds);
+	PreUpdate();
 	ProcessAll(deltaSeconds);
-	FinalUpdate(deltaSeconds);
+	FinalUpdate();
 
 	++simulationTick;
 	simulationTime += deltaSeconds;
 }
 
-void World::PreUpdate(double deltaSeconds)
+void World::PreUpdate()
 {
-	const uint32 updateCount = static_cast<uint32>(worldUpdates.size());
-
-	for (uint32 index = 0; index < updateCount; ++index)
-	{
-		WorldObject* object = worldUpdates[index];
-
-		if (object == nullptr)
-		{
-			continue;
-		}
-
-		object->Update(deltaSeconds);
-	}
+	// 실행 참여 대상과 Scheduler 계약이 확정된 이후 구현합니다.
+	// World는 현재 선행 실행 단계의 경계만 보장합니다.
 }
 
 void World::ProcessAll(double deltaSeconds)
 {
+	// World-local System의 참여와 실행 순서가 확정된 이후 구현합니다.
+	// 현재는 Process 단계의 경계와 delta time 전달 계약만 유지합니다.
 	static_cast<void>(deltaSeconds);
 }
 
-void World::FinalUpdate(double deltaSeconds)
+void World::FinalUpdate()
 {
-	const uint32 updateCount = static_cast<uint32>(worldUpdates.size());
-
-	for (uint32 index = 0; index < updateCount; ++index)
-	{
-		WorldObject* object = worldUpdates[index];
-
-		if (object == nullptr)
-		{
-			continue;
-		}
-
-		object->FinalUpdate(deltaSeconds);
-	}
+	// 실행 참여 대상과 Scheduler 계약이 확정된 이후 구현합니다.
+	// World는 현재 후행 실행 단계의 경계만 보장합니다.
 }
 
 uint64 World::GetSimulationTick() const
@@ -89,70 +68,6 @@ uint64 World::GetSimulationTick() const
 double World::GetSimulationTime() const
 {
 	return simulationTime;
-}
-
-bool World::Enroll(WorldObject& object, const Transform& initialTransform)
-{
-	if (object.world != nullptr)
-	{
-		return false;
-	}
-
-	const StorageSlot<Transform> transformSlot = transforms.Insert(
-		object.GetHandle(),
-		initialTransform);
-
-	if (transformSlot.IsSet() == false)
-	{
-		return false;
-	}
-
-	worldObjects.push_back(&object);
-
-	if (object.participatesInWorldUpdate)
-	{
-		worldUpdates.push_back(&object);
-	}
-
-	object.world = this;
-	return true;
-}
-
-bool World::Unroll(WorldObject& object)
-{
-	std::vector<WorldObject*>::iterator iterator;
-	for (iterator = worldObjects.begin();
-		iterator != worldObjects.end();
-		++iterator)
-	{
-		if (*iterator != &object)
-		{
-			continue;
-		}
-
-		transforms.Remove(object.GetHandle());
-		worldObjects.erase(iterator);
-
-		std::vector<WorldObject*>::iterator updateIterator;
-		for (updateIterator = worldUpdates.begin();
-			updateIterator != worldUpdates.end();
-			++updateIterator)
-		{
-			if (*updateIterator != &object)
-			{
-				continue;
-			}
-
-			worldUpdates.erase(updateIterator);
-			break;
-		}
-
-		object.world = nullptr;
-		return true;
-	}
-
-	object.world = nullptr;
-	return false;
 }
 
 bool World::TryGetTransform(ObjectHandle objectHandle, Transform& outTransform) const

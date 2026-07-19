@@ -8,7 +8,6 @@
 #include "Runtime/Public/ObjectManager.h"
 
 class ObjectManager;
-class World;
 
 // ============================================================================
 // GameObject
@@ -49,15 +48,9 @@ protected:
 	explicit GameObject(ObjectHandle objectHandle);
 	~GameObject() override;
 
-	virtual void Update(double deltaSeconds);
-	virtual void FinalUpdate(double deltaSeconds);
-
-	void ClearComponents();
-
 private:
 	friend class Component;
 	friend class ObjectManager;
-	friend class World;
 
 	void DetachComponent(Component* component);
 

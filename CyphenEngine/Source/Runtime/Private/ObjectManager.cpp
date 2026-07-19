@@ -3,47 +3,84 @@
 #include "Runtime/Public/Object.h"
 #include "Runtime/Public/ObjectManager.h"
 
-std::vector<Object*> ObjectManager::objects;
-std::queue<Object*> ObjectManager::destroyQueue;
-std::queue<uint32> ObjectManager::retiredUIDs;
+HandleAllocator<ObjectHandle> ObjectManager::handleAllocator;
 
-uint32 ObjectManager::nextUID = 1;
+std::unordered_map<uint32, Object*> ObjectManager::objects;
+std::queue<Object*> ObjectManager::destroyQueue;
 
 Object* ObjectManager::FindObject(ObjectHandle objectHandle)
 {
-	for (Object* object : objects)
+	if (objectHandle.IsSet() == false)
 	{
-		if (object->GetHandle() == objectHandle)
-		{
-			return object;
-		}
+		return nullptr;
 	}
 
-	return nullptr;
+	std::unordered_map<uint32, Object*>::iterator iterator = objects.find(objectHandle.GetValue());
+
+	if (iterator == objects.end())
+	{
+		return nullptr;
+	}
+
+	return iterator->second;
 }
 
-void ObjectManager::CollectDestroyedObjects()
+void ObjectManager::DestroyObject(Object* object)
+{
+	if (object == nullptr)
+	{
+		return;
+	}
+
+	const ObjectHandle objectHandle = object->GetHandle();
+
+	if (objectHandle.IsSet() == false)
+	{
+		return;
+	}
+
+	std::unordered_map<uint32, Object*>::iterator iterator = objects.find(objectHandle.GetValue());
+
+	if (iterator == objects.end())
+	{
+		return;
+	}
+
+	if (iterator->second != object)
+	{
+		return;
+	}
+
+	destroyQueue.push(object);
+	objects.erase(iterator);
+}
+
+void ObjectManager::Collect()
 {
 	while (destroyQueue.empty() == false)
 	{
 		Object* destroyedObject = destroyQueue.front();
 		destroyQueue.pop();
 
-		const uint32 releasedUID =
-			destroyedObject->GetHandle().GetUID();
+		const ObjectHandle releasedHandle = destroyedObject->GetHandle();
 
 		delete destroyedObject;
 
-		retiredUIDs.push(releasedUID);
+		handleAllocator.Deallocate(releasedHandle);
 	}
 }
 
-void ObjectManager::Shutdown()
+void ObjectManager::Clear()
 {
 	while (objects.empty() == false)
 	{
-		objects.back()->Destroy();
+		std::unordered_map<uint32, Object*>::iterator iterator = objects.begin();
+
+		Object* object = iterator->second;
+
+		destroyQueue.push(object);
+		objects.erase(iterator);
 	}
 
-	CollectDestroyedObjects();
+	Collect();
 }

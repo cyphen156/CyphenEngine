@@ -153,6 +153,7 @@
     <ClInclude Include="Source\Runtime\Public\Entity.h" />
     <ClInclude Include="Source\Runtime\Public\GameObject.h" />
     <ClInclude Include="Source\Runtime\Public\GameRuntime.h" />
+    <ClInclude Include="Source\Core\Public\HandleAllocator.h" />
     <ClInclude Include="Source\Runtime\Public\Object.h" />
     <ClInclude Include="Source\Runtime\Public\ObjectManager.h" />
     <ClInclude Include="Source\Runtime\Public\World.h" />

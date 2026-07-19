@@ -40,7 +40,14 @@ GameObject::GameObject(ObjectHandle objectHandle)
 
 GameObject::~GameObject()
 {
-	ClearComponents();
+	while (components.empty() == false)
+	{
+		Component* component = components.back();
+		components.pop_back();
+
+		component->owner = nullptr;
+		component->Destroy();
+	}
 }
 
 void GameObject::Update(double deltaSeconds)
@@ -51,18 +58,6 @@ void GameObject::Update(double deltaSeconds)
 void GameObject::FinalUpdate(double deltaSeconds)
 {
 	static_cast<void>(deltaSeconds);
-}
-
-void GameObject::ClearComponents()
-{
-	while (components.empty() == false)
-	{
-		Component* component = components.back();
-		components.pop_back();
-
-		component->owner = nullptr;
-		component->Destroy();
-	}
 }
 
 void GameObject::DetachComponent(Component* component)

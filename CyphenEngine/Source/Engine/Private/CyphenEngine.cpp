@@ -163,7 +163,6 @@ void CyphenEngine::Run()
 
 		// TODO:
 		gameRuntime.Tick(Time::DeltaTime());
-		ObjectManager::CollectDestroyedObjects();
 
 		// 렌더링을 위한 프레임 생산
 		Frame frame = {};
@@ -251,7 +250,7 @@ void CyphenEngine::ShutdownEngine()
 	// GameRuntime 내부에서 World를 초기 상태로 되돌립니다.
 	gameRuntime.Shutdown();
 
-	ObjectManager::Shutdown();
+	ObjectManager::Clear();
 
 	engineStatus.store(Terminated);
 }
