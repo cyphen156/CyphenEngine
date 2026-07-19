@@ -38,9 +38,11 @@ CyphenEngine은 Unreal Engine처럼 엔진 중심의 저수준 제어와 명확�
 
 ## 월드 실행 구조 (#4)
 
-![World Loop: Object(OOP)와 런타임 enroll된 System(DOD)이 World ComponentDataStorage(공유 SSOT)를 사이에 두고 병존하며, 프레임은 이름 붙은 phase로 흐른다](Docs/Images/world-loop.svg)
+![Runtime 다섯 단계와 World 세 단계, Object 수명·World 소속·실행 참여를 분리한 World Loop 경계](Docs/Images/world-loop.svg)
 
-#4 2D 월드의 실행 구조입니다. OOP Object를 기본 정의 표면으로 두고, 다수·균일·hot-path 행동만 런타임에 System으로 enroll해 DOD로 실행합니다. 구조 변경은 안전 지점(SystemSync)에서만, 공유 storage write는 Apply에서만 이뤄집니다. 상세는 [Docs/WorldLoop.md](Docs/WorldLoop.md).
+#4 2D 월드의 실행 구조입니다. OOP Object를 기본 정의 표면으로 두고, 다수·균일·hot-path 행동만 런타임에 System으로 enroll해 DOD로 실행합니다.
+
+현재 ObjectManager의 Registry와 지연 파괴, Outer/SubObject 종속 수명, GameObject-Component 합성, WorldObject의 Join/Leave와 Transform 정본, Runtime 다섯 단계와 World 세 단계까지 구성했습니다. Update 참여 Scheduler와 실제 System enroll 경계는 후속 작업입니다. 상세는 [Docs/WorldLoop.md](Docs/WorldLoop.md).
 
 ## 렌더 파이프라인
 
@@ -92,7 +94,8 @@ README는 프로젝트 소개와 현재 방향만 다룹니다. 세부 구현 �
 - FrameQueue와 렌더 제출 경계 정리
 - Runtime / Editor 책임 분리
 - Windows / Linux 양쪽에서 유지 가능한 renderer 경계 보강
-- World Loop 실행 구조 도입 — Object(OOP) + 런타임 enroll된 System(DOD) 병존 (설계 확정, 구현 예정)
+- GameObject / Component Update 계약과 실행 참여 Scheduler 결정
+- World Loop의 Object(OOP) + 런타임 enroll된 System(DOD) 병존 실행 경계 구현
 
 ## 개발 방식
 

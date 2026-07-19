@@ -38,6 +38,8 @@ CyphenEngine_World_Loop_Rule
 		다수·균일·hot-path 행동만 런타임에 System으로 enroll해 DOD 방식으로 실행한다.
 		DOD는 정의 계층이 아니라 런타임 enroll 계층으로만 존재한다.
 		이로써 순수 ECS의 시스템 증식과 엄격한 전역 순서를 피하고, 일회성 행동의 롱테일은 OOP에 남긴다.
+		ObjectHandle과 EntityHandle은 독립된 관리 도메인의 정체성이다.
+		두 Handle의 내부 값이 같더라도 같은 대상을 의미하지 않으며, 관계가 필요하면 명시적으로 연결한다.
 
 	2. 두 실행 체계의 병존
 		World에는 Object System과 Enrolled System이 병존한다.
@@ -45,6 +47,8 @@ CyphenEngine_World_Loop_Rule
 		Enrolled System은 RuntimeEntry / ComponentDataStorage 기반으로 다수·균일·hot-path 행동을 일괄 처리한다.
 		Object System은 즉시성을 기대하는 영역이므로 기본적으로 병렬 compute graph에 넣지 않는다.
 		Enrolled System은 안정된 입력을 기준으로 compute하고, 결과는 정해진 apply point에서만 World에 반영한다.
+		World 소속, Object 종속 수명과 Update/System 실행 참여는 서로 다른 관계다.
+		World에 Join했다고 Update 또는 System 참여가 자동으로 결정되지는 않는다.
 
 	3. System (실행 단위)
 		런타임 처리 단위의 정식 명칭은 System이다.
@@ -61,6 +65,7 @@ CyphenEngine_World_Loop_Rule
 		적용 여부는 호출 횟수가 아니라 위 조건을 만족하는지로 판단한다.
 
 	5. Enroll / Register / Unenroll
+		아래 계약은 System 참여를 구현할 때 적용할 설계 기준이며 현재 #4_10 코드에는 아직 실행 Scheduler가 없다.
 		Enroll은 System 참여를 확정하는 단일 구조 변경 프리미티브이며 안전 지점에서만 수행한다.
 		진입 트리거는 둘이다: authoring-time 직접 Enroll, runtime Register 요청.
 		Register는 Enroll의 대안이 아니라, 런타임에서 Enroll을 요청하는 지연 트리거다.
@@ -71,7 +76,8 @@ CyphenEngine_World_Loop_Rule
 	6. SSOT (단일 진실)
 		Enroll / Register는 구조 변경 타이밍을 다루는 규칙이며, 데이터 소유 문제를 해결하지 않는다.
 		데이터 소유와 stale 방지는 SSOT 규칙이 담당한다.
-		공유·write-back 대상 상태(Transform, Sprite 등)는 World가 연속 storage로 소유하며 이것이 유일한 SSOT다.
+		현재 구현에서 World에 Join한 WorldObject의 Transform은 World의 ComponentDataStorage가 유일한 SSOT다.
+		Sprite와 이후 ComponentData의 소유 위치는 실제 System 소비 경로가 생길 때 별도로 결정한다.
 		System이 단독 소유하고 다른 System/Object가 읽지 않는 hot data만 RuntimeEntry에 인라인으로 둘 수 있다.
 		둘 이상이 읽거나 write-back 대상이 되는 데이터는 World ComponentDataStorage를 SSOT로 둔다.
 		애매하면 공유 storage를 우선한다.
@@ -91,19 +97,18 @@ CyphenEngine_World_Loop_Rule
 		이벤트/커맨드 수집은 병렬 compute와 호환되도록 thread-local 또는 System-local buffer를 우선한다.
 
 	9. 실행 순서 (Tick Phase)
-		World loop는 이름 붙은 phase로 구성한다.
-		기본 phase는 BeginFrame / ObjectUpdate / SystemSync / SystemCompute / Resolve / Apply / FrameExtract / EndFrame이다.
-		ObjectUpdate는 OOP 즉시 반영 모델을 유지하되, phase 단위 write-ownership을 따른다.
-		SystemSync는 pending Register/Unregister, dirty sync, enroll/unenroll 확정을 처리하는 안전 지점이다.
-		SystemCompute는 Enrolled System의 compute phase이며 World/Object 직접 write를 금지한다.
-		Resolve는 이벤트/커맨드를 명시 규칙으로 해결한다.
-		Apply는 Enrolled System 결과를 공유 World storage에 write-back하는 유일한 지점이다.
-		System 간 read/write 의존(read-after-write)은 phase 또는 명시적 선행 조건으로 해결하며 암묵적 순서에 기대지 않는다.
+		GameRuntime은 GlobalPreUpdate / ProcessBeforeWorldTicks / World Tick / ProcessAfterWorldTicks / GlobalFinalUpdate의 다섯 단계로 실행한다.
+		Global은 프로세스 전역 싱글턴이 아니라 한 GameRuntime이 소유한 모든 World에 공통인 실행 범위다.
+		각 World Tick은 PreUpdate / ProcessAll / FinalUpdate의 세 단계로 실행한다.
+		PreUpdate와 FinalUpdate는 World-local OOP 실행 경계이고 ProcessAll은 World-local System 실행 경계다.
+		현재는 단계와 호출 순서만 확정하며 Update 참여 목록, Scheduler, SystemSync / Compute / Resolve / Apply의 세부 분할은 후속 구현한다.
+		후속 세부 phase를 추가하더라도 Runtime 다섯 단계와 World 세 단계의 상위 경계는 유지한다.
 
 	10. 이번에 하지 않는 것
 		DOTS식 기계장치(archetype chunk, Burst/SIMD, Job 자동 스케줄러)는 이번에 도입하지 않는다.
 		지금은 developer-composed(명시적 enroll·Tick)로 두고, 자동 스케줄·병렬은 시스템 수·엔티티 수가 그 비용을 정당화할 때의 후속 과제로 남긴다.
 		분기 압축(플래그화)·캐시라인 패킹은 엔트리 수가 큰 System에만 적용한다.
+		GameObject와 Component의 Update 계약, 참여 의사, 활성 상태와 Scheduler 등록 정책은 #4_11에서 결정한다.
 
 CyphenEngine_Runtime_World_Snapshot_Rule
 
@@ -115,16 +120,17 @@ CyphenEngine_Runtime_World_Snapshot_Rule
 		GameRuntime은 하나의 실행 컨텍스트로서 World를 소유하고 World의 실행 여부, delta time 전달, snapshot 보관 정책을 조율한다.
 		World는 Object와 System이 살아가는 하나의 논리 시뮬레이션 공간이자 현재 상태 컨테이너다.
 		World::Tick은 자체 Run loop가 아니라 Runtime이 호출하는 한 번의 simulation step이다.
-		실행 호출은 CyphenEngine::Run -> GameRuntime::Tick -> World::Tick -> 향후 System 순서로 중첩된다.
+		실행 호출은 CyphenEngine::Run -> GameRuntime::Tick -> World::Tick 순서로 중첩된다.
+		GameRuntime::Tick은 Runtime 다섯 단계를, World::Tick은 World 세 단계를 보장한다.
 		따라서 Runtime 조율과 World::Tick은 대안 관계가 아니다. Runtime이 호출 정책을 소유하고 World가 자신의 상태 전진을 수행한다.
 
 	2. 현재 최소 상태
-		현재 World가 실제로 소유하는 상태는 simulationTick, simulationTime, 원점 Chunk다.
-		Handle, Object, GameObject, Component, Entity의 최소 기반 타입은 현재 구현에 포함한다.
-		현재 World는 공유 ComponentData의 정본을 둘 ComponentDataStorage<Transform>을 소유한다.
-		Object reference, ObjectStorage, WorldTransformStorage, Physics, System과 실제 Transform 접근·부착 경로는 후속 작업에서 결정하고 구현한다.
-		현재 최소 구현은 좌표 도메인, OOP/DOD 정체성 경계와 공유 ComponentData 저장 위치까지 정의한다.
-		Object 부착·접근과 System 실행 기계장치는 미리 추가하지 않는다.
+		현재 World는 simulationTick, simulationTime, 원점 Chunk와 ComponentDataStorage<Transform, ObjectHandle>을 소유한다.
+		World는 Join한 WorldObject의 비소유 참조를 유지하며 WorldObject의 메모리와 Object 수명은 소유하지 않는다.
+		WorldObject는 생성 후 World에 Join하기 전까지 독립적으로 존재할 수 있다.
+		Join은 WorldObject 참조와 Transform 정본을 연결하고 Leave는 이를 해제한다.
+		ObjectManager는 ObjectHandle 발급, 활성 Registry, 지연 파괴를 담당하고 Object의 Outer/SubObject는 종속 수명만 표현한다.
+		Update와 System 실행 참여 기계장치는 현재 구현하지 않는다.
 
 	3. Live World, Snapshot, Render Frame
 		World는 여러 tick에 걸쳐 유지되는 현재의 가변 simulation state다.

@@ -1,72 +1,65 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 384" font-family="Segoe UI, Malgun Gothic, Arial, sans-serif">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 430" font-family="Segoe UI, Malgun Gothic, Arial, sans-serif">
   <defs>
-    <marker id="arw" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+    <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
       <path d="M0 0 L10 5 L0 10 z" fill="#6b7280"/>
     </marker>
   </defs>
-  <rect x="0" y="0" width="760" height="384" fill="#ffffff"/>
 
-  <text x="40" y="34" font-size="19" font-weight="700" fill="#111827">CyphenEngine World Loop · #4 설계</text>
-  <text x="40" y="56" font-size="12" fill="#4b5563">파랑 = Object(OOP)  ·  노랑 = System(DOD)  ·  회색 = 공유 World storage / 프레임 경계</text>
+  <rect x="0" y="0" width="900" height="430" fill="#ffffff"/>
 
-  <!-- Band 1: 두 실행 체계 병존 -->
-  <rect x="40" y="78" width="250" height="56" rx="8" fill="#eaf2ff" stroke="#2f6fed"/>
-  <text x="165" y="102" font-size="14" font-weight="600" fill="#111827" text-anchor="middle">Object System (OOP)</text>
-  <text x="165" y="120" font-size="11" fill="#4b5563" text-anchor="middle">즉시 반영 · 유니크 · 소수</text>
+  <text x="40" y="35" font-size="20" font-weight="700" fill="#111827">CyphenEngine Runtime / World Loop · #4_10</text>
+  <text x="40" y="58" font-size="12" fill="#4b5563">파랑 = OOP 실행 경계 · 노랑 = System 실행 경계 · 회색 = World 소속과 공유 상태</text>
 
-  <rect x="315" y="78" width="130" height="56" rx="8" fill="#fff4d6" stroke="#c98a00"/>
-  <text x="380" y="99" font-size="12" font-weight="600" fill="#111827" text-anchor="middle">Enroll / Register</text>
-  <text x="380" y="116" font-size="11" fill="#4b5563" text-anchor="middle">Unenroll · 안전 지점</text>
+  <text x="40" y="94" font-size="14" font-weight="700" fill="#111827">GameRuntime Tick · 고정된 다섯 단계</text>
 
-  <rect x="470" y="78" width="250" height="56" rx="8" fill="#fff4d6" stroke="#c98a00"/>
-  <text x="595" y="102" font-size="14" font-weight="600" fill="#111827" text-anchor="middle">Enrolled System (DOD)</text>
-  <text x="595" y="120" font-size="11" fill="#4b5563" text-anchor="middle">RuntimeEntry · 다수 · 균일 · hot-path</text>
+  <rect x="40" y="108" width="150" height="54" rx="7" fill="#eaf2ff" stroke="#2f6fed"/>
+  <text x="115" y="140" font-size="12" font-weight="600" fill="#111827" text-anchor="middle">GlobalPreUpdate</text>
 
-  <line x1="290" y1="106" x2="313" y2="106" stroke="#6b7280" marker-end="url(#arw)"/>
-  <line x1="445" y1="106" x2="468" y2="106" stroke="#6b7280" marker-end="url(#arw)"/>
+  <rect x="205" y="108" width="165" height="54" rx="7" fill="#fff4d6" stroke="#c98a00"/>
+  <text x="287" y="132" font-size="12" font-weight="600" fill="#111827" text-anchor="middle">ProcessBefore</text>
+  <text x="287" y="148" font-size="12" font-weight="600" fill="#111827" text-anchor="middle">WorldTicks</text>
 
-  <rect x="40" y="164" width="680" height="36" rx="8" fill="#f1f3f5" stroke="#9ca3af"/>
-  <text x="52" y="187" font-size="13" font-weight="600" fill="#111827">World ComponentDataStorage — 공유 SSOT (Transform, Sprite …)</text>
+  <rect x="385" y="108" width="130" height="54" rx="7" fill="#f1f3f5" stroke="#6b7280"/>
+  <text x="450" y="132" font-size="12" font-weight="600" fill="#111827" text-anchor="middle">각 World</text>
+  <text x="450" y="148" font-size="12" font-weight="600" fill="#111827" text-anchor="middle">Tick</text>
 
-  <line x1="165" y1="134" x2="165" y2="164" stroke="#6b7280" stroke-dasharray="3 3" marker-end="url(#arw)"/>
-  <text x="172" y="153" font-size="10.5" fill="#4b5563">즉시 write (phase 제한)</text>
-  <line x1="595" y1="134" x2="595" y2="164" stroke="#6b7280" marker-end="url(#arw)"/>
-  <text x="588" y="153" font-size="10.5" fill="#4b5563" text-anchor="end">Apply write · index read</text>
+  <rect x="530" y="108" width="165" height="54" rx="7" fill="#fff4d6" stroke="#c98a00"/>
+  <text x="612" y="132" font-size="12" font-weight="600" fill="#111827" text-anchor="middle">ProcessAfter</text>
+  <text x="612" y="148" font-size="12" font-weight="600" fill="#111827" text-anchor="middle">WorldTicks</text>
 
-  <!-- Band 2: Tick Phase -->
-  <text x="40" y="238" font-size="13" font-weight="600" fill="#111827">Tick Phase</text>
+  <rect x="710" y="108" width="150" height="54" rx="7" fill="#eaf2ff" stroke="#2f6fed"/>
+  <text x="785" y="140" font-size="12" font-weight="600" fill="#111827" text-anchor="middle">GlobalFinalUpdate</text>
 
-  <rect x="40" y="250" width="78" height="42" rx="6" fill="#f1f3f5" stroke="#9ca3af"/>
-  <text x="79" y="275" font-size="11.5" font-weight="600" fill="#111827" text-anchor="middle">Begin</text>
+  <line x1="190" y1="135" x2="203" y2="135" stroke="#6b7280" marker-end="url(#arrow)"/>
+  <line x1="370" y1="135" x2="383" y2="135" stroke="#6b7280" marker-end="url(#arrow)"/>
+  <line x1="515" y1="135" x2="528" y2="135" stroke="#6b7280" marker-end="url(#arrow)"/>
+  <line x1="695" y1="135" x2="708" y2="135" stroke="#6b7280" marker-end="url(#arrow)"/>
 
-  <rect x="126" y="250" width="78" height="42" rx="6" fill="#eaf2ff" stroke="#2f6fed"/>
-  <text x="165" y="270" font-size="11.5" font-weight="600" fill="#111827" text-anchor="middle">Object</text>
-  <text x="165" y="284" font-size="11.5" font-weight="600" fill="#111827" text-anchor="middle">Update</text>
+  <text x="40" y="207" font-size="14" font-weight="700" fill="#111827">World Tick · 고정된 세 단계</text>
 
-  <rect x="212" y="250" width="78" height="42" rx="6" fill="#fff4d6" stroke="#c98a00"/>
-  <text x="251" y="270" font-size="11.5" font-weight="600" fill="#111827" text-anchor="middle">System</text>
-  <text x="251" y="284" font-size="11.5" font-weight="600" fill="#111827" text-anchor="middle">Sync</text>
+  <rect x="180" y="222" width="160" height="54" rx="7" fill="#eaf2ff" stroke="#2f6fed"/>
+  <text x="260" y="254" font-size="13" font-weight="600" fill="#111827" text-anchor="middle">PreUpdate</text>
 
-  <rect x="298" y="250" width="78" height="42" rx="6" fill="#fff4d6" stroke="#c98a00"/>
-  <text x="337" y="270" font-size="11.5" font-weight="600" fill="#111827" text-anchor="middle">System</text>
-  <text x="337" y="284" font-size="11.5" font-weight="600" fill="#111827" text-anchor="middle">Compute</text>
+  <rect x="370" y="222" width="160" height="54" rx="7" fill="#fff4d6" stroke="#c98a00"/>
+  <text x="450" y="254" font-size="13" font-weight="600" fill="#111827" text-anchor="middle">ProcessAll</text>
 
-  <rect x="384" y="250" width="78" height="42" rx="6" fill="#fff4d6" stroke="#c98a00"/>
-  <text x="423" y="275" font-size="11.5" font-weight="600" fill="#111827" text-anchor="middle">Resolve</text>
+  <rect x="560" y="222" width="160" height="54" rx="7" fill="#eaf2ff" stroke="#2f6fed"/>
+  <text x="640" y="254" font-size="13" font-weight="600" fill="#111827" text-anchor="middle">FinalUpdate</text>
 
-  <rect x="470" y="250" width="78" height="42" rx="6" fill="#fff4d6" stroke="#c98a00"/>
-  <text x="509" y="275" font-size="11.5" font-weight="600" fill="#111827" text-anchor="middle">Apply</text>
+  <line x1="340" y1="249" x2="368" y2="249" stroke="#6b7280" marker-end="url(#arrow)"/>
+  <line x1="530" y1="249" x2="558" y2="249" stroke="#6b7280" marker-end="url(#arrow)"/>
 
-  <rect x="556" y="250" width="78" height="42" rx="6" fill="#f1f3f5" stroke="#9ca3af"/>
-  <text x="595" y="270" font-size="11.5" font-weight="600" fill="#111827" text-anchor="middle">Frame</text>
-  <text x="595" y="284" font-size="11.5" font-weight="600" fill="#111827" text-anchor="middle">Extract</text>
+  <text x="40" y="323" font-size="14" font-weight="700" fill="#111827">서로 분리된 세 관계</text>
 
-  <rect x="642" y="250" width="78" height="42" rx="6" fill="#f1f3f5" stroke="#9ca3af"/>
-  <text x="681" y="275" font-size="11.5" font-weight="600" fill="#111827" text-anchor="middle">End</text>
+  <rect x="40" y="338" width="250" height="58" rx="7" fill="#eaf2ff" stroke="#2f6fed"/>
+  <text x="165" y="362" font-size="12.5" font-weight="600" fill="#111827" text-anchor="middle">Outer / SubObject</text>
+  <text x="165" y="381" font-size="11" fill="#4b5563" text-anchor="middle">Object 종속 수명</text>
 
-  <line x1="79" y1="304" x2="678" y2="304" stroke="#6b7280" marker-end="url(#arw)"/>
+  <rect x="325" y="338" width="250" height="58" rx="7" fill="#f1f3f5" stroke="#6b7280"/>
+  <text x="450" y="362" font-size="12.5" font-weight="600" fill="#111827" text-anchor="middle">World Join / Leave</text>
+  <text x="450" y="381" font-size="11" fill="#4b5563" text-anchor="middle">World 소속 · Transform SSOT</text>
 
-  <text x="40" y="328" font-size="11" fill="#4b5563">· SystemSync = pending Register/Unregister · enroll/unenroll 확정 안전 지점</text>
-  <text x="40" y="346" font-size="11" fill="#4b5563">· SystemCompute = World/Object 직접 write 금지 (read-only 핸들)</text>
-  <text x="40" y="364" font-size="11" fill="#4b5563">· Apply = 공유 World storage에 write-back하는 유일한 지점</text>
+  <rect x="610" y="338" width="250" height="58" rx="7" fill="#fff4d6" stroke="#c98a00" stroke-dasharray="5 4"/>
+  <text x="735" y="362" font-size="12.5" font-weight="600" fill="#111827" text-anchor="middle">Update / System 참여</text>
+  <text x="735" y="381" font-size="11" fill="#4b5563" text-anchor="middle">#4_11 이후 Scheduler</text>
 </svg>

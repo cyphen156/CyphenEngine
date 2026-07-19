@@ -1,0 +1,110 @@
+Date: 2026-07-14~19
+Branch: #4-2D-월드-개발
+
+
+작업 요약
+	#4_7에서 WorldObject의 Transform 수명과 GameObject-Component 합성을 처음 연결했습니다.
+
+	이후 #4_8부터 #4_10까지 Object의 정체성, 저장 위치, 종속 수명과 World 소속을 반복해서 재검토했습니다.
+
+	최종적으로 Handle과 StorageSlot의 역할을 분리하고, ObjectManager의 Registry 및 지연 파괴 정책을 정리했습니다. Object에는 범용 Outer/SubObject 종속 수명 구조를 도입했으며, WorldObject는 World에 생성되는 객체가 아니라 기존 World에 합류하거나 이탈하는 객체로 재정의했습니다.
+
+	Runtime과 World의 실행 단계는 고정했지만, 실제 Update 참여 계약과 Scheduler 구성은 다음 작업으로 남겼습니다.
+
+
+진행한 커밋
+	#4_7 [Add:World] WorldObject Transform 수명과 OOP Component 소유 연결
+	#4_8 [Refactor:Runtime] Object UID와 World 실행 수명 경계 재구성
+	#4_9 [Refactor:Runtime] Handle 발급과 Object Registry 관리 경계 재구성
+	#4_10 [Refactor:Runtime] Object 종속 수명과 World 합류 실행 경계 정리
+
+
+주요 정리 내용
+	1. Handle과 저장 위치 분리
+		기존 Handle이 객체의 정체성과 ComponentDataStorage의 슬롯 위치를 함께 표현하던 구조를 분리했습니다.
+
+		Handle<Type>은 관리 도메인 안에서 대상을 식별하는 타입 안전한 값으로 한정했습니다. 밀집 배열의 위치와 재사용 세대는 StorageSlot<Type>{index, generation}이 별도로 표현합니다.
+
+		#4_8에서는 Object와 Entity가 같은 UID를 공유하는 구조를 검토했지만, #4_9에서 둘을 독립적인 관리 도메인으로 교정했습니다. 내부 숫자가 같더라도 서로 같은 대상을 의미하지 않으며, 필요한 관계는 명시적으로 연결합니다.
+
+	2. ObjectManager 관리 경계 재구성
+		ObjectHandle 발급은 HandleAllocator<ObjectHandle>이 담당하고, ObjectManager는 Object 생성과 Registry, 지연 파괴를 담당하도록 분리했습니다.
+
+		활성 Object는 ObjectHandle을 키로 하는 Registry에서 단건 조회하며, Object 내부 Handle을 확인하기 위한 선형 탐색을 제거했습니다.
+
+		Destroy는 즉시 delete하지 않고 활성 Registry에서 제거한 뒤 파괴 대기열로 이동합니다. 실제 메모리 해제는 엔진이 선택한 안전 지점에서 Collect를 호출하여 수행합니다.
+
+		ObjectManager는 참조 도달 가능성을 추적하는 GC가 아니라, 명시적인 Destroy 요청을 안전하게 지연 처리하는 엔진 전역 Object 수명 관리 경계입니다.
+
+	3. 범용 Outer/SubObject 종속 수명 도입
+		기존 GameObject-Component에 한정된 소유 관계를 Object 전체에서 사용할 수 있는 Outer/SubObject 구조로 확장했습니다.
+
+		Object는 다른 Object를 SubObject로 소유할 수 있으며, Destroy 요청은 종속된 SubObject에 먼저 전파됩니다. 순환 관계와 중복 부착은 거부합니다.
+
+		이 관계는 종속 수명만 표현합니다. Transform 계층, World 소속, Update 실행 순서를 Outer/SubObject 관계에서 자동으로 추론하지 않습니다.
+
+	4. GameObject와 Component 관계 정리
+		GameObject는 직접 부착된 Component를 평면 목록으로 관리합니다.
+
+		Component도 독립 ObjectHandle을 갖는 Object이지만, GameObject에 부착될 때 직접 Outer가 GameObject여야 합니다. Component-in-Component는 허용하지 않습니다.
+
+		GameObject의 Component 목록은 타입별 접근을 위한 직접 목록이고, 실제 종속 수명의 정본은 Object의 Outer/SubObject 관계입니다.
+
+		Component 파괴 시에는 GameObject의 Component 목록과 Outer 관계를 함께 해제하도록 정리했습니다.
+
+	5. WorldObject의 World 합류 모델 확정
+		WorldObject의 생성과 World 소속을 분리했습니다.
+
+		WorldObject는 생성 직후에는 어떤 World에도 소속되지 않을 수 있습니다. Join을 통해 기존 World에 합류하고 Leave를 통해 이탈합니다.
+
+		World는 WorldObject의 메모리를 소유하지 않습니다. 대신 소속된 WorldObject의 비소유 참조와 Transform 정본을 관리합니다.
+
+		Join 시 WorldObject 참조와 초기 Transform을 등록하고, Leave 시 이를 제거합니다. WorldObject의 Destroy는 먼저 소속 World에서 이탈한 뒤 Object 종속 수명 파괴 경로로 진입합니다.
+
+	6. Runtime과 World 실행 단계 고정
+		GameRuntime의 실행 단계를 다음 다섯 단계로 고정했습니다.
+
+		GlobalPreUpdate
+		ProcessBeforeWorldTicks
+		각 World Tick
+		ProcessAfterWorldTicks
+		GlobalFinalUpdate
+
+		각 World Tick은 다시 다음 세 단계로 구성합니다.
+
+		PreUpdate
+		ProcessAll
+		FinalUpdate
+
+		Global은 엔진 전체 싱글턴이 아니라 하나의 GameRuntime이 소유한 모든 World에 공통인 실행 범위를 의미합니다.
+
+		World 소속과 Update 또는 System 참여는 서로 다른 계약으로 분리했습니다. 현재는 실제 Update 참여 목록과 Scheduler를 미리 구현하지 않고 실행 단계만 고정했습니다.
+
+
+정리한 설계 기준
+	- Handle<Type>은 관리 도메인의 타입 안전한 식별값입니다.
+	- StorageSlot<Type>은 밀집 저장소의 index와 generation을 표현합니다.
+	- ObjectHandle과 EntityHandle은 독립적인 정체성이며 자동으로 같은 값을 공유하지 않습니다.
+	- ObjectManager는 Object 생성, Registry 조회와 지연 파괴를 담당합니다.
+	- Object의 Outer/SubObject는 종속 수명만 표현합니다.
+	- Component는 GameObject에 직접 부착되는 평면 구성 요소입니다.
+	- Component-in-Component는 허용하지 않습니다.
+	- WorldObject는 생성과 동시에 World에 소속될 필요가 없습니다.
+	- World는 WorldObject의 메모리를 소유하지 않고 비소유 참조와 Transform 정본을 관리합니다.
+	- World 합류와 실행 참여는 서로 다른 계약입니다.
+	- Runtime의 다섯 실행 단계와 World의 세 실행 단계는 고정합니다.
+	- 실제 Update 계약과 참여 Scheduler는 #4_11에서 별도로 결정합니다.
+
+
+검증
+	#4_7에서 Windows Release와 Linux Debug 빌드를 확인했습니다.
+
+	#4_10에서 Windows x64 Release 빌드와 변경 파일 인코딩 및 diff 상태를 확인했습니다.
+
+
+다음 작업
+	#4_11에서는 Object에 Update를 추가하지 않고 GameObject와 Component의 실행 능력을 검토합니다.
+
+	GameObject의 Update/FinalUpdate와 Component의 UpdateComponent/FinalUpdateComponent 계약을 먼저 확정합니다.
+
+	참여 의사, 활성 상태, Scheduler 등록과 해제 정책은 실행 계약을 확정한 뒤 별도로 추가합니다.

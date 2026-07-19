@@ -22,13 +22,23 @@
 	- Linux GUI 실행에서 CoreIoTests PASS=69 FAIL=0, ModuleTests PASS=34 FAIL=0을 확인했습니다.
 	- CyphenRendererVulkan.so 로드, Vulkan surface / swapchain / pipeline 초기화, 텍스처 출력까지 확인했습니다.
 
+5. Runtime / World
+	- Handle과 StorageSlot의 정체성 / 저장 위치 역할을 분리했습니다.
+	- ObjectManager의 Handle 발급, Registry 단건 조회와 지연 파괴 경계를 구성했습니다.
+	- Object의 Outer/SubObject 종속 수명과 GameObject의 평면 Component 목록을 구성했습니다.
+	- WorldObject의 생성과 World 소속을 분리하고 Join / Leave로 Transform 정본을 연결합니다.
+	- GameRuntime 다섯 단계와 World 세 단계의 실행 경계를 고정했습니다.
+
 
 ## 해야 할 일
 
 1. 2D World
 	- #4 브랜치의 우선 목표입니다.
 	- debug fixture 수준의 텍스처 표시를 실제 2D 월드 표시 흐름으로 확장합니다.
-	- Runtime / Editor 책임 경계를 다시 확인합니다.
+	- #4_11에서 GameObject와 Component의 Update 계약을 먼저 확정합니다.
+	- Update 참여 의사, 활성 상태와 Scheduler 등록·해제 정책은 실행 계약 이후 결정합니다.
+	- World 소속과 Update / System 참여는 별도 관계로 유지합니다.
+	- System Register / Enroll / Unenroll의 실제 저장소 변경 경계를 구체 System과 함께 구현합니다.
 	- 월드 데이터가 Frame / RenderCommand로 넘어가는 최소 경로를 설계합니다.
 
 2. ResourceManager / FileSystem
