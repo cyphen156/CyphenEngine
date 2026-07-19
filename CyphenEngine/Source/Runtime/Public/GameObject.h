@@ -12,17 +12,20 @@ class ObjectManager;
 // ============================================================================
 // GameObject
 // ----------------------------------------------------------------------------
-// 게임 런타임의 OOP Component composition root입니다.
+// 게임 실행을 위한 OOP composition root입니다.
 //
-// 부착된 Component의 composition을 소유하며, GameObject가 파괴되면 부착된
-// Component에도 파괴를 요청합니다. 실제 메모리 수명은 ObjectManager가 관리합니다.
+// 부착된 Component는 GameObject의 직접 SubObject로 연결합니다.
+// 모든 Component는 하나의 GameObject에 직접 부착된 평면 목록의 구성원이며,
+// Component가 다른 Component를 직접 소유하는 composition 계층은 허용하지 않습니다.
 //
-// Component 접근은 부모가 보관한 포인터 배열을 직접 순회합니다.
-// 일상적인 Component 접근에 ObjectHandle 조회를 강제하지 않습니다.
+// GameObject가 파괴되면 ObjectManager의 종속 수명 순회를 통해 Component에도
+// 파괴가 요청되며, 실제 메모리 수명은 ObjectManager가 관리합니다.
 //
-// Update는 실행 도메인의 System 처리 전에 수행하는 일반 행위입니다.
-// FinalUpdate는 System 처리로 확정된 결과를 소비하는 후행 행위입니다.
-// 실제 호출 여부와 global / World-local 실행 범위는 등록된 실행 도메인이 결정합니다.
+// components는 Component 타입에 특화된 평면 조회 인덱스입니다.
+// 종속 수명의 정본은 Object의 Outer/SubObject 관계입니다.
+//
+// GameObject는 일반 Object, 다른 GameObject와 Component를 SubObject로
+// 소유할 수 있습니다.
 //
 // World 소속과 Transform은 GameObject의 기본 책임이 아닙니다.
 // ============================================================================
@@ -52,7 +55,7 @@ private:
 	friend class Component;
 	friend class ObjectManager;
 
-	void DetachComponent(Component* component);
+	bool DetachComponent(Component* component);
 
 	std::vector<Component*> components;
 };
@@ -61,11 +64,17 @@ template<typename ComponentType, typename... ArgumentTypes>
 ComponentType* GameObject::AddComponent(ArgumentTypes&&... arguments)
 {
 	ComponentType* component = Object::NewObject<ComponentType>(
-		*this,
 		std::forward<ArgumentTypes>(arguments)...);
 
 	if (component == nullptr)
 	{
+		return nullptr;
+	}
+
+	if (AttachSubObject(*component) == false)
+	{
+		component->Object::Destroy();
+
 		return nullptr;
 	}
 
@@ -99,8 +108,7 @@ const ComponentType* GameObject::GetComponent() const
 
 	for (uint32 index = 0; index < componentCount; ++index)
 	{
-		const ComponentType* component =
-			dynamic_cast<const ComponentType*>(components[index]);
+		const ComponentType* component = dynamic_cast<const ComponentType*>(components[index]);
 
 		if (component != nullptr)
 		{

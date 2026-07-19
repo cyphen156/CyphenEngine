@@ -9,8 +9,7 @@
 #include "Runtime/Public/WorldObject.h"
 
 WorldObjectInstantiateParams WorldObjectInstantiateParams::DefaultWorld(
-	GameRuntime& runtime,
-	const Transform& initialTransform)
+	GameRuntime& runtime, const Transform& initialTransform)
 {
 	WorldObjectInstantiateParams parameters;
 	parameters.runtime = &runtime;
@@ -19,8 +18,7 @@ WorldObjectInstantiateParams WorldObjectInstantiateParams::DefaultWorld(
 }
 
 WorldObjectInstantiateParams WorldObjectInstantiateParams::TargetWorld(
-	World& targetWorld,
-	const Transform& initialTransform)
+	World& targetWorld, const Transform& initialTransform)
 {
 	WorldObjectInstantiateParams parameters;
 	parameters.targetWorld = &targetWorld;
@@ -39,8 +37,7 @@ bool WorldObject::Instantiate(const WorldObjectInstantiateParams& parameters)
 
 	if (targetWorld == nullptr)
 	{
-		if (parameters.runtime == nullptr ||
-			parameters.runtime->IsInitialized() == false)
+		if (parameters.runtime == nullptr || parameters.runtime->IsInitialized() == false)
 		{
 			return false;
 		}
@@ -48,7 +45,17 @@ bool WorldObject::Instantiate(const WorldObjectInstantiateParams& parameters)
 		targetWorld = &parameters.runtime->world;
 	}
 
-	return targetWorld->Enroll(*this, parameters.initialTransform);
+	return targetWorld->Join(*this, parameters.initialTransform);
+}
+
+bool WorldObject::Destroy()
+{
+	if (world != nullptr && world->Leave(*this) == false)
+	{
+		return false;
+	}
+
+	return Object::Destroy();
 }
 
 Transform WorldObject::GetTransform() const
@@ -58,8 +65,8 @@ Transform WorldObject::GetTransform() const
 	if (world == nullptr)
 	{
 #ifdef _DEBUG
-		PRINT_DEBUG_OUTPUT(
-			"[WorldObject] World에 소속된 이후에 Transform을 조회해야 합니다.\n");
+		PRINT_DEBUG_OUTPUT("[WorldObject] World에 합류한 이후에 Transform을 조회해야 합니다.\n");
+
 		assert(world != nullptr);
 #endif
 		return transform;
@@ -68,8 +75,8 @@ Transform WorldObject::GetTransform() const
 	if (world->TryGetTransform(GetHandle(), transform) == false)
 	{
 #ifdef _DEBUG
-		PRINT_DEBUG_OUTPUT(
-			"[WorldObject] World에서 Transform을 찾을 수 없습니다.\n");
+		PRINT_DEBUG_OUTPUT("[WorldObject] World에서 Transform을 찾을 수 없습니다.\n");
+
 		assert(false);
 #endif
 	}
@@ -82,18 +89,9 @@ const World* WorldObject::GetWorld() const
 	return world;
 }
 
-WorldObject::WorldObject(
-	ObjectHandle objectHandle,
-	bool newParticipatesInWorldUpdate)
+WorldObject::WorldObject(ObjectHandle objectHandle)
 	: GameObject(objectHandle)
-	, participatesInWorldUpdate(newParticipatesInWorldUpdate)
 {
 }
 
-WorldObject::~WorldObject()
-{
-	if (world != nullptr)
-	{
-		world->Unroll(*this);
-	}
-}
+WorldObject::~WorldObject() = default;

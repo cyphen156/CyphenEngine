@@ -14,10 +14,21 @@ class WorldObject;
 // ============================================================================
 // World
 // ----------------------------------------------------------------------------
-// GameObject와 System이 살아가는 독립된 논리 시뮬레이션 공간입니다.
+// Object와 System이 살아가는 독립된 논리 시뮬레이션 공간입니다.
 //
 // World는 WorldObject의 메모리와 수명을 소유하지 않습니다.
 // World-local ComponentData 정본과 소속 WorldObject의 비소유 참조를 유지합니다.
+//
+// Join:
+//   - 생성된 WorldObject를 현재 World의 논리 공간에 합류시킵니다.
+//   - WorldObject의 Transform 정본을 생성합니다.
+//   - WorldObject의 비소유 참조와 World 소속 관계를 연결합니다.
+//   - Update 또는 System 실행 참여를 자동으로 결정하지 않습니다.
+//
+// Leave:
+//   - WorldObject의 Transform 정본을 제거합니다.
+//   - WorldObject의 비소유 참조와 World 소속 관계를 해제합니다.
+//   - WorldObject의 메모리와 Object 수명은 변경하지 않습니다.
 //
 // Tick:
 //   - GameRuntime이 simulation을 전진시킬 때 호출합니다.
@@ -39,8 +50,7 @@ class WorldObject;
 // 비책임:
 //   - 자체 Run loop 소유
 //   - delta time 산출과 Tick 호출 정책
-//   - 실행 참여 대상의 등록·해제 정책
-//   - Scheduler의 실행 순서와 구조 변경 안전 시점 결정
+//   - 실행 참여 대상의 Scheduler 등록·해제 정책
 //   - Render Frame 생성과 Renderer 연결
 //   - WorldObject 생성과 수명 관리
 //   - ObjectHandle 발급과 Object 메모리 소유
@@ -64,6 +74,9 @@ public:
 private:
 	friend class GameRuntime;
 	friend class WorldObject;
+
+	bool Join(WorldObject& worldObject, const Transform& initialTransform);
+	bool Leave(WorldObject& worldObject);
 
 	void Reset();
 	void Tick(double deltaSeconds);

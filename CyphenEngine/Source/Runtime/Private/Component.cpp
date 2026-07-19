@@ -5,29 +5,34 @@
 
 GameObject* Component::GetOwner()
 {
-	return owner;
+	return static_cast<GameObject*>(GetOuter());
 }
 
 const GameObject* Component::GetOwner() const
 {
-	return owner;
+	return static_cast<const GameObject*>(GetOuter());
 }
 
-Component::Component(ObjectHandle objectHandle, GameObject& newOwner)
-	: Object(objectHandle)
-	, owner(&newOwner)
+bool Component::Destroy()
 {
-}
+	GameObject* owner = GetOwner();
 
-Component::~Component()
-{
-	if (owner == nullptr)
+	if (owner != nullptr && owner->DetachComponent(this) == false)
 	{
-		return;
+		return false;
 	}
 
-	GameObject* previousOwner = owner;
+	return Object::Destroy();
+}
 
-	owner = nullptr;
-	previousOwner->DetachComponent(this);
+Component::Component(ObjectHandle objectHandle)
+	: Object(objectHandle)
+{
+}
+
+Component::~Component() = default;
+
+bool Component::CanAttachTo(const Object& outer) const
+{
+	return dynamic_cast<const GameObject*>(&outer) != nullptr;
 }

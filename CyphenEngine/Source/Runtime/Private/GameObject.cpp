@@ -38,30 +38,15 @@ GameObject::GameObject(ObjectHandle objectHandle)
 {
 }
 
-GameObject::~GameObject()
+GameObject::~GameObject() = default;
+
+bool GameObject::DetachComponent(Component* component)
 {
-	while (components.empty() == false)
+	if (component == nullptr)
 	{
-		Component* component = components.back();
-		components.pop_back();
-
-		component->owner = nullptr;
-		component->Destroy();
+		return false;
 	}
-}
 
-void GameObject::Update(double deltaSeconds)
-{
-	static_cast<void>(deltaSeconds);
-}
-
-void GameObject::FinalUpdate(double deltaSeconds)
-{
-	static_cast<void>(deltaSeconds);
-}
-
-void GameObject::DetachComponent(Component* component)
-{
 	std::vector<Component*>::iterator iterator;
 	for (iterator = components.begin(); iterator != components.end(); ++iterator)
 	{
@@ -70,7 +55,15 @@ void GameObject::DetachComponent(Component* component)
 			continue;
 		}
 
+		if (DetachSubObject(*component) == false)
+		{
+			return false;
+		}
+
 		components.erase(iterator);
-		return;
+
+		return true;
 	}
+
+	return false;
 }

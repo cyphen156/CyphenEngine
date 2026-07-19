@@ -75,10 +75,10 @@ private:
 	template<typename ObjectType, typename... ArgumentTypes>
 	static ObjectType* NewObject(ArgumentTypes&&... arguments);
 
-	static void DestroyObject(Object* object);
+	static bool DestroyObject(Object* object);
 
 	static void Collect();
-	static void Clear();
+	static bool Clear();
 
 	static HandleAllocator<ObjectHandle> handleAllocator;
 

@@ -25,34 +25,53 @@ Object* ObjectManager::FindObject(ObjectHandle objectHandle)
 	return iterator->second;
 }
 
-void ObjectManager::DestroyObject(Object* object)
+bool ObjectManager::DestroyObject(Object* object)
 {
 	if (object == nullptr)
 	{
-		return;
+		return false;
 	}
 
 	const ObjectHandle objectHandle = object->GetHandle();
 
 	if (objectHandle.IsSet() == false)
 	{
-		return;
+		return false;
 	}
 
 	std::unordered_map<uint32, Object*>::iterator iterator = objects.find(objectHandle.GetValue());
 
-	if (iterator == objects.end())
+	if (iterator == objects.end() || iterator->second != object)
 	{
-		return;
+		return false;
 	}
 
-	if (iterator->second != object)
+	// SubObject의 virtual Destroy를 호출하여 각 타입에 귀속된 관계를
+	// 먼저 정리한 뒤 공통 Object 파괴 경로에 합류하도록 합니다.
+	while (object->subObjects.empty() == false)
 	{
-		return;
+		Object* subObject = object->subObjects.back();
+
+		if (subObject == nullptr)
+		{
+			return false;
+		}
+
+		if (subObject->Destroy() == false)
+		{
+			return false;
+		}
 	}
 
-	destroyQueue.push(object);
+	if (object->outer != nullptr && object->outer->DetachSubObject(*object) == false)
+	{
+		return false;
+	}
+
 	objects.erase(iterator);
+	destroyQueue.push(object);
+
+	return true;
 }
 
 void ObjectManager::Collect()
@@ -70,17 +89,19 @@ void ObjectManager::Collect()
 	}
 }
 
-void ObjectManager::Clear()
+bool ObjectManager::Clear()
 {
 	while (objects.empty() == false)
 	{
 		std::unordered_map<uint32, Object*>::iterator iterator = objects.begin();
 
-		Object* object = iterator->second;
-
-		destroyQueue.push(object);
-		objects.erase(iterator);
+		if (iterator->second->Destroy() == false)
+		{
+			return false;
+		}
 	}
 
 	Collect();
+
+	return true;
 }
