@@ -73,6 +73,7 @@ public:
 
 protected:
 	explicit WorldObject(ObjectHandle objectHandle);
+	WorldObject(ObjectHandle objectHandle, UpdateParticipation updateParticipation);
 	~WorldObject() override;
 
 private:

@@ -65,7 +65,7 @@ private:
 	bool Initialize();
 	void Tick(double deltaSeconds);
 
-	void GlobalPreUpdate(double deltaSeconds);
+	void GlobalUpdate(double deltaSeconds);
 	void ProcessBeforeWorldTicks(double deltaSeconds);
 	void ProcessAfterWorldTicks(double deltaSeconds);
 	void GlobalFinalUpdate(double deltaSeconds);

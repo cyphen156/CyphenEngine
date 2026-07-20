@@ -156,6 +156,7 @@
     <ClInclude Include="Source\Core\Public\HandleAllocator.h" />
     <ClInclude Include="Source\Runtime\Public\Object.h" />
     <ClInclude Include="Source\Runtime\Public\ObjectManager.h" />
+    <ClInclude Include="Source\Runtime\Public\UpdateParticipation.h" />
     <ClInclude Include="Source\Runtime\Public\World.h" />
     <ClInclude Include="Source\Runtime\Public\WorldObject.h" />
     <!-- Test -->
@@ -163,6 +164,9 @@
     <!-- PCH -->
     <ClInclude Include="Source\pch.h" />
     <ClInclude Include="Source\Test\Module\ModuleTest.h" />
+    <ClInclude Include="Source\Test\Runtime\RuntimeTest.h" />
+    <ClInclude Include="Source\Test\Runtime\Sprite.h" />
+    <ClInclude Include="Source\Test\Runtime\Square.h" />
   </ItemGroup>
   <!-- Source Files -->
   <ItemGroup>
@@ -242,6 +246,9 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="Source\Test\Module\ModuleTest.cpp" />
+    <ClCompile Include="Source\Test\Runtime\RuntimeTest.cpp" />
+    <ClCompile Include="Source\Test\Runtime\Sprite.cpp" />
+    <ClCompile Include="Source\Test\Runtime\Square.cpp" />
   </ItemGroup>
   <!-- Resources -->
   <ItemGroup>

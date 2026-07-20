@@ -71,20 +71,20 @@ public:
 	uint64 GetSimulationTick() const;
 	double GetSimulationTime() const;
 
+	bool Join(WorldObject& worldObject, const Transform& initialTransform);
+	bool Leave(WorldObject& worldObject);
+
 private:
 	friend class GameRuntime;
 	friend class WorldObject;
-
-	bool Join(WorldObject& worldObject, const Transform& initialTransform);
-	bool Leave(WorldObject& worldObject);
 
 	void Reset();
 	void Tick(double deltaSeconds);
 
 	// World Loop Phases
-	void PreUpdate();
+	void PreUpdate(double deltaSeconds);
 	void ProcessAll(double deltaSeconds);
-	void FinalUpdate();
+	void FinalUpdate(double deltaSeconds);
 
 	bool TryGetTransform(ObjectHandle objectHandle, Transform& outTransform) const;
 

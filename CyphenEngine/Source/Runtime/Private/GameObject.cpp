@@ -1,69 +1,55 @@
 #include "pch.h"
 
+#include "Runtime/Public/Component.h"
 #include "Runtime/Public/GameObject.h"
 
-Component* GameObject::FindComponent(ObjectHandle componentHandle)
+void GameObject::GlobalUpdate(double deltaSeconds)
 {
-	for (Component* component : components)
-	{
-		if (component->GetHandle() == componentHandle)
-		{
-			return component;
-		}
-	}
-
-	return nullptr;
 }
 
-const Component* GameObject::FindComponent(ObjectHandle componentHandle) const
+void GameObject::Update(double deltaSeconds)
 {
-	for (const Component* component : components)
-	{
-		if (component->GetHandle() == componentHandle)
-		{
-			return component;
-		}
-	}
+}
 
-	return nullptr;
+void GameObject::FinalUpdate(double deltaSeconds)
+{
+}
+
+void GameObject::GlobalFinalUpdate(double deltaSeconds)
+{
+}
+
+bool GameObject::HasUpdateParticipation(UpdateParticipation participation) const
+{
+	return (static_cast<uint8>(updateParticipation) &
+		static_cast<uint8>(participation)) != 0;
 }
 
 uint32 GameObject::GetComponentCount() const
 {
-	return static_cast<uint32>(components.size());
+	uint32 componentCount = 0;
+	const uint32 subObjectCount = GetSubObjectCount();
+
+	for (uint32 index = 0; index < subObjectCount; ++index)
+	{
+		if (dynamic_cast<const Component*>(GetSubObject(index)) != nullptr)
+		{
+			++componentCount;
+		}
+	}
+
+	return componentCount;
 }
 
 GameObject::GameObject(ObjectHandle objectHandle)
-	: Object(objectHandle)
+	: GameObject(objectHandle, UpdateParticipation::None)
+{
+}
+
+GameObject::GameObject(ObjectHandle objectHandle, UpdateParticipation updateParticipationValue)
+	: Object(objectHandle),
+	updateParticipation(updateParticipationValue)
 {
 }
 
 GameObject::~GameObject() = default;
-
-bool GameObject::DetachComponent(Component* component)
-{
-	if (component == nullptr)
-	{
-		return false;
-	}
-
-	std::vector<Component*>::iterator iterator;
-	for (iterator = components.begin(); iterator != components.end(); ++iterator)
-	{
-		if (*iterator != component)
-		{
-			continue;
-		}
-
-		if (DetachSubObject(*component) == false)
-		{
-			return false;
-		}
-
-		components.erase(iterator);
-
-		return true;
-	}
-
-	return false;
-}

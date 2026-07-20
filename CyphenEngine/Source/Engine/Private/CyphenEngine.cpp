@@ -11,12 +11,13 @@
 #include "Core/Public/FileSystem.h"
 #include "Resource/Public/Texture.h"
 #include "Modules/Resource/Public/ResourceCommand.h"
+#include "Test/Runtime/RuntimeTest.h"
 
 constexpr CChar DebugProfileTexturePath[] = CTEXT("Resources/Thumbnail/Profile.jpg");
 constexpr CChar DebugProfile2TexturePath[] = CTEXT("Resources/Thumbnail/Profile2.jpg");
-#endif
-
 std::vector<ResourceId> debugTexturedQuadResourceIds;
+
+#endif
 
 CyphenEngine::CyphenEngine()
 	: engineStatus(Initializing)
@@ -87,7 +88,7 @@ void CyphenEngine::Run()
 		{
 			Texture2D texture;
 			texture.resourceId = nextResourceId++;
-			texture.kind = ResourceKind::Texture2D;
+
 			const ResourceId textureId = texture.resourceId;
 
 			std::vector<uint8> bytes;
@@ -95,7 +96,9 @@ void CyphenEngine::Run()
 				File::ReadAllBytes(path, bytes) == false ||
 				Codec::Decode(path, bytes, texture) == false)
 			{
-				PRINT_DEBUG_OUTPUT("[Resource] texture load failed.\n");
+				PRINT_DEBUG_OUTPUT(
+					"[Resource] texture load failed.\n");
+
 				continue;
 			}
 
@@ -107,6 +110,7 @@ void CyphenEngine::Run()
 				static_cast<uint64>(texture.pixels.size()) != pixelBytes)
 			{
 				PRINT_DEBUG_OUTPUT("[Resource] texture invalid.\n");
+
 				continue;
 			}
 
@@ -124,10 +128,17 @@ void CyphenEngine::Run()
 
 			uint8* cursor = payload.data();
 
-			std::memcpy(cursor, &command, sizeof(command));
+			std::memcpy(
+				cursor,
+				&command,
+				sizeof(command));
+
 			cursor += sizeof(command);
 
-			std::memcpy(cursor, &texturePayload, sizeof(texturePayload));
+			std::memcpy(
+				cursor,
+				&texturePayload,
+				sizeof(texturePayload));
 
 			cursor += sizeof(texturePayload);
 
@@ -147,7 +158,20 @@ void CyphenEngine::Run()
 			debugTexturedQuadResourceIds.push_back(textureId);
 		}
 
-		renderer.ExecuteDebugResourceCommandList(resourceCommands);
+		if (renderer.ExecuteDebugResourceCommandList(resourceCommands) == false)
+		{
+			PRINT_DEBUG_OUTPUT("[Resource] Resource command execution failed.\n");
+		}
+		else if (debugTexturedQuadResourceIds.empty())
+		{
+			PRINT_DEBUG_OUTPUT("[RuntimeTest] Runtime 구성에 사용할 Texture가 없습니다.\n");
+		}
+		else if (RunRuntimeTest(
+			gameRuntime,
+			debugTexturedQuadResourceIds[0]) == false)
+		{
+			PRINT_DEBUG_OUTPUT("[RuntimeTest] Runtime 구성에 실패했습니다.\n");
+		}
 	}
 
 	double lastEngineLogTime = Time::ElapsedTime();
@@ -168,6 +192,7 @@ void CyphenEngine::Run()
 		Frame frame = {};
 		frame.frameNumber = frameNumber++;
 		
+#ifdef _DEBUG
 		if (debugTexturedQuadResourceIds.empty() == false)
 		{
 			const uint64 textureIndex =
@@ -175,10 +200,13 @@ void CyphenEngine::Run()
 				static_cast<uint64>(debugTexturedQuadResourceIds.size());
 
 			TexturedQuadDrawItem drawItem = {};
-			drawItem.textureId = debugTexturedQuadResourceIds[static_cast<size_t>(textureIndex)];
+			drawItem.textureId =
+				debugTexturedQuadResourceIds[
+					static_cast<size_t>(textureIndex)];
 
 			frame.texturedQuadDrawItems.push_back(drawItem);
 		}
+#endif
 
 		if (renderer.BeginRenderingFrame(frame) == false)
 		{

@@ -22,7 +22,7 @@ void GameRuntime::Tick(double deltaSeconds)
 		return;
 	}
 
-	GlobalPreUpdate(deltaSeconds);
+	GlobalUpdate(deltaSeconds);
 	ProcessBeforeWorldTicks(deltaSeconds);
 
 	world.Tick(deltaSeconds);
@@ -31,7 +31,7 @@ void GameRuntime::Tick(double deltaSeconds)
 	GlobalFinalUpdate(deltaSeconds);
 }
 
-void GameRuntime::GlobalPreUpdate(double deltaSeconds)
+void GameRuntime::GlobalUpdate(double deltaSeconds)
 {
 	// Runtime 전체 범위의 OOP 선행 실행 계약을 확정한 이후 구현합니다.
 	// 현재는 GlobalPreUpdate 단계의 경계와 delta time 전달만 보장합니다.

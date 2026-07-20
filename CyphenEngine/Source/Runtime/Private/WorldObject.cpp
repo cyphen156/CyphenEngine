@@ -94,4 +94,9 @@ WorldObject::WorldObject(ObjectHandle objectHandle)
 {
 }
 
+WorldObject::WorldObject(ObjectHandle objectHandle, UpdateParticipation updateParticipation)
+	: GameObject(objectHandle, updateParticipation)
+{
+}
+
 WorldObject::~WorldObject() = default;

@@ -85,15 +85,15 @@ void World::Tick(double deltaSeconds)
 		return;
 	}
 
-	PreUpdate();
+	PreUpdate(deltaSeconds);
 	ProcessAll(deltaSeconds);
-	FinalUpdate();
+	FinalUpdate(deltaSeconds);
 
 	++simulationTick;
 	simulationTime += deltaSeconds;
 }
 
-void World::PreUpdate()
+void World::PreUpdate(double deltaSeconds)
 {
 	// 실행 참여 대상과 Scheduler 계약을 확정한 이후 구현합니다.
 	// World는 현재 선행 실행 단계의 경계만 보장합니다.
@@ -106,7 +106,7 @@ void World::ProcessAll(double deltaSeconds)
 	static_cast<void>(deltaSeconds);
 }
 
-void World::FinalUpdate()
+void World::FinalUpdate(double deltaSeconds)
 {
 	// 실행 참여 대상과 Scheduler 계약을 확정한 이후 구현합니다.
 	// World는 현재 후행 실행 단계의 경계만 보장합니다.

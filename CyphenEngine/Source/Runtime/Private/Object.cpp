@@ -58,8 +58,7 @@ Object::Object(ObjectHandle objectHandle)
 #ifdef _DEBUG
 	if (objectHandle.IsSet() == false)
 	{
-		PRINT_DEBUG_OUTPUT(
-			"[Object] 유효한 핸들을 반드시 부여해야 합니다.\n");
+		PRINT_DEBUG_OUTPUT("[Object] 유효한 핸들을 반드시 부여해야 합니다.\n");
 
 		assert(objectHandle.IsSet());
 	}
