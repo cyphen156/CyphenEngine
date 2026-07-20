@@ -62,6 +62,9 @@ CyphenEngine
 			Debug 빌드에서 엔진 내부 기준선을 검증하는 테스트 계층입니다.
 			Runtime / Engine 및 Release 빌드에서는 의존하지 않습니다.
 
+			/Runtime
+				Object composition과 World 합류를 실제 Runtime 예제 객체로 검증합니다.
+
 	pch
 		사전 컴파일 헤더 및 공통 빌드 환경입니다.
 

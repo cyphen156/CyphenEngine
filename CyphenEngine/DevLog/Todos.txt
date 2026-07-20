@@ -25,9 +25,11 @@
 5. Runtime / World
 	- Handle과 StorageSlot의 정체성 / 저장 위치 역할을 분리했습니다.
 	- ObjectManager의 Handle 발급, Registry 단건 조회와 지연 파괴 경계를 구성했습니다.
-	- Object의 Outer/SubObject 종속 수명과 GameObject의 평면 Component 목록을 구성했습니다.
+	- Object의 Outer/SubObject를 composition과 종속 수명의 단일 정본으로 구성했습니다.
 	- WorldObject의 생성과 World 소속을 분리하고 Join / Leave로 Transform 정본을 연결합니다.
 	- GameRuntime 다섯 단계와 World 세 단계의 실행 경계를 고정했습니다.
+	- GameObject와 Component에 네 단계의 Update 함수와 생성 시점의 UpdateParticipation 계약을 추가했습니다.
+	- Square WorldObject와 Sprite Component로 Object 구성과 World 합류의 최소 Runtime 경로를 검증했습니다.
 
 
 ## 해야 할 일
@@ -35,10 +37,11 @@
 1. 2D World
 	- #4 브랜치의 우선 목표입니다.
 	- debug fixture 수준의 텍스처 표시를 실제 2D 월드 표시 흐름으로 확장합니다.
-	- #4_11에서 GameObject와 Component의 Update 계약을 먼저 확정합니다.
-	- Update 참여 의사, 활성 상태와 Scheduler 등록·해제 정책은 실행 계약 이후 결정합니다.
+	- UpdateParticipation을 Runtime-global 및 World-local 실행 목록에 등록·해제하는 Scheduler 경계를 결정합니다.
+	- 활성 상태와 실행 중 구조 변경을 안전 지점에서 반영하는 정책을 결정합니다.
 	- World 소속과 Update / System 참여는 별도 관계로 유지합니다.
 	- System Register / Enroll / Unenroll의 실제 저장소 변경 경계를 구체 System과 함께 구현합니다.
+	- WorldObject와 Sprite Component의 Transform 정본, World 이동과 계층 합성 규칙을 결정합니다.
 	- 월드 데이터가 Frame / RenderCommand로 넘어가는 최소 경로를 설계합니다.
 
 2. ResourceManager / FileSystem

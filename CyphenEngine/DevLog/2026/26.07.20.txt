@@ -1,0 +1,87 @@
+Date: 2026-07-20
+Branch: #4-2D-월드-개발
+
+
+작업 요약
+	GameObject와 Component가 Runtime OOP 실행에 참여할 수 있도록 네 단계의 Update 함수와 불변 참여 계약을 추가했습니다.
+
+	GameObject의 별도 Component 목록을 제거하고 Object의 Outer/SubObject 관계를 composition과 종속 수명의 단일 정본으로 정리했습니다.
+
+	업로드된 Texture Resource를 사용하는 Sprite Component와 Square WorldObject를 구성해 Object 생성, Component 부착과 World 합류가 하나의 Runtime 흐름에서 정상적으로 연결되는지 확인했습니다.
+
+
+진행된 커밋
+	#4_11 [Add:Runtime] Update 참여 계약과 최소 World 구성 검증
+
+
+주요 정리 내용
+	1. Runtime OOP Update 계약 구성
+		Object는 Update 실행과 무관한 공통 정체성 및 종속 수명 기반으로 유지했습니다.
+
+		GameObject와 Component에는 GlobalUpdate, Update, FinalUpdate와 GlobalFinalUpdate virtual 함수를 각각 추가했습니다. 같은 이름과 시그니처를 사용하지만 두 타입은 서로 독립된 실행 대상입니다.
+
+		GlobalUpdate와 GlobalFinalUpdate는 한 GameRuntime이 소유한 모든 World에 공통인 실행 범위의 선행·후행 OOP 단계입니다. Update와 FinalUpdate는 각 World의 ProcessAll 전후에 배치되는 World-local OOP 단계입니다.
+
+		모든 함수는 GameRuntime이 산출한 delta time을 인자로 받습니다. World의 PreUpdate와 FinalUpdate도 같은 값을 전달받도록 단계 시그니처를 맞췄습니다.
+
+	2. UpdateParticipation 참여 의사 분리
+		UpdateParticipation을 uint8 비트 플래그로 추가해 네 Update 단계 중 클래스가 참여할 단계를 생성 시점에 명시하도록 구성했습니다.
+
+		참여 정보는 const 멤버로 보관하며 Runtime 실행 중 변경하지 않습니다. 기본 생성자 경로는 None을 선택하고, Update에 참여하는 사용자 파생 클래스만 참여 정보를 명시적으로 기반 생성자에 전달합니다.
+
+		HasUpdateParticipation은 요청한 한 단계의 비트가 설정되어 있는지만 반환합니다. 전체 참여 상태 노출, Set 함수와 실행 중 참여 변경은 제공하지 않습니다.
+
+		이번 작업은 실행 능력과 참여 의사까지만 정의했습니다. 실제 Global 또는 World Scheduler 등록, 활성 상태와 안전 지점 변경 처리는 구현하지 않았습니다.
+
+	3. Object composition 단일 정본 확정
+		Object에 AddSubObject를 추가하고 AttachSubObject와 DetachSubObject를 공개 관계 변경 API로 구성했습니다.
+
+		GameObject가 별도로 보관하던 Component 포인터 목록과 AddComponent, FindComponent, GetComponent 경로를 제거했습니다. 직접 Component 수도 Outer/SubObject 목록을 기준으로 계산해 composition 정본이 두 곳으로 갈라지지 않도록 했습니다.
+
+		Component는 부모 없이 독립적으로 생성할 수 있지만 GameObject composition에 부착될 때 직접 Outer가 반드시 GameObject여야 합니다. Component-in-Component는 계속 허용하지 않습니다.
+
+		Component 전용 Destroy 경로를 제거하고 ObjectManager가 Outer/SubObject 관계를 기준으로 자식부터 파괴를 요청하는 공통 수명 경로를 사용하도록 통일했습니다.
+
+	4. World 소속 변경 표면 확장
+		World::Join과 World::Leave를 공개 API로 이동해 이미 생성된 WorldObject의 논리 공간 합류와 이탈을 명시적으로 요청할 수 있도록 했습니다.
+
+		Join은 WorldObject 비소유 참조와 Transform 정본을 생성하고, Leave는 객체를 파괴하지 않은 채 World-local 상태만 제거합니다.
+
+		World membership과 UpdateParticipation은 서로 독립된 관계입니다. World에 합류했다는 사실만으로 Update Scheduler 참여를 자동 결정하지 않습니다.
+
+	5. 최소 Runtime 구성 검증
+		Test/Runtime에 Square WorldObject와 Sprite Component를 추가했습니다. Sprite는 Renderer에 업로드된 Texture의 ResourceId만 참조합니다.
+
+		RuntimeTest는 Square와 Sprite에 서로 다른 ObjectHandle이 발급되는지 확인하고, Sprite를 Square의 직접 SubObject로 부착해 Outer, Component Owner와 구성원 수를 검증합니다.
+
+		Resource 명령 실행이 성공한 이후 RuntimeTest를 호출해 실제 업로드된 Texture ResourceId를 전달하고, Square가 GameRuntime의 기본 World에 합류해 Transform Storage에 등록되는 흐름을 확인했습니다.
+
+		기존 debug textured quad Frame 생성은 Debug 구성으로 제한하고 Runtime 테스트 파일을 Visual Studio 프로젝트에 등록했습니다.
+
+
+정리된 설계 기준
+	- Object는 Update를 제공하지 않습니다.
+	- GameObject와 Component는 서로 독립적으로 같은 네 Update 함수를 제공할 수 있습니다.
+	- UpdateParticipation은 실행 능력의 구현 여부를 판별하지 않고 Scheduler 등록 의사만 표현합니다.
+	- 참여 정보는 생성 시점에 확정하며 Runtime 중 Set 함수로 변경하지 않습니다.
+	- Outer/SubObject는 Object composition과 종속 수명의 단일 정본입니다.
+	- Component는 GameObject의 직접 SubObject로만 부착하며 Component-in-Component는 허용하지 않습니다.
+	- World Join/Leave는 World membership과 Transform 정본만 관리합니다.
+	- World membership과 Update 참여는 서로 다른 계약입니다.
+	- 실제 Scheduler 목록과 등록·해제 정책은 아직 구현하지 않습니다.
+
+
+검증
+	Windows Debug 실행에서 Square와 Sprite의 독립 ObjectHandle, Outer/SubObject 관계, Component Owner, World 합류와 Transform Storage 등록을 확인했습니다.
+
+	git diff --check에서 공백 오류가 없음을 확인했습니다.
+
+
+다음 작업
+	UpdateParticipation을 실제 Runtime-global 및 World-local 실행 목록에 등록하고 해제하는 Scheduler 경계를 결정합니다.
+
+	GameObject 또는 Component가 활성·비활성 상태로 전환될 때 실행 목록을 어떻게 변경할지, 실행 중 구조 변경을 어느 안전 지점에서 반영할지 정리합니다.
+
+	WorldObject와 Sprite Component의 Transform 정본, World 이동 시 저장 위치 변경과 Transform 계층 합성 규칙은 별도 설계로 확정합니다.
+
+	WorldObject 생성과 World Join을 함께 수행하는 Instantiate 편의 API는 현재 Join/Leave 계약을 유지한 상태에서 후속 검토합니다.
