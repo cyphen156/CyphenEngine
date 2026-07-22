@@ -1,0 +1,91 @@
+Date: 2026-07-22
+Branch: #4-2D-월드-개발
+
+
+작업 요약
+	GameObject가 생성 이후 하나의 GameRuntime에 소속되고 파괴 경로에서만 이탈하는 Runtime affinity를 구성했습니다.
+
+	GameRuntime이 World를 자동 생성하던 단일 World 구조를 제거하고, 명시적으로 생성한 World를 0개 이상 소유하도록 수명 경계를 확장했습니다.
+
+	World::Spawn을 WorldObject 생성, Runtime Admit과 World Join의 합성 경로로 구성하고 두 Square / Sprite 쌍의 생성·파괴·재생성과 유지 상태를 검증 대상으로 정리했습니다.
+
+
+진행한 커밋
+	#4_12 [Refactor:Runtime] Runtime 소속과 다중 World 수명 경계 재구성
+
+
+주요 정리 내용
+	1. GameObject Runtime 소속 경계 구성
+		GameObject는 ObjectManager에서 생성된 직후 Runtime에 속하지 않은 상태를 허용합니다.
+
+		GameRuntime::Admit은 Outer가 없는 루트 GameObject만 현재 Runtime에 등록하고, 이미 Runtime에 속한 객체의 중복 Admit과 다른 Runtime으로의 전이를 거부합니다.
+
+		GameObject::Destroy는 공통 Object 파괴를 요청하기 전에 GameRuntime의 비소유 목록과 Runtime 포인터를 해제합니다. 살아 있는 미소속 GameObject로 되돌리는 별도 Leave 또는 Detach는 제공하지 않습니다.
+
+		GameRuntime은 GameObject만 알며 WorldObject, Square와 Sprite 같은 구체 타입에 의존하지 않습니다. 자식 GameObject와 Component의 Runtime 참여는 이번 루트 등록 경계에서 처리하지 않습니다.
+
+	2. 명시적 다중 World 수명 구성
+		GameRuntime의 단일 World 값 멤버와 GetWorld를 제거하고 World 포인터 목록을 소유하도록 변경했습니다.
+
+		Runtime은 World 없이 초기화될 수 있으며 CyphenEngine이 필요한 World를 CreateWorld로 명시적으로 생성합니다. 생성된 World는 처음부터 하나의 GameRuntime에 속하며 무소속 상태와 Runtime 사이 전이를 허용하지 않습니다.
+
+		World는 owningRuntime을 참조로 보관하고 같은 Runtime에 Admit된 WorldObject만 Join할 수 있습니다. 현재 Tick은 Runtime이 소유한 World를 생성 순서대로 모두 실행하며 World 소속과 향후 Tick 참여 정책은 별도 관계로 남겼습니다.
+
+		DestroyWorld는 World-local Transform과 WorldObject 연결을 정리한 뒤 World를 파괴합니다. Runtime Shutdown은 소속 GameObject를 먼저 파괴하고 남은 World를 뒤에 파괴합니다.
+
+	3. World::Spawn과 파괴 경로 합성
+		기존 WorldObjectInstantiateParams와 WorldObject::Instantiate를 제거하고 생성 위치를 명시하는 World::Spawn으로 교체했습니다.
+
+		World::Spawn은 Object::NewObject, owning Runtime의 Admit과 현재 World의 Join을 순서대로 수행합니다. 중간 단계가 실패하면 생성한 객체의 다형적 Destroy 경로를 호출해 Runtime과 Object 수명을 정리합니다.
+
+		WorldObject::Destroy는 현재 World에서 먼저 Leave한 뒤 GameObject::Destroy를 통해 Runtime 소속을 해제하고 ObjectManager의 공통 파괴 요청으로 합류합니다.
+
+		TryGetTransform은 World에 배치된 객체가 ObjectHandle로 Transform 정본을 찾기 위한 public World-local 조회 경계로 유지했습니다.
+
+	4. Runtime 구성 검증 확장
+		RuntimeTest가 CyphenEngine이 명시적으로 생성한 World와 업로드된 ResourceId 목록을 입력으로 받도록 변경했습니다.
+
+		서로 다른 Transform과 Texture ResourceId를 사용하는 Square / Sprite 두 쌍을 Spawn하고 ObjectManager 등록, Runtime과 World 소속, Transform 정본, Outer/SubObject 관계와 Component Owner를 항목별로 확인하도록 구성했습니다.
+
+		중복 Admit과 중복 Join 거부, 잘못된 Component Outer 거부, Square 파괴에 따른 Sprite 종속 파괴와 World Transform 제거를 검증 대상으로 추가했습니다.
+
+		파괴 검증 이후 같은 Square / Sprite 두 쌍을 다시 생성해 Runtime과 World에 유지합니다. 유지된 구성은 후속 Scheduler와 World 상태에서 Frame / RenderCommand를 추출하는 경로의 타깃 fixture로 사용합니다.
+
+	5. 빌드와 현재 문서 동기화
+		Runtime 테스트 구현 세 파일을 CMake 공통 소스 목록에 등록해 Windows와 Linux가 같은 Runtime 검증 코드를 빌드하도록 맞췄습니다.
+
+		Decisions와 Todos에 Runtime Admit, World 0개 이상 소유, 무소속 World 금지, Spawn 합성과 파괴 이탈 규칙을 반영했습니다.
+
+		WorldLoop 문서와 SVG를 #4_12 기준으로 갱신하고 GlobalPreUpdate를 현재 함수명인 GlobalUpdate로 수정했습니다.
+
+
+정리된 설계 기준
+	- ObjectManager의 메모리 소유와 GameRuntime의 실행 소속은 서로 다른 관계입니다.
+	- GameObject는 Runtime에 속하지 않은 상태로 생성될 수 있지만 Admit된 뒤 다른 Runtime으로 전이할 수 없습니다.
+	- Runtime 소속 해제는 GameObject 파괴 경로에서만 수행합니다.
+	- GameRuntime은 World를 자동 생성하지 않으며 명시적으로 생성한 World를 0개 이상 소유합니다.
+	- World는 생성 시점부터 하나의 Runtime에 반드시 속하고 무소속 상태와 Runtime 전이를 허용하지 않습니다.
+	- WorldObject는 Runtime에만 속하고 World에는 Join하지 않은 상태를 허용합니다.
+	- World에 Join하려면 대상 World와 같은 Runtime에 먼저 Admit되어 있어야 합니다.
+	- World::Spawn은 NewObject, Runtime Admit과 World Join을 합성하며 복제 API가 아닙니다.
+	- World Leave는 World-local 관계만 해제하며 Object와 Runtime 소속을 파괴하지 않습니다.
+	- World 소속, Object 종속 수명과 Update / System 실행 참여는 서로 다른 관계입니다.
+	- 이번 단계에서는 루트 GameObject의 Runtime 소속만 관리하며 자식과 Component의 Scheduler 참여는 후속 작업으로 둡니다.
+
+
+검증
+	Windows x64 Debug와 Release 전체 Rebuild에서 경고 0, 오류 0으로 CyphenEngine 빌드 성공을 확인했습니다.
+
+	Visual Studio 번들 CMake Debug 빌드에서 RuntimeTest.cpp, Sprite.cpp와 Square.cpp가 공통 소스로 컴파일되고 CyphenEngine과 CyphenRendererVulkan 링크가 성공하는 것을 확인했습니다.
+
+	Windows Debug 실행 스모크에서 Runtime Loop가 3초 이상 유지되는 것을 확인했습니다.
+
+	World Loop SVG의 XML 파싱과 git diff --check에서 오류가 없음을 확인했습니다.
+
+
+다음 작업
+	UpdateParticipation을 Runtime-global 및 World-local 실행 목록에 등록·해제하는 Scheduler 경계와 실행 중 구조 변경의 안전 지점을 결정합니다.
+
+	#4_12에서 유지한 두 Square / Sprite 구성을 대상으로 World Transform과 표시 정보가 Frame / RenderCommand로 넘어가는 최소 추출 경로를 구성합니다.
+
+	같은 Runtime 안의 World 이동, 자식 GameObject와 Component의 Runtime 관계, Transform 계층 합성 규칙은 실제 소비 경로와 함께 후속 단계에서 확정합니다.
