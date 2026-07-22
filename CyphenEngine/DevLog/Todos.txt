@@ -26,10 +26,14 @@
 	- Handle과 StorageSlot의 정체성 / 저장 위치 역할을 분리했습니다.
 	- ObjectManager의 Handle 발급, Registry 단건 조회와 지연 파괴 경계를 구성했습니다.
 	- Object의 Outer/SubObject를 composition과 종속 수명의 단일 정본으로 구성했습니다.
-	- WorldObject의 생성과 World 소속을 분리하고 Join / Leave로 Transform 정본을 연결합니다.
+	- GameObject는 생성 뒤 Runtime에 속하지 않을 수 있으며, Admit으로 하나의 Runtime 소속을 확정하고 파괴할 때만 이탈합니다.
+	- GameRuntime은 World를 자동 생성하지 않으며, 명시적으로 생성한 World를 0개 이상 소유합니다.
+	- World는 생성 시점부터 하나의 Runtime에 속하고 다른 Runtime으로 전이할 수 없습니다.
+	- WorldObject는 Runtime 소속과 World 소속을 분리하고 Join / Leave로 Transform 정본을 연결합니다.
+	- World::Spawn은 WorldObject 생성, Runtime Admit과 World Join을 하나의 생성 경로로 합성합니다.
 	- GameRuntime 다섯 단계와 World 세 단계의 실행 경계를 고정했습니다.
 	- GameObject와 Component에 네 단계의 Update 함수와 생성 시점의 UpdateParticipation 계약을 추가했습니다.
-	- Square WorldObject와 Sprite Component로 Object 구성과 World 합류의 최소 Runtime 경로를 검증했습니다.
+	- #4_12는 Runtime / World 소속과 수명 경계, World::Spawn, 두 Square / Sprite 구성의 생성·파괴·재생성과 유지까지로 마감합니다.
 
 
 ## 해야 할 일
@@ -37,12 +41,13 @@
 1. 2D World
 	- #4 브랜치의 우선 목표입니다.
 	- debug fixture 수준의 텍스처 표시를 실제 2D 월드 표시 흐름으로 확장합니다.
+	- #4_12에서 유지한 두 Square / Sprite 구성을 후속 Scheduler와 Frame 추출의 검증 대상으로 사용합니다.
 	- UpdateParticipation을 Runtime-global 및 World-local 실행 목록에 등록·해제하는 Scheduler 경계를 결정합니다.
 	- 활성 상태와 실행 중 구조 변경을 안전 지점에서 반영하는 정책을 결정합니다.
 	- World 소속과 Update / System 참여는 별도 관계로 유지합니다.
 	- System Register / Enroll / Unenroll의 실제 저장소 변경 경계를 구체 System과 함께 구현합니다.
 	- WorldObject와 Sprite Component의 Transform 정본, World 이동과 계층 합성 규칙을 결정합니다.
-	- 월드 데이터가 Frame / RenderCommand로 넘어가는 최소 경로를 설계합니다.
+	- Runtime과 World에 유지한 두 Square / Sprite 구성을 대상으로 월드 데이터가 Frame / RenderCommand로 넘어가는 최소 경로를 설계합니다.
 
 2. ResourceManager / FileSystem
 	- Texture2D CPU decode와 GPU upload 경계를 ResourceCommand / RenderCommand 흐름 기준으로 유지합니다.

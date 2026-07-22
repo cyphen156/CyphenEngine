@@ -1,16 +1,12 @@
 #include "pch.h"
 
+#include "Runtime/Public/GameRuntime.h"
 #include "Runtime/Public/World.h"
 #include "Runtime/Public/WorldObject.h"
 
-World::~World()
-{
-	Reset();
-}
-
 bool World::Join(WorldObject& worldObject, const Transform& initialTransform)
 {
-	if (worldObject.world != nullptr)
+	if (worldObject.world != nullptr || worldObject.GetGameRuntime() != &owningRuntime)
 	{
 		return false;
 	}
@@ -58,6 +54,36 @@ bool World::Leave(WorldObject& worldObject)
 	worldObject.world = nullptr;
 
 	return true;
+}
+
+uint64 World::GetSimulationTick() const
+{
+	return simulationTick;
+}
+
+double World::GetSimulationTime() const
+{
+	return simulationTime;
+}
+
+const GameRuntime& World::GetGameRuntime() const
+{
+	return owningRuntime;
+}
+
+bool World::TryGetTransform(ObjectHandle objectHandle, Transform& outTransform) const
+{
+	return transforms.TryGet(objectHandle, outTransform);
+}
+
+World::World(GameRuntime& owningRuntime)
+	: owningRuntime(owningRuntime)
+{
+}
+
+World::~World()
+{
+	Reset();
 }
 
 void World::Reset()
@@ -110,19 +136,4 @@ void World::FinalUpdate(double deltaSeconds)
 {
 	// 실행 참여 대상과 Scheduler 계약을 확정한 이후 구현합니다.
 	// World는 현재 후행 실행 단계의 경계만 보장합니다.
-}
-
-uint64 World::GetSimulationTick() const
-{
-	return simulationTick;
-}
-
-double World::GetSimulationTime() const
-{
-	return simulationTime;
-}
-
-bool World::TryGetTransform(ObjectHandle objectHandle, Transform& outTransform) const
-{
-	return transforms.TryGet(objectHandle, outTransform);
 }

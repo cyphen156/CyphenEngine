@@ -97,7 +97,7 @@ CyphenEngine_World_Loop_Rule
 		이벤트/커맨드 수집은 병렬 compute와 호환되도록 thread-local 또는 System-local buffer를 우선한다.
 
 	9. 실행 순서 (Tick Phase)
-		GameRuntime은 GlobalPreUpdate / ProcessBeforeWorldTicks / World Tick / ProcessAfterWorldTicks / GlobalFinalUpdate의 다섯 단계로 실행한다.
+		GameRuntime은 GlobalUpdate / ProcessBeforeWorldTicks / World Tick / ProcessAfterWorldTicks / GlobalFinalUpdate의 다섯 단계로 실행한다.
 		Global은 프로세스 전역 싱글턴이 아니라 한 GameRuntime이 소유한 모든 World에 공통인 실행 범위다.
 		각 World Tick은 PreUpdate / ProcessAll / FinalUpdate의 세 단계로 실행한다.
 		PreUpdate와 FinalUpdate는 World-local OOP 실행 경계이고 ProcessAll은 World-local System 실행 경계다.
@@ -117,7 +117,8 @@ CyphenEngine_Runtime_World_Snapshot_Rule
 
 	1. 책임과 실행 계층
 		CyphenEngine은 프로세스 호스트이자 최상위 프레임 펌프다.
-		GameRuntime은 하나의 실행 컨텍스트로서 World를 소유하고 World의 실행 여부, delta time 전달, snapshot 보관 정책을 조율한다.
+		GameRuntime은 하나의 실행 컨텍스트로서 World를 소유하고 World의 실행 여부와 delta time 전달을 조율한다.
+		Snapshot이 도입되면 GameRuntime이 World별 보관 정책을 조율한다.
 		World는 Object와 System이 살아가는 하나의 논리 시뮬레이션 공간이자 현재 상태 컨테이너다.
 		World::Tick은 자체 Run loop가 아니라 Runtime이 호출하는 한 번의 simulation step이다.
 		실행 호출은 CyphenEngine::Run -> GameRuntime::Tick -> World::Tick 순서로 중첩된다.
@@ -127,24 +128,26 @@ CyphenEngine_Runtime_World_Snapshot_Rule
 	2. 현재 최소 상태
 		현재 World는 simulationTick, simulationTime, 원점 Chunk와 ComponentDataStorage<Transform, ObjectHandle>을 소유한다.
 		World는 Join한 WorldObject의 비소유 참조를 유지하며 WorldObject의 메모리와 Object 수명은 소유하지 않는다.
-		WorldObject는 생성 후 World에 Join하기 전까지 독립적으로 존재할 수 있다.
-		Join은 WorldObject 참조와 Transform 정본을 연결하고 Leave는 이를 해제한다.
+		GameObject는 ObjectManager가 생성한 뒤 Runtime에 속하지 않은 상태로 존재할 수 있다.
+		GameRuntime::Admit은 생성된 루트 GameObject의 Runtime 소속을 한 번 확정하며 다른 Runtime으로의 전이를 허용하지 않는다.
+		GameObject는 Runtime에 Admit된 뒤에도 World에 Join하지 않은 상태로 존재할 수 있다.
+		World::Join은 같은 Runtime에 Admit된 WorldObject의 참조와 Transform 정본을 연결하고 Leave는 World 소속만 해제한다.
+		World::Spawn은 NewObject, Runtime Admit, World Join을 합성하며 복제 API가 아니다.
+		Runtime 소속 해제는 GameObject 파괴 경로에서만 수행한다.
 		ObjectManager는 ObjectHandle 발급, 활성 Registry, 지연 파괴를 담당하고 Object의 Outer/SubObject는 종속 수명만 표현한다.
 		Update와 System 실행 참여 기계장치는 현재 구현하지 않는다.
 
 	3. Live World, Snapshot, Render Frame
 		World는 여러 tick에 걸쳐 유지되는 현재의 가변 simulation state다.
-		WorldSnapshot은 특정 simulation tick으로 복구하기 위한 값 데이터다.
+		도입할 WorldSnapshot은 특정 simulation tick으로 복구하기 위한 값 데이터다.
 		Frame은 Renderer가 소비하는 표현 전용 입력이며 WorldSnapshot과 목적과 수명이 다르다.
-		World는 WorldSnapshot을 capture/restore할 수 있지만 snapshot history 자체는 소유하지 않는다.
+		Snapshot 도입 시 World는 capture/restore의 주체가 되지만 snapshot history 자체는 소유하지 않는다.
 
 	4. Snapshot History
-		GameRuntime은 초기 World 상태와 매 World::Tick 이후 상태를 고정 용량 원형 큐에 기록한다.
-		현재 #4의 history 용량은 32개다.
-		32개는 현재 경계와 원형 큐 동작을 검증하기 위한 초기값이며 실제 World 상태 크기와 목표 rollback 범위를 측정한 뒤 조정한다.
-		0 ticksAgo는 가장 최근 snapshot이며 용량을 넘은 가장 오래된 snapshot은 덮어쓴다.
-		과거 snapshot을 복원하면 기존 미래 history를 폐기하고 복원한 상태를 새 기준점으로 남긴다.
-		60Hz 기준 32개 snapshot은 약 0.53초의 상태 범위다.
+		현재 #4 구현에는 WorldSnapshot과 Snapshot History가 없다.
+		도입 시 GameRuntime은 자신에게 속한 각 World의 history 보관 정책을 조율하되 World의 현재 상태와 history 저장소를 구분한다.
+		초기 상태와 매 World::Tick 이후 상태를 고정 용량 원형 큐로 기록하는 방안을 우선 검토한다.
+		history 용량, ticksAgo 조회, 미래 history 폐기와 복원 정책은 실제 World 상태 크기와 목표 rollback 범위를 측정한 뒤 확정한다.
 
 	5. Physics Snapshot 방향
 		Physics가 추가되면 복구와 재시뮬레이션에 필요한 World-local persistent 상태를 WorldSnapshot에 포함한다.
@@ -160,7 +163,10 @@ CyphenEngine_Runtime_World_Snapshot_Rule
 		Rollback과 Replay는 현재 확정 기능이 아니라 Snapshot 구조가 열어 두는 미래 방향이며 실제 요구와 비용을 확인한 뒤 확정한다.
 
 	7. Runtime과 World의 다중성
-		현재 구현은 CyphenEngine 하나가 GameRuntime 하나를 구성하고, GameRuntime 하나가 World 하나를 소유한다.
+		현재 구현은 CyphenEngine 하나가 GameRuntime 하나를 구성하고, GameRuntime은 World를 0개 이상 소유할 수 있다.
+		World는 GameRuntime이 명시적으로 생성하며 생성 시점부터 해당 Runtime에 속한다.
+		무소속 World와 Runtime 사이의 World 전이는 허용하지 않는다.
+		World의 Runtime 소속과 Tick 참여는 별개이며, 현재는 소유한 World를 생성 순서대로 모두 Tick한다.
 		Editor MultiPlay를 위해 프로세스당 Runtime 0..N과 Runtime당 독립 World 가능성을 막지 않는다.
 		Runtime과 World 상태는 전역/싱글턴으로 두지 않고 인스턴스 범위에 둔다.
 		Runtime 컨테이너, EditorRuntime, PIE, 단일 프로세스/다중 프로세스 구성은 해당 기능 구현 시 결정한다.

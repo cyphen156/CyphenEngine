@@ -1,76 +1,254 @@
 #include "pch.h"
 
+#include <cstdio>
+
 #include "Test/Runtime/RuntimeTest.h"
 
 #include "Runtime/Public/GameRuntime.h"
 #include "Runtime/Public/Object.h"
 #include "Runtime/Public/ObjectManager.h"
+#include "Runtime/Public/World.h"
 #include "Runtime/Public/WorldObject.h"
 #include "Test/Runtime/Sprite.h"
 #include "Test/Runtime/Square.h"
 
-bool RunRuntimeTest(GameRuntime& runtime, ResourceId textureId)
+namespace
 {
-	if (runtime.IsInitialized() == false ||
-		textureId == InvalidResourceId)
+	struct TestContext
 	{
-		return false;
+		int32 passCount = 0;
+		int32 failCount = 0;
+	};
+
+	void WriteTestLine(const char* message)
+	{
+#ifdef _DEBUG
+		PRINT_DEBUG_OUTPUT(message);
+		PRINT_DEBUG_OUTPUT("\n");
+#endif
 	}
 
-	Square* square = Object::NewObject<Square>();
-
-	if (square == nullptr)
+	void Expect(TestContext& context, bool condition, const char* name)
 	{
-		return false;
+		if (condition)
+		{
+			++context.passCount;
+#ifdef _DEBUG
+			PRINT_DEBUG_OUTPUT("[PASS] ");
+#endif
+		}
+		else
+		{
+			++context.failCount;
+#ifdef _DEBUG
+			PRINT_DEBUG_OUTPUT("[FAIL] ");
+#endif
+		}
+
+		WriteTestLine(name);
+	}
+}
+
+void RunRuntimeTests(GameRuntime& runtime, World& world, const std::vector<ResourceId>& resourceIds)
+{
+	TestContext context;
+
+	WriteTestLine("[RuntimeTests] Begin");
+
+	Expect(context, runtime.IsInitialized(),
+		"GameRuntime is initialized");
+
+	Expect(context, &world.GetGameRuntime() == &runtime,
+		"World belongs to the target GameRuntime");
+
+	Expect(context, resourceIds.size() >= 2,
+		"Runtime fixture has two ResourceIds");
+
+	if (resourceIds.size() >= 2)
+	{
+		constexpr uint32 RuntimeTestObjectCount = 2;
+
+		const Transform initialTransforms[RuntimeTestObjectCount] =
+		{
+			Transform::FromPlanar(Vector2(-0.5f, 0.0f), 0.0f, Vector2::One()),
+			Transform::FromPlanar(Vector2(0.5f, 0.0f), 0.0f, Vector2::One())
+		};
+
+		Square* squares[RuntimeTestObjectCount] = {};
+		Sprite* sprites[RuntimeTestObjectCount] = {};
+
+		for (uint32 index = 0; index < RuntimeTestObjectCount; ++index)
+		{
+			squares[index] = world.Spawn<Square>(initialTransforms[index]);
+
+			Expect(context, squares[index] != nullptr,
+				"World.Spawn creates a Square");
+
+			Square* square = squares[index];
+
+			if (square == nullptr)
+			{
+				continue;
+			}
+
+			Expect(context, ObjectManager::FindObject(square->GetHandle()) == square,
+				"Spawned Square is registered in ObjectManager");
+
+			Expect(context, square->GetGameRuntime() == &runtime,
+				"Spawned Square belongs to the target GameRuntime");
+
+			Expect(context, square->GetWorld() == &world,
+				"Spawned Square belongs to the target World");
+
+			Expect(context, runtime.Admit(*square) == false,
+				"GameRuntime rejects duplicate Admit");
+
+			Expect(context, world.Join(*square, initialTransforms[index]) == false,
+				"World rejects duplicate Join");
+
+			Transform worldTransform;
+
+			Expect(context,
+				world.TryGetTransform(square->GetHandle(), worldTransform) &&
+				worldTransform.position == initialTransforms[index].position,
+				"World resolves the Square Transform");
+
+			sprites[index] = square->AddSubObject<Sprite>(resourceIds[index]);
+
+			Expect(context, sprites[index] != nullptr,
+				"Square creates a Sprite SubObject");
+
+			Sprite* sprite = sprites[index];
+
+			if (sprite == nullptr)
+			{
+				continue;
+			}
+
+			Expect(context, ObjectManager::FindObject(sprite->GetHandle()) == sprite,
+				"Sprite is registered in ObjectManager");
+
+			Expect(context, sprite->GetOuter() == square && sprite->GetOwner() == square,
+				"Sprite Outer and Owner reference the Square");
+
+			Expect(context, sprite->GetTextureId() == resourceIds[index],
+				"Sprite stores its ResourceId");
+
+			Expect(context, square->GetSubObjectCount() == 1 && square->GetComponentCount() == 1,
+				"Square owns one Sprite Component");
+		}
+
+		if (squares[0] != nullptr && squares[1] != nullptr)
+		{
+			Expect(context, squares[0]->GetHandle() != squares[1]->GetHandle(),
+				"Squares have independent ObjectHandles");
+		}
+
+		if (sprites[0] != nullptr && sprites[1] != nullptr)
+		{
+			Expect(context, sprites[0]->GetHandle() != sprites[1]->GetHandle(),
+				"Sprites have independent ObjectHandles");
+		}
+
+		Object* invalidOuter = Object::NewObject<Object>();
+		Sprite* detachedSprite = Object::NewObject<Sprite>(resourceIds[0]);
+
+		Expect(context, invalidOuter != nullptr && detachedSprite != nullptr,
+			"Invalid Component Outer fixture is created");
+
+		if (invalidOuter != nullptr && detachedSprite != nullptr)
+		{
+			Expect(context, invalidOuter->AttachSubObject(*detachedSprite) == false,
+				"Sprite rejects a non-GameObject Outer");
+		}
+
+		if (detachedSprite != nullptr)
+		{
+			detachedSprite->Destroy();
+		}
+
+		if (invalidOuter != nullptr)
+		{
+			invalidOuter->Destroy();
+		}
+
+		for (uint32 index = 0; index < RuntimeTestObjectCount; ++index)
+		{
+			Square* square = squares[index];
+
+			if (square == nullptr)
+			{
+				continue;
+			}
+
+			const ObjectHandle squareHandle = square->GetHandle();
+			const ObjectHandle spriteHandle =
+				sprites[index] != nullptr ? sprites[index]->GetHandle() : ObjectHandle();
+
+			Expect(context, square->Destroy(),
+				"Square destruction succeeds");
+
+			Expect(context, ObjectManager::FindObject(squareHandle) == nullptr,
+				"Destroyed Square leaves ObjectManager");
+
+			if (spriteHandle.IsSet())
+			{
+				Expect(context, ObjectManager::FindObject(spriteHandle) == nullptr,
+					"Square destruction propagates to Sprite");
+			}
+
+			Transform destroyedTransform;
+
+			Expect(context, world.TryGetTransform(squareHandle, destroyedTransform) == false,
+				"Destroyed Square leaves World Transform storage");
+		}
+
+		for (uint32 index = 0; index < RuntimeTestObjectCount; ++index)
+		{
+			squares[index] = world.Spawn<Square>(initialTransforms[index]);
+
+			Expect(context, squares[index] != nullptr,
+				"World.Spawn recreates a retained Square");
+
+			Square* square = squares[index];
+
+			if (square == nullptr)
+			{
+				continue;
+			}
+
+			Transform retainedTransform;
+
+			Expect(context,
+				world.TryGetTransform(square->GetHandle(), retainedTransform) &&
+				retainedTransform.position == initialTransforms[index].position,
+				"Retained Square remains in World Transform storage");
+
+			sprites[index] = square->AddSubObject<Sprite>(resourceIds[index]);
+
+			Expect(context, sprites[index] != nullptr,
+				"Retained Square recreates a Sprite SubObject");
+
+			Sprite* sprite = sprites[index];
+
+			if (sprite == nullptr)
+			{
+				continue;
+			}
+
+			Expect(context, sprite->GetTextureId() == resourceIds[index],
+				"Retained Sprite stores its ResourceId");
+		}
 	}
 
-	if (ObjectManager::FindObject(square->GetHandle()) != square)
-	{
-		square->Destroy();
+	char summary[128] = {};
+	std::snprintf(
+		summary,
+		sizeof(summary),
+		"[RuntimeTests] Summary PASS=%d FAIL=%d",
+		context.passCount,
+		context.failCount);
 
-		return false;
-	}
-
-	Sprite* sprite = square->AddSubObject<Sprite>(textureId);
-
-	if (sprite == nullptr)
-	{
-		square->Destroy();
-
-		return false;
-	}
-
-	if (ObjectManager::FindObject(sprite->GetHandle()) != sprite ||
-		sprite->GetOuter() != square ||
-		sprite->GetOwner() != square ||
-		sprite->GetTextureId() != textureId ||
-		square->GetSubObjectCount() != 1 ||
-		square->GetComponentCount() != 1)
-	{
-		square->Destroy();
-
-		return false;
-	}
-
-	const WorldObjectInstantiateParams parameters = WorldObjectInstantiateParams::DefaultWorld(runtime);
-
-	if (square->Instantiate(parameters) == false)
-	{
-		square->Destroy();
-
-		return false;
-	}
-
-	if (square->GetWorld() != &runtime.GetWorld())
-	{
-		square->Destroy();
-
-		return false;
-	}
-
-	square->GetTransform();
-	PRINT_DEBUG_OUTPUT("[RuntimeTest] Square Runtime 구성이 완료되었습니다.\n");
-
-	/// 월드 편입
-	return true;
+	WriteTestLine(summary);
+	WriteTestLine("[RuntimeTests] End");
 }

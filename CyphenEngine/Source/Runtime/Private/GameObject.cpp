@@ -2,6 +2,17 @@
 
 #include "Runtime/Public/Component.h"
 #include "Runtime/Public/GameObject.h"
+#include "Runtime/Public/GameRuntime.h"
+
+bool GameObject::Destroy()
+{
+	if (runtime != nullptr && runtime->Destroy(*this) == false)
+	{
+		return false;
+	}
+
+	return Object::Destroy();
+}
 
 void GameObject::GlobalUpdate(double deltaSeconds)
 {
@@ -21,8 +32,7 @@ void GameObject::GlobalFinalUpdate(double deltaSeconds)
 
 bool GameObject::HasUpdateParticipation(UpdateParticipation participation) const
 {
-	return (static_cast<uint8>(updateParticipation) &
-		static_cast<uint8>(participation)) != 0;
+	return (static_cast<uint8>(updateParticipation) & static_cast<uint8>(participation)) != 0;
 }
 
 uint32 GameObject::GetComponentCount() const
@@ -39,6 +49,11 @@ uint32 GameObject::GetComponentCount() const
 	}
 
 	return componentCount;
+}
+
+const GameRuntime* GameObject::GetGameRuntime() const
+{
+	return runtime;
 }
 
 GameObject::GameObject(ObjectHandle objectHandle)

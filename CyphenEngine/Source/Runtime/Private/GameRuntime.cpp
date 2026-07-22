@@ -1,6 +1,28 @@
 #include "pch.h"
 
+#include "Runtime/Public/GameObject.h"
 #include "Runtime/Public/GameRuntime.h"
+#include "Runtime/Public/World.h"
+
+bool GameRuntime::Admit(GameObject& gameObject)
+{
+	if (isInitialized == false || gameObject.runtime != nullptr || gameObject.GetOuter() != nullptr)
+	{
+		return false;
+	}
+
+	gameObjects.push_back(&gameObject);
+	gameObject.runtime = this;
+
+	return true;
+}
+
+bool GameRuntime::IsInitialized() const
+{
+	return isInitialized;
+}
+
+GameRuntime::GameRuntime() = default;
 
 bool GameRuntime::Initialize()
 {
@@ -9,10 +31,39 @@ bool GameRuntime::Initialize()
 		return false;
 	}
 
-	world.Reset();
 	isInitialized = true;
 
 	return true;
+}
+
+void GameRuntime::Shutdown()
+{
+	if (isInitialized == false)
+	{
+		return;
+	}
+
+	while (gameObjects.empty() == false)
+	{
+		GameObject* gameObject = gameObjects.back();
+
+		if (gameObject == nullptr || gameObject->Destroy() == false)
+		{
+			break;
+		}
+	}
+
+	while (worlds.empty() == false)
+	{
+		World* world = worlds.back();
+
+		if (world == nullptr || DestroyWorld(*world) == false)
+		{
+			break;
+		}
+	}
+
+	isInitialized = false;
 }
 
 void GameRuntime::Tick(double deltaSeconds)
@@ -25,7 +76,13 @@ void GameRuntime::Tick(double deltaSeconds)
 	GlobalUpdate(deltaSeconds);
 	ProcessBeforeWorldTicks(deltaSeconds);
 
-	world.Tick(deltaSeconds);
+	for (World* world : worlds)
+	{
+		if (world != nullptr)
+		{
+			world->Tick(deltaSeconds);
+		}
+	}
 
 	ProcessAfterWorldTicks(deltaSeconds);
 	GlobalFinalUpdate(deltaSeconds);
@@ -34,7 +91,7 @@ void GameRuntime::Tick(double deltaSeconds)
 void GameRuntime::GlobalUpdate(double deltaSeconds)
 {
 	// Runtime 전체 범위의 OOP 선행 실행 계약을 확정한 이후 구현합니다.
-	// 현재는 GlobalPreUpdate 단계의 경계와 delta time 전달만 보장합니다.
+	// 현재는 GlobalUpdate 단계의 경계와 delta time 전달만 보장합니다.
 	static_cast<void>(deltaSeconds);
 }
 
@@ -61,23 +118,69 @@ void GameRuntime::GlobalFinalUpdate(double deltaSeconds)
 	static_cast<void>(deltaSeconds);
 }
 
-void GameRuntime::Shutdown()
+World* GameRuntime::CreateWorld()
 {
 	if (isInitialized == false)
 	{
-		return;
+		return nullptr;
 	}
 
-	world.Reset();
-	isInitialized = false;
-}
+	World* world = new World(*this);
+	worlds.push_back(world);
 
-const World& GameRuntime::GetWorld() const
-{
 	return world;
 }
 
-bool GameRuntime::IsInitialized() const
+bool GameRuntime::DestroyWorld(World& world)
 {
-	return isInitialized;
+	if (&world.GetGameRuntime() != this)
+	{
+		return false;
+	}
+
+	std::vector<World*>::iterator iterator;
+	for (iterator = worlds.begin(); iterator != worlds.end(); ++iterator)
+	{
+		if (*iterator == &world)
+		{
+			break;
+		}
+	}
+
+	if (iterator == worlds.end())
+	{
+		return false;
+	}
+
+	worlds.erase(iterator);
+	delete& world;
+
+	return true;
+}
+
+bool GameRuntime::Destroy(GameObject& gameObject)
+{
+	if (gameObject.runtime != this)
+	{
+		return false;
+	}
+
+	std::vector<GameObject*>::iterator iterator;
+	for (iterator = gameObjects.begin(); iterator != gameObjects.end(); ++iterator)
+	{
+		if (*iterator == &gameObject)
+		{
+			break;
+		}
+	}
+
+	if (iterator == gameObjects.end())
+	{
+		return false;
+	}
+
+	gameObjects.erase(iterator);
+	gameObject.runtime = nullptr;
+
+	return true;
 }

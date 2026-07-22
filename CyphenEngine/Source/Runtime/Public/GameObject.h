@@ -4,6 +4,7 @@
 #include "Runtime/Public/UpdateParticipation.h"
 
 class ObjectManager;
+class GameRuntime;
 
 // ============================================================================
 // GameObject
@@ -27,12 +28,18 @@ class ObjectManager;
 // GameObject는 일반 Object, 다른 GameObject와 Component를 SubObject로
 // 소유할 수 있습니다.
 //
+// GameObject는 생성 직후 Runtime에 속하지 않습니다.
+// GameRuntime::Admit을 통해 하나의 Runtime에 소속되며 다른 Runtime으로 전이할 수 없습니다.
+// Runtime 소속 해제는 GameObject::Destroy의 파괴 경로에서만 수행합니다.
+//
 // World 소속과 Transform은 GameObject의 기본 책임이 아닙니다.
 // ============================================================================
 
 class GameObject : public Object
 {
 public:
+	bool Destroy() override;
+
 	// Lifecycle Functions
 	virtual void GlobalUpdate(double deltaSeconds);
 	virtual void Update(double deltaSeconds);
@@ -42,6 +49,7 @@ public:
 	bool HasUpdateParticipation(UpdateParticipation participation) const;
 
 	uint32 GetComponentCount() const;
+	const GameRuntime* GetGameRuntime() const;
 
 protected:
 	explicit GameObject(ObjectHandle objectHandle);
@@ -50,7 +58,9 @@ protected:
 	~GameObject() override;
 
 private:
+	friend class GameRuntime;
 	friend class ObjectManager;
 
 	const UpdateParticipation updateParticipation;
+	GameRuntime* runtime = nullptr;
 };

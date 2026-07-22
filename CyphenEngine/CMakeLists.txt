@@ -56,6 +56,9 @@ set(CYPHEN_COMMON_SOURCES
 
 	Source/Test/CoreIO/CoreIOTests.cpp
 	Source/Test/Module/ModuleTest.cpp
+	Source/Test/Runtime/RuntimeTest.cpp
+	Source/Test/Runtime/Sprite.cpp
+	Source/Test/Runtime/Square.cpp
 )
 
 set(CYPHEN_WINDOWS_SOURCES

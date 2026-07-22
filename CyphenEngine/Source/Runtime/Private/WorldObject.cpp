@@ -4,49 +4,8 @@
 #include <cassert>
 #endif
 
-#include "Runtime/Public/GameRuntime.h"
-#include "Runtime/Public/World.h"
 #include "Runtime/Public/WorldObject.h"
-
-WorldObjectInstantiateParams WorldObjectInstantiateParams::DefaultWorld(
-	GameRuntime& runtime, const Transform& initialTransform)
-{
-	WorldObjectInstantiateParams parameters;
-	parameters.runtime = &runtime;
-	parameters.initialTransform = initialTransform;
-	return parameters;
-}
-
-WorldObjectInstantiateParams WorldObjectInstantiateParams::TargetWorld(
-	World& targetWorld, const Transform& initialTransform)
-{
-	WorldObjectInstantiateParams parameters;
-	parameters.targetWorld = &targetWorld;
-	parameters.initialTransform = initialTransform;
-	return parameters;
-}
-
-bool WorldObject::Instantiate(const WorldObjectInstantiateParams& parameters)
-{
-	if (world != nullptr)
-	{
-		return false;
-	}
-
-	World* targetWorld = parameters.targetWorld;
-
-	if (targetWorld == nullptr)
-	{
-		if (parameters.runtime == nullptr || parameters.runtime->IsInitialized() == false)
-		{
-			return false;
-		}
-
-		targetWorld = &parameters.runtime->world;
-	}
-
-	return targetWorld->Join(*this, parameters.initialTransform);
-}
+#include "Runtime/Public/World.h"
 
 bool WorldObject::Destroy()
 {
@@ -55,7 +14,7 @@ bool WorldObject::Destroy()
 		return false;
 	}
 
-	return Object::Destroy();
+	return GameObject::Destroy();
 }
 
 Transform WorldObject::GetTransform() const

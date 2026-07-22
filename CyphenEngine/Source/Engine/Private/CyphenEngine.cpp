@@ -1,7 +1,8 @@
 #include "pch.h"
 
-#include "Core/Public/Time.h"
 #include "Engine/Public/CyphenEngine.h"
+#include "Core/Public/Time.h"
+#include "Runtime/Public/ObjectManager.h"
 
 #ifdef _DEBUG
 #include <vector>
@@ -78,6 +79,12 @@ void CyphenEngine::Run()
 #pragma region Debug Resource Bootstrap
 	{
 		debugTexturedQuadResourceIds.clear();
+		World* debugWorld = gameRuntime.CreateWorld();
+
+		if (debugWorld == nullptr)
+		{
+			PRINT_DEBUG_OUTPUT("[RuntimeTest] World 생성에 실패했습니다.\n");
+		}
 
 		ResourceCommandBuffer resourceCommands;
 		ResourceId nextResourceId = 1;
@@ -162,15 +169,15 @@ void CyphenEngine::Run()
 		{
 			PRINT_DEBUG_OUTPUT("[Resource] Resource command execution failed.\n");
 		}
-		else if (debugTexturedQuadResourceIds.empty())
+
+		if (debugTexturedQuadResourceIds.size() < 2)
 		{
-			PRINT_DEBUG_OUTPUT("[RuntimeTest] Runtime 구성에 사용할 Texture가 없습니다.\n");
+			PRINT_DEBUG_OUTPUT("[Resource] Runtime fixture requires two ResourceIds.\n");
 		}
-		else if (RunRuntimeTest(
-			gameRuntime,
-			debugTexturedQuadResourceIds[0]) == false)
+
+		if (debugWorld != nullptr)
 		{
-			PRINT_DEBUG_OUTPUT("[RuntimeTest] Runtime 구성에 실패했습니다.\n");
+			RunRuntimeTests(gameRuntime, *debugWorld, debugTexturedQuadResourceIds);
 		}
 	}
 
@@ -275,7 +282,7 @@ void CyphenEngine::ShutdownEngine()
 	// Renderer 내부에서 Render Thread와 GPU 인스턴스를 먼저 종료합니다.
 	renderer.Shutdown();
 
-	// GameRuntime 내부에서 World를 초기 상태로 되돌립니다.
+	// GameRuntime에 소속된 GameObject와 모든 World를 파괴합니다.
 	gameRuntime.Shutdown();
 
 	ObjectManager::Clear();
