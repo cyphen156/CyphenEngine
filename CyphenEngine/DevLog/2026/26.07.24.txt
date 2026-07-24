@@ -1,0 +1,107 @@
+Date: 2026-07-24
+Branch: #4-2D-월드-개발
+
+
+작업 요약
+	GameObject와 Component가 제공하는 virtual Update 함수를 Runtime과 World의 평면 Function Group에서 실행할 수 있도록 UpdateFunction 계약을 구성했습니다.
+
+	GameRuntime은 Runtime-global Function Group을, World는 World-local Function Group을 각각 소유하며 Admit / Join에서 등록하고 Destroy / Leave에서 해제하도록 연결했습니다.
+
+	등록 시점에 대상 타입과 실행 함수를 확정하여 매 프레임 RTTI나 타입 switch 없이 활성 객체의 virtual 함수로 진입하도록 구성하고 Runtime 실행 계약을 검증했습니다.
+
+
+진행한 커밋
+	#4_13 [Add:Runtime] 업데이트 함수 그룹과 객체 실행 루프 구성
+
+
+주요 정리 내용
+	1. UpdateFunction 실행 계약 구성
+		Object는 Update를 알지 않는 공통 정체성과 종속 수명 기반으로 유지했습니다.
+
+		UpdateFunction은 실행 대상 Object 포인터와 UpdateExecuteFunction 함수 포인터만 보관하는 POD 구조체로 구성했습니다.
+
+		ExecuteUpdateFunction 템플릿은 등록 시점에 실제 대상 타입과 실행할 virtual 멤버 함수를 확정합니다. Function Group 실행 중에는 RTTI, dynamic_cast 또는 타입 switch 없이 저장된 함수 포인터로 직접 진입합니다.
+
+		실행 함수는 대상 타입을 복구한 뒤 IsActive를 확인하고, 활성 상태인 경우에만 등록된 virtual Update 함수를 호출합니다.
+
+	2. Runtime-global Function Group 연결
+		GameRuntime은 GlobalUpdate와 GlobalFinalUpdate를 위한 Function Group을 각각 소유합니다.
+
+		GameRuntime::Admit은 전달받은 GameObject 본인의 UpdateParticipation을 확인하고 GlobalUpdate 또는 GlobalFinalUpdate 참여가 선언된 경우 대응하는 Function Group에 등록합니다.
+
+		GameRuntime::Tick은 GlobalUpdate Function Group을 실행한 뒤 Runtime-global Process 단계와 각 World Tick을 진행하고 마지막에 GlobalFinalUpdate Function Group을 실행합니다.
+
+		GameObject::Destroy가 Runtime 소속을 해제할 때 대상 UpdateFunction을 각 그룹에서 탐색하고 swap-and-pop으로 제거합니다. 같은 그룹 안의 실행 순서는 보장하지 않습니다.
+
+	3. World-local Function Group 연결
+		World는 Update와 FinalUpdate를 위한 Function Group을 각각 소유합니다.
+
+		World::Join은 같은 Runtime에 Admit된 WorldObject를 World에 합류시킨 뒤 본인의 UpdateParticipation을 확인하여 대응하는 World-local Function Group에 등록합니다.
+
+		World::PreUpdate와 FinalUpdate는 각각의 Function Group을 평면 순회하며 등록된 UpdateFunction을 실행합니다. ProcessAll은 두 OOP 실행 단계 사이의 World-local System 처리 경계로 유지했습니다.
+
+		World::Leave는 Transform과 World 소속을 해제하는 과정에서 대상 UpdateFunction을 각 그룹에서 swap-and-pop으로 제거합니다. World::Reset은 모든 Function Group을 함께 정리합니다.
+
+	4. 활성 상태와 등록 상태 분리
+		GameObject와 Component에 SetActive와 IsActive를 추가했습니다.
+
+		SetActive는 객체 자신의 활성 플래그만 변경하며 Function Group의 등록과 해제를 발생시키지 않습니다.
+
+		객체가 Function Group에 등록되어 있어도 비활성 상태라면 ExecuteUpdateFunction이 virtual 함수 호출을 건너뜁니다. 참여 선언, 그룹 등록과 현재 활성 상태를 서로 다른 계약으로 유지했습니다.
+
+		UpdateParticipation은 생성 시점에 확정되는 불변 참여 선언으로 유지하고, 실행 중 참여 단계를 변경하는 API는 제공하지 않습니다.
+
+	5. 현재 등록 범위 제한
+		GameRuntime::Admit은 전달받은 GameObject 본인의 Runtime-global 참여만 등록합니다.
+
+		World::Join은 전달받은 WorldObject 본인의 World-local 참여만 등록합니다.
+
+		자식 GameObject와 Component의 참여를 재귀적으로 탐색하거나 자동 전파하지 않습니다. Component의 실제 Function Group 연결은 composition의 Attach / Detach 경계와 함께 후속 작업으로 남겼습니다.
+
+	6. Runtime 실행 계약 검증
+		Square에 Update와 GlobalFinalUpdate 참여를 부여하고 각 virtual 함수의 호출 횟수를 기록하도록 확장했습니다.
+
+		Sprite에 GlobalUpdate와 Update 참여를 부여하고 각 virtual 함수의 호출 횟수를 기록하도록 확장했습니다.
+
+		GameObject 기반 호출이 Square의 구현으로 도달하고 Component 기반 호출이 Sprite의 구현으로 도달하는 것을 확인해 두 형제 타입의 virtual 실행 진입점이 유지되는지 검증했습니다.
+
+		기존 Runtime 소속, World 합류, Transform, Outer/SubObject, Component Owner와 종속 파괴 검증을 유지하면서 Update 참여 선언과 실행 검증을 추가했습니다.
+
+
+정리된 설계 기준
+	- Object는 Update 실행 계약을 제공하지 않습니다.
+	- GameObject와 Component는 서로 독립적으로 같은 네 Update virtual 함수를 제공합니다.
+	- UpdateParticipation은 실행 함수 구현 여부가 아니라 Function Group 등록 의사를 표현합니다.
+	- UpdateFunction은 Object 포인터와 등록 시 확정된 실행 함수 포인터만 보관합니다.
+	- Runtime-global Function Group은 각 GameRuntime 인스턴스가 소유합니다.
+	- World-local Function Group은 각 World 인스턴스가 소유합니다.
+	- Runtime과 World의 다중 인스턴스가 독립적인 simulation과 실행 그룹을 유지하므로 전역 TickManager는 두지 않습니다.
+	- 실행 중에는 RTTI 또는 대상 타입 switch를 수행하지 않습니다.
+	- 활성 상태는 Function Group 등록 상태와 분리하며 비활성 객체는 실행 진입점에서 건너뜁니다.
+	- Function Group 안의 객체 실행 순서는 보장하지 않습니다.
+	- 등록은 Admit / Join에서, 해제는 Destroy / Leave에서 수행합니다.
+	- 현재는 전달받은 객체 본인만 등록하며 자식 GameObject와 Component 참여는 자동 전파하지 않습니다.
+
+
+검증
+	Windows x64 Release 빌드에서 CyphenEngine.exe 생성을 확인했습니다.
+
+	CoreIoTests PASS=69 FAIL=0을 확인했습니다.
+
+	ModuleTests PASS=34 FAIL=0을 확인했습니다.
+
+	RuntimeTests PASS=59 FAIL=0을 확인했습니다.
+
+	Windows Debug 실행에서 Runtime Loop가 유지되고 등록된 객체의 Update 함수가 실행되는 것을 확인했습니다.
+
+	git diff --check에서 공백 오류가 없음을 확인했습니다.
+
+
+다음 작업
+	Component가 GameObject에 Attach되거나 Detach될 때 해당 Component 본인의 Runtime-global 및 World-local Function Group 등록과 해제를 연결합니다.
+
+	자식 GameObject의 실행 참여를 composition 관계 변경 시점에 어떻게 반영할지 결정합니다.
+
+	Update 실행 중 Admit, Join, Leave와 Destroy가 요청될 때 Function Group 변경을 반영할 안전 지점과 지연 처리 정책을 구성합니다.
+
+	같은 Function Group 안에서 명시적인 실행 순서가 필요한 경우에만 execution order와 선행 조건 계약을 추가합니다.
