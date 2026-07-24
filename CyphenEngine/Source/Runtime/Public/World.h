@@ -9,6 +9,7 @@
 #include "Runtime/Public/ComponentDataStorage.h"
 #include "Runtime/Public/GameRuntime.h"
 #include "Runtime/Public/Object.h"
+#include "Runtime/Public/UpdateFunction.h"
 
 class WorldObject;
 
@@ -33,9 +34,11 @@ class WorldObject;
 //   - 현재 World와 같은 GameRuntime에 Admit된 WorldObject만 허용합니다.
 //   - WorldObject의 Transform 정본을 생성합니다.
 //   - WorldObject의 비소유 참조와 World 소속 관계를 연결합니다.
-//   - Update 또는 System 실행 참여를 자동으로 결정하지 않습니다.
+//   - 전달받은 WorldObject 본인의 Update / FinalUpdate 참여를 직접 등록합니다.
+//   - 자식 GameObject와 Component의 실행 참여는 처리하지 않습니다.
 //
 // Leave:
+//   - WorldObject 본인의 Update / FinalUpdate 등록을 제거합니다.
 //   - WorldObject의 Transform 정본을 제거합니다.
 //   - WorldObject의 비소유 참조와 World 소속 관계를 해제합니다.
 //   - WorldObject의 메모리와 Object 수명은 변경하지 않습니다.
@@ -48,15 +51,15 @@ class WorldObject;
 //   - GameRuntime이 simulation을 전진시킬 때 호출합니다.
 //   - 한 번의 호출은 한 번의 World simulation step을 의미합니다.
 //   - PreUpdate -> ProcessAll -> FinalUpdate 순서로 실행합니다.
-//   - 현재는 실행 단계의 경계만 정의합니다.
-//   - 실행 참여 대상과 등록·해제 시점, 단계별 실행 순서는
-//     Scheduler 계약과 함께 후속 구현합니다.
+//   - PreUpdate와 FinalUpdate는 등록된 OOP 실행 함수를 순회합니다.
+//   - ProcessAll은 World-local System 실행 단계의 경계입니다.
 //   - 플랫폼 시간을 직접 조회하지 않고 GameRuntime이 전달한 delta time만 사용합니다.
 //
 // 책임:
 //   - 현재 World-local simulation 상태 소유
 //   - 공유 ComponentData 정본 소유
 //   - 소속 WorldObject의 비소유 참조와 World-local 표현 연결
+//   - World-local Function Group 등록과 실행
 //   - Runtime이 요청한 한 번의 simulation step 수행
 //   - PreUpdate -> ProcessAll -> FinalUpdate 실행 단계 경계 보장
 //   - Snapshot 대상이 되는 논리 상태 유지
@@ -64,7 +67,7 @@ class WorldObject;
 // 비책임:
 //   - 자체 Run loop 소유
 //   - delta time 산출과 Tick 호출 정책
-//   - 실행 참여 대상의 Scheduler 등록·해제 정책
+//   - 자식 GameObject와 Component의 실행 참여 전파
 //   - Render Frame 생성과 Renderer 연결
 //   - WorldObject 메모리와 Object 수명 소유
 //   - ObjectHandle 발급과 Object 메모리 소유
@@ -111,8 +114,12 @@ private:
 
 	GameRuntime& owningRuntime;
 	Chunk worldOrigin = {};
+
 	std::vector<WorldObject*> worldObjects;
 	ComponentDataStorage<Transform, ObjectHandle> transforms;
+
+	std::vector<UpdateFunction> updateFunctions;
+	std::vector<UpdateFunction> finalUpdateFunctions;
 };
 
 template<typename WorldObjectType, typename... ArgumentTypes>

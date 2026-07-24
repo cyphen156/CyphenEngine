@@ -44,6 +44,9 @@ class ObjectManager;
 class Component : public Object
 {
 public:
+	void SetActive(bool activationFlag);
+	bool IsActive() const;
+
 	// Lifecycle Functions
 	virtual void GlobalUpdate(double deltaSeconds);
 	virtual void Update(double deltaSeconds);
@@ -65,6 +68,8 @@ protected:
 
 private:
 	friend class ObjectManager;
+
+	bool isActive = true;
 
 	const UpdateParticipation updateParticipation;
 };

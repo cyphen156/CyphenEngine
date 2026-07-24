@@ -1,7 +1,7 @@
 #include "pch.h"
 
-#include "Runtime/Public/GameRuntime.h"
 #include "Runtime/Public/World.h"
+#include "Runtime/Public/GameRuntime.h"
 #include "Runtime/Public/WorldObject.h"
 
 bool World::Join(WorldObject& worldObject, const Transform& initialTransform)
@@ -20,6 +20,24 @@ bool World::Join(WorldObject& worldObject, const Transform& initialTransform)
 
 	worldObjects.push_back(&worldObject);
 	worldObject.world = this;
+
+	if (worldObject.HasUpdateParticipation(UpdateParticipation::Update))
+	{
+		updateFunctions.push_back(
+			{
+				&worldObject,
+				ExecuteUpdateFunction<GameObject, &GameObject::Update>
+			});
+	}
+
+	if (worldObject.HasUpdateParticipation(UpdateParticipation::FinalUpdate))
+	{
+		finalUpdateFunctions.push_back(
+			{
+				&worldObject,
+				ExecuteUpdateFunction<GameObject, &GameObject::FinalUpdate>
+			});
+	}
 
 	return true;
 }
@@ -48,6 +66,36 @@ bool World::Leave(WorldObject& worldObject)
 	if (transforms.Remove(worldObject.GetHandle()) == false)
 	{
 		return false;
+	}
+
+	const uint32 updateCount = static_cast<uint32>(updateFunctions.size());
+
+	for (uint32 index = 0; index < updateCount; ++index)
+	{
+		if (updateFunctions[index].target != &worldObject)
+		{
+			continue;
+		}
+
+		updateFunctions[index] = updateFunctions.back();
+		updateFunctions.pop_back();
+
+		break;
+	}
+
+	const uint32 finalUpdateCount = static_cast<uint32>(finalUpdateFunctions.size());
+
+	for (uint32 index = 0; index < finalUpdateCount; ++index)
+	{
+		if (finalUpdateFunctions[index].target != &worldObject)
+		{
+			continue;
+		}
+
+		finalUpdateFunctions[index] = finalUpdateFunctions.back();
+		finalUpdateFunctions.pop_back();
+
+		break;
 	}
 
 	worldObjects.erase(iterator);
@@ -88,6 +136,9 @@ World::~World()
 
 void World::Reset()
 {
+	updateFunctions.clear();
+	finalUpdateFunctions.clear();
+
 	for (WorldObject* worldObject : worldObjects)
 	{
 		if (worldObject != nullptr)
@@ -121,8 +172,10 @@ void World::Tick(double deltaSeconds)
 
 void World::PreUpdate(double deltaSeconds)
 {
-	// 실행 참여 대상과 Scheduler 계약을 확정한 이후 구현합니다.
-	// World는 현재 선행 실행 단계의 경계만 보장합니다.
+	for (const UpdateFunction& updateFunction : updateFunctions)
+	{
+		updateFunction.execute(updateFunction.target, deltaSeconds);
+	}
 }
 
 void World::ProcessAll(double deltaSeconds)
@@ -134,6 +187,8 @@ void World::ProcessAll(double deltaSeconds)
 
 void World::FinalUpdate(double deltaSeconds)
 {
-	// 실행 참여 대상과 Scheduler 계약을 확정한 이후 구현합니다.
-	// World는 현재 후행 실행 단계의 경계만 보장합니다.
+	for (const UpdateFunction& updateFunction : finalUpdateFunctions)
+	{
+		updateFunction.execute(updateFunction.target, deltaSeconds);
+	}
 }

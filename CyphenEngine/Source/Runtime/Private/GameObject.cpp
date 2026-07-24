@@ -4,6 +4,16 @@
 #include "Runtime/Public/GameObject.h"
 #include "Runtime/Public/GameRuntime.h"
 
+void GameObject::SetActive(bool activationFlag)
+{
+	isActive = activationFlag;
+}
+
+bool GameObject::IsActive() const
+{
+	return isActive;
+}
+
 bool GameObject::Destroy()
 {
 	if (runtime != nullptr && runtime->Destroy(*this) == false)

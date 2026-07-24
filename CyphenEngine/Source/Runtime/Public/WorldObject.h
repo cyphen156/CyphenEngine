@@ -20,8 +20,9 @@ class ObjectManager;
 // Destroy는 현재 World에 합류한 상태라면 먼저 Leave를 요청합니다.
 // 이후 GameObject의 Runtime 소속 해제와 공통 Object 파괴 요청 경로에 합류합니다.
 //
-// World membership은 Update Scheduler 참여와 별개의 관계입니다.
-// Spawn은 World 표현을 구성하지만 Update 실행 참여를 자동으로 결정하지 않습니다.
+// World membership과 Update 참여 선언은 별개의 관계입니다.
+// World::Join은 UpdateParticipation 선언을 확인하여
+// 해당 WorldObject 본인의 World-local 실행 참여만 등록합니다.
 //
 // WorldObject는 소속 World를 비소유 포인터로 저장합니다.
 // World의 수명을 소유하거나 연장하지 않습니다.

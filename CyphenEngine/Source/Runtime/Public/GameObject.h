@@ -3,44 +3,33 @@
 #include "Runtime/Public/Object.h"
 #include "Runtime/Public/UpdateParticipation.h"
 
-class ObjectManager;
 class GameRuntime;
+class ObjectManager;
 
 // ============================================================================
 // GameObject
 // ----------------------------------------------------------------------------
-// 게임 실행을 위한 OOP composition root입니다.
+// Runtime OOP 객체군을 구성할 수 있는 논리 객체입니다.
 //
-// Component는 GameObject의 직접 SubObject로 부착합니다.
-// 모든 Component는 하나의 GameObject에 직접 부착된 평면 구성원이며,
-// Component가 다른 Component를 직접 소유하는 composition 계층은 허용하지 않습니다.
+// 루트 GameObject는 GameRuntime::Admit을 통해 Runtime에 소속됩니다.
+// GameRuntime 소속은 현재 객체의 runtime 필드에 명시적으로 저장합니다.
+// GetGameRuntime은 Outer 관계를 탐색하여 Runtime 소속을 추론하지 않습니다.
 //
-// 새로운 Component의 생성과 부착은 Object::AddSubObject를 사용합니다.
-// 이미 생성된 Component의 부착과 분리는 Object::AttachSubObject와
-// Object::DetachSubObject를 사용합니다.
+// 하위 GameObject의 Runtime 소속 변경은 관계가 변경되는
+// Attach / Detach 처리에서 수행합니다.
 //
-// GameObject가 파괴되면 ObjectManager의 종속 수명 순회를 통해 Component에도
-// 파괴가 요청되며, 실제 메모리 수명은 ObjectManager가 관리합니다.
-//
-// Component 관계의 정본은 Object의 Outer/SubObject 관계입니다.
-// GetComponentCount는 직접 SubObject 중 Component 구성원의 수를 반환합니다.
-//
-// GameObject는 일반 Object, 다른 GameObject와 Component를 SubObject로
-// 소유할 수 있습니다.
-//
-// GameObject는 생성 직후 Runtime에 속하지 않습니다.
-// GameRuntime::Admit을 통해 하나의 Runtime에 소속되며 다른 Runtime으로 전이할 수 없습니다.
-// Runtime 소속 해제는 GameObject::Destroy의 파괴 경로에서만 수행합니다.
-//
-// World 소속과 Transform은 GameObject의 기본 책임이 아닙니다.
+// UpdateParticipation은 실행 능력의 선언입니다.
+// 실제 등록은 Runtime 또는 World의 명시적인 소속 처리에서 수행합니다.
 // ============================================================================
 
 class GameObject : public Object
 {
 public:
+	void SetActive(bool activationFlag);
+	bool IsActive() const;
+
 	bool Destroy() override;
 
-	// Lifecycle Functions
 	virtual void GlobalUpdate(double deltaSeconds);
 	virtual void Update(double deltaSeconds);
 	virtual void FinalUpdate(double deltaSeconds);
@@ -49,6 +38,7 @@ public:
 	bool HasUpdateParticipation(UpdateParticipation participation) const;
 
 	uint32 GetComponentCount() const;
+
 	const GameRuntime* GetGameRuntime() const;
 
 protected:
@@ -61,6 +51,10 @@ private:
 	friend class GameRuntime;
 	friend class ObjectManager;
 
+	bool isActive = true;
+
 	const UpdateParticipation updateParticipation;
+
+	// 직접 Admit된 루트 GameObject에서만 설정합니다.
 	GameRuntime* runtime = nullptr;
 };

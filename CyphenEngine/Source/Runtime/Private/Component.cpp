@@ -3,6 +3,16 @@
 #include "Runtime/Public/Component.h"
 #include "Runtime/Public/GameObject.h"
 
+void Component::SetActive(bool activationFlag)
+{
+	isActive = activationFlag;
+}
+
+bool Component::IsActive() const
+{
+	return isActive;
+}
+
 void Component::GlobalUpdate(double deltaSeconds)
 {
 }

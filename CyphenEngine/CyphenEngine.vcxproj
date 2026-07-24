@@ -156,6 +156,7 @@
     <ClInclude Include="Source\Core\Public\HandleAllocator.h" />
     <ClInclude Include="Source\Runtime\Public\Object.h" />
     <ClInclude Include="Source\Runtime\Public\ObjectManager.h" />
+    <ClInclude Include="Source\Runtime\Public\UpdateFunction.h" />
     <ClInclude Include="Source\Runtime\Public\UpdateParticipation.h" />
     <ClInclude Include="Source\Runtime\Public\World.h" />
     <ClInclude Include="Source\Runtime\Public\WorldObject.h" />
