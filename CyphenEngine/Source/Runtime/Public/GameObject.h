@@ -11,12 +11,13 @@ class ObjectManager;
 // ----------------------------------------------------------------------------
 // Runtime OOP 객체군을 구성할 수 있는 논리 객체입니다.
 //
-// 루트 GameObject는 GameRuntime::Admit을 통해 Runtime에 소속됩니다.
+// GameObject는 GameRuntime::Admit을 통해 Runtime에 소속됩니다.
 // GameRuntime 소속은 현재 객체의 runtime 필드에 명시적으로 저장합니다.
 // GetGameRuntime은 Outer 관계를 탐색하여 Runtime 소속을 추론하지 않습니다.
 //
-// 하위 GameObject의 Runtime 소속 변경은 관계가 변경되는
-// Attach / Detach 처리에서 수행합니다.
+// Runtime에 참여하는 GameObject 아래에 Subtree가 Attach되면,
+// 아직 Runtime이 없는 하위 GameObject는 같은 Runtime에 참여합니다.
+// Detach는 기존 Runtime 소속을 제거하지 않습니다.
 //
 // UpdateParticipation은 실행 능력의 선언입니다.
 // 실제 등록은 Runtime 또는 World의 명시적인 소속 처리에서 수행합니다.
@@ -46,6 +47,10 @@ protected:
 	GameObject(ObjectHandle objectHandle, UpdateParticipation updateParticipation);
 
 	~GameObject() override;
+
+	bool CanAttachSubtreeTo(const Object& outer) const override;
+	
+	void OnAttached() override;
 
 private:
 	friend class GameRuntime;

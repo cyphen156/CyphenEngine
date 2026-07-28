@@ -50,8 +50,8 @@ class WorldObject;
 // Tick:
 //   - GameRuntime이 simulation을 전진시킬 때 호출합니다.
 //   - 한 번의 호출은 한 번의 World simulation step을 의미합니다.
-//   - PreUpdate -> ProcessAll -> FinalUpdate 순서로 실행합니다.
-//   - PreUpdate와 FinalUpdate는 등록된 OOP 실행 함수를 순회합니다.
+//   - Update -> ProcessAll -> FinalUpdate 순서로 실행합니다.
+//   - Update와 FinalUpdate는 등록된 OOP 실행 함수를 순회합니다.
 //   - ProcessAll은 World-local System 실행 단계의 경계입니다.
 //   - 플랫폼 시간을 직접 조회하지 않고 GameRuntime이 전달한 delta time만 사용합니다.
 //
@@ -61,7 +61,7 @@ class WorldObject;
 //   - 소속 WorldObject의 비소유 참조와 World-local 표현 연결
 //   - World-local Function Group 등록과 실행
 //   - Runtime이 요청한 한 번의 simulation step 수행
-//   - PreUpdate -> ProcessAll -> FinalUpdate 실행 단계 경계 보장
+//   - Update -> ProcessAll -> FinalUpdate 실행 단계 경계 보장
 //   - Snapshot 대상이 되는 논리 상태 유지
 //
 // 비책임:
@@ -105,7 +105,7 @@ private:
 	void Tick(double deltaSeconds);
 
 	// World Loop Phases
-	void PreUpdate(double deltaSeconds);
+	void Update(double deltaSeconds);
 	void ProcessAll(double deltaSeconds);
 	void FinalUpdate(double deltaSeconds);
 

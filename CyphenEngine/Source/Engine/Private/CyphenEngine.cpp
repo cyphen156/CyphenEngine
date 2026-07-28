@@ -18,6 +18,10 @@ constexpr CChar DebugProfileTexturePath[] = CTEXT("Resources/Thumbnail/Profile.j
 constexpr CChar DebugProfile2TexturePath[] = CTEXT("Resources/Thumbnail/Profile2.jpg");
 std::vector<ResourceId> debugTexturedQuadResourceIds;
 
+extern uint32 globalUpdateCallCount;
+extern uint32 globalFinalUpdateCallCount;
+extern uint32 updateCallCount;
+extern uint32 finalUpdateCallCount;
 #endif
 
 CyphenEngine::CyphenEngine()
@@ -250,16 +254,22 @@ void CyphenEngine::Run()
 
 			const double engineFrameRate = static_cast<double>(submittedFrameCount) / engineLogDeltaTime;
 
-			char message[160] = {};
+			char message[192] = {};
 			std::snprintf(
 				message,
 				sizeof(message),
 				"[Engine] SubmittedFrames=%llu "
-				"FPS=%.2f ElapsedTime=%.6f\n",
+				"FPS=%.2f ElapsedTime=%.6f\n"
+				"[Runtime] GlobalUpdate=%u GlobalFinalUpdate=%u\n"
+				"[World 0] Update=%u FinalUpdate=%u\n",
 				static_cast<unsigned long long>(
 					submittedFrameCount),
 				engineFrameRate,
-				currentEngineLogTime);
+				currentEngineLogTime,
+				static_cast<unsigned int>(globalUpdateCallCount),
+				static_cast<unsigned int>(globalFinalUpdateCallCount),
+				static_cast<unsigned int>(updateCallCount),
+				static_cast<unsigned int>(finalUpdateCallCount));
 
 			PRINT_DEBUG_OUTPUT(message);
 

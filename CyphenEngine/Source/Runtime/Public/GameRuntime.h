@@ -47,7 +47,7 @@ class World;
 //        World들이 실행되기 전에 필요한 Runtime-global System 처리를 수행합니다.
 //
 //     3. World Tick
-//        현재 Tick에 참여하는 World의 PreUpdate -> ProcessAll -> FinalUpdate를 실행합니다.
+//        현재 Tick에 참여하는 World의 Update -> ProcessAll -> FinalUpdate를 실행합니다.
 //
 //     4. ProcessAfterWorldTicks
 //        모든 World의 실행 결과를 사용하는 Runtime-global System 처리를 수행합니다.

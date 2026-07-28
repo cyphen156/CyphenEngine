@@ -4,16 +4,82 @@
 #include "Runtime/Public/GameObject.h"
 #include "Runtime/Public/World.h"
 
+// 디버그용 Tick Call Count
+#if _DEBUG
+uint32 globalUpdateCallCount = 0;
+uint32 globalFinalUpdateCallCount = 0;
+#endif
+
 bool GameRuntime::Admit(GameObject& gameObject)
 {
-	if (isInitialized == false || gameObject.runtime != nullptr || gameObject.GetOuter() != nullptr)
+	if (isInitialized == false || gameObject.runtime != nullptr)
 	{
 		return false;
 	}
 
-	gameObjects.push_back(&gameObject);
-	gameObject.runtime = this;
+	std::vector<Object*> pendingObjects;
+	pendingObjects.push_back(&gameObject);
 
+	// 실제 등록 전에 전체 계층을 먼저 확인합니다.
+	// 순수 Object와 Component는 Runtime 소속 대상이 아니므로
+	// 구체 타입을 판별하지 않고 하위 SubObject 탐색만 계속합니다.
+	while (pendingObjects.empty() == false)
+	{
+		Object* object = pendingObjects.back();
+		pendingObjects.pop_back();
+
+		GameObject* childGameObject = dynamic_cast<GameObject*>(object);
+
+		if (childGameObject != nullptr &&
+			childGameObject->runtime != nullptr &&
+			childGameObject->runtime != this)
+		{
+			return false;
+		}
+
+		const uint32 subObjectCount = object->GetSubObjectCount();
+
+		for (uint32 index = 0; index < subObjectCount; ++index)
+		{
+			Object* subObject = object->GetSubObject(subObjectCount - index - 1);
+
+			if (subObject != nullptr)
+			{
+				pendingObjects.push_back(subObject);
+			}
+		}
+	}
+
+	pendingObjects.push_back(&gameObject);
+
+	// 검사가 끝난 뒤 계층에 포함된 모든 GameObject를
+	// Runtime의 평면 gameObjects 장부에 등록합니다.
+	while (pendingObjects.empty() == false)
+	{
+		Object* object = pendingObjects.back();
+		pendingObjects.pop_back();
+
+		GameObject* childGameObject =
+			dynamic_cast<GameObject*>(object);
+
+		if (childGameObject != nullptr && childGameObject->runtime == nullptr)
+		{
+			gameObjects.push_back(childGameObject);
+			childGameObject->runtime = this;
+		}
+
+		const uint32 subObjectCount = object->GetSubObjectCount();
+
+		for (uint32 index = 0; index < subObjectCount; ++index)
+		{
+			Object* subObject = object->GetSubObject( subObjectCount - index - 1);
+
+			if (subObject != nullptr)
+			{
+				pendingObjects.push_back(subObject);
+			}
+		}
+	}
 	if (gameObject.HasUpdateParticipation(UpdateParticipation::GlobalUpdate))
 	{
 		globalUpdateFunctions.push_back(
@@ -31,7 +97,6 @@ bool GameRuntime::Admit(GameObject& gameObject)
 				ExecuteUpdateFunction<GameObject, &GameObject::GlobalFinalUpdate>
 			});
 	}
-
 	return true;
 }
 
@@ -94,6 +159,12 @@ void GameRuntime::Tick(double deltaSeconds)
 		return;
 	}
 
+// 프레임 틱 콜 카운트 초기화
+#if _DEBUG
+	globalUpdateCallCount = 0;
+	globalFinalUpdateCallCount = 0;
+#endif
+
 	GlobalUpdate(deltaSeconds);
 	ProcessBeforeWorldTicks(deltaSeconds);
 
@@ -116,6 +187,10 @@ void GameRuntime::GlobalUpdate(double deltaSeconds)
 	for (const UpdateFunction& updateFunction : globalUpdateFunctions)
 	{
 		updateFunction.execute(updateFunction.target, deltaSeconds);
+
+#if _DEBUG
+		globalUpdateCallCount++;
+#endif
 	}
 }
 
@@ -140,6 +215,10 @@ void GameRuntime::GlobalFinalUpdate(double deltaSeconds)
 	for (const UpdateFunction& updateFunction : globalFinalUpdateFunctions)
 	{
 		updateFunction.execute(updateFunction.target, deltaSeconds);
+
+#if _DEBUG
+		globalFinalUpdateCallCount++;
+#endif
 	}
 }
 

@@ -31,7 +31,9 @@
 // AttachSubObject / DetachSubObject:
 //   - 이미 생성된 Object와 현재 Object 사이의 종속 수명 관계를 변경합니다.
 //   - 관계 변경은 부모가 될 Object를 주어로 수행합니다.
-//   - AttachSubObject는 중복 부착, 다중 Outer, 순환 관계와 타입 계약을 검사합니다.
+//   - AttachSubObject는 중복 부착, 다중 Outer, 순환 관계와 직접 타입 계약을 검사합니다.
+//   - 직접 관계가 유효하면 이동하는 Subtree 전체가 새 계층을 받아들일 수 있는지
+//     검사한 뒤 관계를 확정합니다.
 //   - DetachSubObject는 관계만 해제하며 SubObject를 파괴하지 않습니다.
 //
 // Handle 보유 여부는 객체의 실제 소유 위치를 결정하지 않습니다.
@@ -74,6 +76,10 @@ protected:
 	virtual ~Object();
 
 	virtual bool CanAttachTo(const Object& outer) const;
+	virtual bool CanAttachSubtreeTo(const Object& outer) const;
+
+	virtual void OnAttached();
+	virtual void OnDetaching();
 
 private:
 	friend class ObjectManager;

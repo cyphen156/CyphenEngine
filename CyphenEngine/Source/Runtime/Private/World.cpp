@@ -4,6 +4,12 @@
 #include "Runtime/Public/GameRuntime.h"
 #include "Runtime/Public/WorldObject.h"
 
+// 디버그용 Tick Call Count
+#if _DEBUG
+uint32 updateCallCount = 0;
+uint32 finalUpdateCallCount = 0;
+#endif
+
 bool World::Join(WorldObject& worldObject, const Transform& initialTransform)
 {
 	if (worldObject.world != nullptr || worldObject.GetGameRuntime() != &owningRuntime)
@@ -162,7 +168,12 @@ void World::Tick(double deltaSeconds)
 		return;
 	}
 
-	PreUpdate(deltaSeconds);
+#if _DEBUG
+	updateCallCount = 0;
+	finalUpdateCallCount = 0;
+#endif
+
+	Update(deltaSeconds);
 	ProcessAll(deltaSeconds);
 	FinalUpdate(deltaSeconds);
 
@@ -170,11 +181,15 @@ void World::Tick(double deltaSeconds)
 	simulationTime += deltaSeconds;
 }
 
-void World::PreUpdate(double deltaSeconds)
+void World::Update(double deltaSeconds)
 {
 	for (const UpdateFunction& updateFunction : updateFunctions)
 	{
 		updateFunction.execute(updateFunction.target, deltaSeconds);
+
+#if _DEBUG
+		++updateCallCount;
+#endif
 	}
 }
 
@@ -190,5 +205,9 @@ void World::FinalUpdate(double deltaSeconds)
 	for (const UpdateFunction& updateFunction : finalUpdateFunctions)
 	{
 		updateFunction.execute(updateFunction.target, deltaSeconds);
+
+#if _DEBUG
+	++finalUpdateCallCount;
+#endif
 	}
 }

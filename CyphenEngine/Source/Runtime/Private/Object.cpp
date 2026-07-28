@@ -74,6 +74,41 @@ bool Object::CanAttachTo(const Object& outer) const
 	return true;
 }
 
+bool Object::CanAttachSubtreeTo(const Object& outer) const
+{
+	for (const Object* subObject : subObjects)
+	{
+		if (subObject == nullptr || subObject->CanAttachSubtreeTo(outer) == false)
+		{
+			return false;
+		}
+	}
+
+	return true;
+}
+
+void Object::OnAttached()
+{
+	for (Object* subObject : subObjects)
+	{
+		if (subObject != nullptr)
+		{
+			subObject->OnAttached();
+		}
+	}
+}
+
+void Object::OnDetaching()
+{
+	for (Object* subObject : subObjects)
+	{
+		if (subObject != nullptr)
+		{
+			subObject->OnDetaching();
+		}
+	}
+}
+
 bool Object::AttachSubObject(Object& subObject)
 {
 	if (&subObject == this)
@@ -91,12 +126,20 @@ bool Object::AttachSubObject(Object& subObject)
 		return false;
 	}
 
+	// 직접 부모와 자식의 구조적 관계를 검사합니다.
 	if (subObject.CanAttachTo(*this) == false)
 	{
 		return false;
 	}
 
-	const Object* ancestor = this;
+	// 부착으로 발생할 계층 전파를
+	// 서브트리 전체가 받아들일 수 있는지 검사합니다.
+	if (subObject.CanAttachSubtreeTo(*this) == false)
+	{
+		return false;
+	}
+
+	const Object* ancestor = GetOuter();
 
 	while (ancestor != nullptr)
 	{
@@ -110,6 +153,8 @@ bool Object::AttachSubObject(Object& subObject)
 
 	subObjects.push_back(&subObject);
 	subObject.outer = this;
+
+	subObject.OnAttached();
 
 	return true;
 }
@@ -128,6 +173,8 @@ bool Object::DetachSubObject(Object& subObject)
 		{
 			continue;
 		}
+
+		subObject.OnDetaching();
 
 		subObjects.erase(iterator);
 		subObject.outer = nullptr;
