@@ -1,0 +1,285 @@
+Date: 2026-07-28
+Branch: #4-2D-월드-개발
+
+
+작업 요약
+	#4_13에서 전달받은 한 GameObject 또는 WorldObject만 Function Group에 등록하던 범위를 확장하기 전에, 
+	혼합 Object 계층에서 Runtime 소속과 관계 변경이 어떤 규칙으로 전파되어야 하는지 먼저 정리했습니다.
+
+	Object의 Outer/SubObject는 종속 수명 관계이고, GameRuntime 소속은 실행 컨텍스트의 정체성이며, 
+	World 소속은 논리 공간 membership이고, UpdateFunction 등록은 실행 참여의 실현이라는 네 관계를 분리했습니다.
+
+	Runtime에 참여하는 GameObject는 계층 위치와 무관하게 GameRuntime의 평면 gameObjects 장부에 각각 등록하되, 
+	참여가 시작된 서브트리 안에서는 같은 Runtime 소속이 연속되도록 구성했습니다.
+
+	Attach는 직접 부모·자식 관계와 서브트리 전체의 Runtime 연속성을 관계 변경 전에 검사하고, 
+	관계가 확정된 뒤 OnAttached를 통해 미참여 하위 GameObject의 Runtime 소속을 연결하도록 구성했습니다.
+
+	Component와 일반 Object가 섞인 계층, 
+	중첩 GameObject의 선행·후발 Admit, Detach 이후 
+	동일 Runtime 재부착을 RuntimeTest에 추가하여 평면 소속 장부와 종속 수명 트리의 결합을 검증했습니다.
+
+
+진행한 커밋
+	#4_14 [Update:Runtime] Object 계층의 Runtime 소속 전파와 평면 등록 정리
+
+
+문제 정의
+	#4_13의 Function Group은 등록된 대상에 대해 매 프레임 RTTI와 타입 switch 없이 Update 함수를 실행할 수 있습니다.
+
+	그러나 등록 대상은 Admit 또는 Join에 직접 전달된 객체 하나로 제한되어 있었습니다. 
+	다음과 같이 GameObject, Component와 일반 Object가 교차하는 SubObject 계층에서는 
+	직접 전달되지 않은 하위 GameObject와 Component의 소속 및 실행 참여를 설명하지 못했습니다.
+
+	GameObject
+		Component
+			Object
+				GameObject
+
+	Object는 모든 객체의 공통 정체성과 종속 수명을 담당하므로 GameObject, Component, GameRuntime 또는 World를 알아서는 안 됩니다. 
+	반대로 GameObject와 Component는 자신의 상위 Object 관계를 따라 필요한 실행 문맥을 해석할 수 있습니다.
+
+	따라서 Runtime 또는 World가 모든 하위 구체 타입의 행동을 중앙에서 결정하거나, Object가 하위 타입을 switch하는 구조는 사용하지 않기로 했습니다. 
+	관계 변경의 공통 순서만 Object가 보장하고, 구체적인 소속 처리는 해당 타입이 맡는 방향으로 경계를 정리했습니다.
+
+
+주요 설계 결정
+	1. 네 관계의 역할 분리
+		Outer/SubObject는 부모가 자식을 소유하는 종속 수명 관계입니다. 
+		Attach와 Detach는 이 관계를 생성하거나 분리하며 객체를 Runtime 또는 World에서 직접 제거하지 않습니다.
+
+		GameRuntime 소속은 GameObject가 어느 실행 컨텍스트에 참여하는지를 나타냅니다. 
+		GameObject의 runtime 필드와 GameRuntime의 gameObjects 장부가 이 관계를 함께 표현합니다.
+
+		World 소속은 WorldObject가 어느 논리 공간의 Transform 정본과 World-local 상태에 연결되는지를 나타냅니다. 
+		Runtime 소속과 별도이며 World::Join과 Leave가 관리합니다.
+
+		UpdateParticipation은 실행 단계 참여 의사이고 UpdateFunction은 그 의사를 실제 실행 그룹에 반영한 결과입니다. 
+		Runtime 또는 World 소속과 Update 등록은 동일한 상태가 아닙니다.
+
+		이 분리를 통해 Attach가 UpdateParticipation을 새로 결정하는 것이 아니라, 
+		이미 선언된 참여 계약을 실현할 문맥을 제공한다는 기준을 세웠습니다.
+
+	2. Runtime의 평면 GameObject 장부
+		GameRuntime의 gameObjects는 SubObject 트리의 루트 목록이 아니라 
+		Runtime에 참여하는 모든 GameObject의 평면 장부로 사용합니다.
+
+		평면 장부는 파괴와 실행 계약 해제 시 대상 GameObject를 직접 찾을 수 있고, 
+		중첩 GameObject가 Detach되어 독립 루트가 되어도 별도의 장부 승격이 필요하지 않습니다.
+
+		GameRuntime::Admit은 전달받은 GameObject를 루트로 SubObject 트리를 탐색하고, 
+		포함된 모든 GameObject를 같은 Runtime의 평면 장부에 등록합니다. 
+		일반 Object와 Component는 Runtime 필드를 갖지 않으므로 등록하지 않지만 
+		그 아래의 GameObject를 찾기 위한 탐색은 계속합니다.
+
+		Admit 적용 전에 전체 서브트리를 먼저 확인하여 
+		다른 Runtime에 이미 참여한 GameObject가 있으면 아무것도 변경하지 않고 실패하도록 구성했습니다. 
+		검사와 적용을 분리해 부분 등록과 보상 처리를 피했습니다.
+
+		RTTI는 매 프레임 Update 실행 경로가 아니라 Admit과 Attach 같은 구조 변경 경로에서만 사용합니다. 
+		실행 중 타입 판별을 없애기 위해 등록 시 비용을 지불한다는 #4_13의 방향을 유지했습니다.
+
+	3. Runtime 참여의 계층 연속성
+		Runtime에 참여하지 않은 상위 GameObject 아래에서 특정 하위 GameObject만 먼저 Admit하는 것은 허용합니다. 
+		Admit은 상위 방향으로 소속을 전파하지 않습니다.
+
+		하위 GameObject에서 Runtime 참여가 시작되면 그 아래의 GameObject는 같은 Runtime에 연속적으로 참여해야 합니다. 
+		참여 중간에 runtime이 없는 GameObject가 남거나 다른 Runtime이 등장하는 상태는 허용하지 않습니다.
+
+		서로 분리된 미참여 가지는 각각 다른 Runtime에 참여할 수 있습니다. 
+		Runtime 강제는 전역 Object 트리가 아니라 참여가 시작된 각 서브트리에만 적용합니다.
+
+		미참여 조상 아래의 GameObject만 먼저 Admit한 뒤 나중에 조상을 Admit할 수 있습니다. 
+		후발 Admit은 이미 같은 Runtime에 참여한 하위를 중복 등록하지 않고 중간의 미참여 GameObject를 채웁니다.
+
+	4. 직접 Attach 가능성과 서브트리 전파 가능성 분리
+		CanAttachTo는 들어오는 Object가 현재 Object의 직접 자식이 될 수 있는지를 검사합니다. 
+		Component가 GameObject에만 직접 부착될 수 있다는 타입 제약이 이 계약에 속합니다.
+
+		CanAttachSubtreeTo는 들어오는 Object가 소유한 서브트리 전체가 새 상위 계층의 Runtime 규칙을 받아들일 수 있는지를 검사합니다.
+
+		두 검사를 합치면 직접 부모가 바뀌지 않는 내부 Component까지 새 외부 부모를 자신의 직접 Outer처럼 검사하게 됩니다. 
+		직접 관계 검사와 계층 전파 검사의 호출 대상과 의미가 다르므로 두 virtual을 유지했습니다.
+
+		기존 CanAttachHierarchyTo는 어느 쪽 hierarchy를 의미하는지 모호했습니다. 
+		이동하는 Object를 루트로 한 서브트리를 검사한다는 의미가 드러나도록 CanAttachSubtreeTo로 변경했습니다.
+
+		Unreal Engine의 CanAttachAsChild는 
+		부모 SceneComponent가 전달받은 SceneComponent 하나를 직접 자식으로 받을 수 있는지 묻는 부모 관점의 함수입니다. 
+		CyphenEngine의 CanAttachTo는 자식이 자신의 직접 Outer 제약을 판단하고, 
+		CanAttachSubtreeTo는 UE에 없는 혼합 Object 서브트리의 Runtime 연속성을 추가로 검사하므로 동일한 계약으로 합치지 않았습니다.
+
+	5. Attach의 검사와 적용 순서
+		AttachSubObject는 자기 부착, 기존 Outer, 직접 타입 계약, 서브트리 Runtime 연속성과 순환 관계를 모두 검사한 뒤 관계를 변경합니다.
+
+		검사 중에는 subObjects와 outer를 변경하지 않습니다. 
+		관계를 임시로 연결한 뒤 실패 시 되돌리는 방식은 검사 코드가 중간 상태를 관측하고 이후 후속 처리가 추가될수록 보상 범위가 커지므로 사용하지 않습니다.
+
+		모든 검사가 성공하면 부모의 subObjects에 자식을 추가하고 자식의 outer를 설정한 뒤 OnAttached를 호출합니다.
+
+		OnAttached는 관계가 이미 확정되었다는 완료 통지입니다. 
+		Object는 자기 도메인 밖의 타입을 판별하지 않고 하위 SubObject에 같은 통지를 전달합니다.
+
+		GameObject는 아직 Runtime에 참여하지 않은 경우 가장 가까운 상위 GameObject를 확인합니다. 
+		해당 GameObject가 Runtime에 참여 중이면 같은 GameRuntime에 Admit을 요청합니다.
+
+		가장 가까운 상위 GameObject가 Runtime에 참여하지 않았다면 더 위의 GameObject를 대신 사용하지 않습니다. 
+		GameObject 자체가 Runtime 연속성의 경계이므로 소속되지 않은 직접 계층을 건너뛰어 실행 문맥을 가져오지 않습니다.
+
+	6. Detach 이후 Runtime 소속 유지
+		DetachSubObject는 OnDetaching을 먼저 호출한 뒤 
+		부모의 subObjects에서 자식을 제거하고 outer를 nullptr로 설정합니다.
+
+		OnDetaching을 관계 제거 전에 호출하여 
+		이후 Component와 World 실행 계약이 기존 Outer 문맥을 확인하며 등록을 정리할 수 있도록 순서를 고정했습니다.
+
+		GameObject의 Runtime 소속은 Detach로 제거하지 않습니다. 
+		평면 장부에 이미 등록된 GameObject 서브트리는 분리된 뒤 독립적인 Runtime 참여 루트가 됩니다.
+
+		이 규칙으로 GameObject의 구조적 독립과 Runtime 탈출을 구분했습니다. 
+		Runtime 이탈은 현재 파괴 경로에서 수행하며 일반 Detach가 암묵적인 Runtime 탈퇴나 이주를 발생시키지 않습니다.
+
+	7. World 전파와 Runtime 전파의 차이
+		Runtime은 한 참여 서브트리 안에서 같은 GameRuntime으로 연속됩니다.
+
+		World는 계층 전체로 강제 전파하지 않습니다. 
+		일반 GameObject는 World 포인터를 보유하지 않으며
+		World-local 실행 문맥은 자신부터 Outer 방향으로 탐색한 최초의 WorldObject를 anchor로 사용합니다.
+
+		최초 WorldObject가 World에 Join되어 있으면 해당 World를 사용하고, Join되지 않았다면 
+		더 위의 WorldObject를 탐색하지 않고 World-local 실행에 참여하지 않습니다.
+
+		중첩 WorldObject는 자신의 World를 가질 수 있으며 그 아래 서브트리에 새로운 World 경계를 형성합니다. 
+		이 규칙은 구조적 자유도를 유지하면서 서로 다른 World의 객체가 한 종속 수명 트리에 존재할 수 있도록 합니다.
+
+		이번 변경에서는 World anchor를 사용한 일반 GameObject와 Component의 UpdateFunction 등록은 구현하지 않았습니다.
+
+	8. UpdateFunction 계약과의 경계
+		기존 GameObject 본인의 GlobalUpdate와 GlobalFinalUpdate 등록은 유지했습니다.
+
+		이번 작업은 하위 GameObject와 Component의 Runtime 소속을 정리하는 단계이며, 
+		하위 구성요소의 네 UpdateFunction을 실제 Function Group에 등록하거나 해제하는 프로토콜은 추가하지 않았습니다.
+
+		GameObject와 Component는 같은 네 Update 함수를 제공하지만 공통 Update 실행 기반 클래스를 갖지 않습니다. 
+		Object에 Update 지식을 올리면 상위 계층이 하위 실행 도메인을 알게 되고, 
+		GameRuntime이 Component를 직접 관리하면 Runtime의 타입 인지 범위가 넓어집니다.
+
+		따라서 하위 구성요소 Update 참여는 별도 등록 프로토콜의 호출 방향, 
+		타입 정보 전달 시점과 해제 키를 함께 결정한 뒤 연결하기로 했습니다.
+
+	9. 실행 중 구조 변경과 이벤트 큐 보류
+		UpdateFunction은 검증 없는 Object 포인터를 보관하므로 
+		Function Group 순회 중 Attach, Detach, Destroy 또는 등록 해제가 발생하면 반복자와 대상 수명이 깨질 수 있습니다.
+
+		관계 변경과 실행 장부 변경을 고정된 안전 지점에서 처리하는 이벤트 커맨드 큐의 필요성을 확인했습니다.
+
+		다만 이벤트 큐는 Attach와 Detach뿐 아니라 
+		Admit, Join, Leave, Destroy, ObjectHandle 재검증과 API의 완료 의미까지 함께 바꿉니다. 
+		이벤트 시스템 작업 단위와 결합해야 하므로 #4_14에는 포함하지 않고 후속 이벤트 작업으로 보류했습니다.
+
+		현재는 동기식 관계 변경을 유지하고, UpdateFunction 그룹 변경을 연결할 때 
+		실행 구간을 읽기 전용으로 고정하는 안전 지점을 다시 설계합니다.
+
+	10. 실행 단계 명칭과 Debug 계측 정리
+		World의 OOP 실행 단계 이름을 PreUpdate에서 Update로 변경해 
+		GameObject와 Component가 제공하는 UpdateParticipation::Update 및 Update virtual 함수와 명칭을 맞췄습니다.
+
+		GameRuntime과 현재 World 실행 그룹이 
+		한 프레임에 호출한 GlobalUpdate, GlobalFinalUpdate, Update와 FinalUpdate 횟수를 Debug 구성에서 집계하도록 추가했습니다.
+
+		엔진 주기 로그에 네 호출 횟수를 함께 출력하여 
+		후속 Component 참여 연결에서 누락 등록과 중복 등록을 즉시 관찰할 수 있도록 했습니다.
+
+		현재 World 계측은 하나의 Debug World를 전제로 합니다. 
+		다중 World별 진단 값 분리는 실제 다중 World 실행 검증과 함께 후속 진단 작업에서 다룹니다.
+
+
+RuntimeTest 개정
+	1. 관계 변경 원자성 검증
+		자기 자신 Attach, 다른 Outer로의 암묵적 Reparent와 순환 관계를 거부하는지 확인했습니다.
+
+		동일 Outer로의 중복 Attach가 성공하더라도 subObjects에 같은 대상이 중복 추가되지 않는지 확인했습니다.
+
+		Component의 직접 부모 타입 검사와 실패 이후 양쪽 Outer/SubObject 상태가 변경되지 않는지 확인했습니다.
+
+	2. 평면 Runtime 등록 검증
+		GameObject 세 개를 먼저 계층으로 구성한 뒤 루트를 Admit하여 모든 GameObject가 같은 Runtime에 등록되는지 확인했습니다.
+
+		루트 파괴 시 중첩 GameObject 각각의 GameRuntime::Destroy가 성공하고 ObjectManager Registry에서 모두 제거되는지 확인해 
+		평면 gameObjects 장부 정합성을 간접 검증했습니다.
+
+	3. Attach 시 Runtime 전파 검증
+		Admit된 GameObject 아래에 Object를 루트로 한 
+		미참여 GameObject 서브트리를 Attach하고 모든 하위 GameObject가 같은 Runtime에 참여하는지 확인했습니다.
+
+		서브트리를 Detach한 뒤 Runtime 소속이 유지되는지, 
+		같은 Runtime의 다른 GameObject에 재부착할 수 있는지 확인했습니다.
+
+	4. 부분 참여와 후발 Admit 검증
+		미참여 GameObject 계층의 가장 아래 GameObject만 먼저 Admit했을 때 
+		상위 방향으로 Runtime 소속이 전파되지 않는지 확인했습니다.
+
+		이후 루트를 Admit하면 중간의 미참여 GameObject가 같은 Runtime에 등록되고 
+		기존 참여 GameObject는 중복 등록되지 않는지 확인했습니다.
+
+	5. Component 혼합 계층 검증
+		Admit된 GameObject에 Component, 일반 Object와 GameObject가 
+		이어지는 서브트리를 Attach하고 Component와 Object를 통과해 중첩 GameObject까지 Runtime 소속이 전파되는지 확인했습니다.
+
+		Component 서브트리를 Detach하면 Component Owner는 nullptr이 되지만 
+		중첩 GameObject의 Runtime 소속은 유지되는지 확인했습니다.
+
+		연쇄 Destroy 이후 이미 논리적으로 파괴된 자식 포인터를 다시 사용하지 않도록 
+		핸들을 먼저 저장하고 Registry 제거 결과를 검증하도록 테스트 정리를 수정했습니다.
+
+
+검증
+	Windows x64 Debug 빌드에서 CyphenEngine.exe와 CyphenRendererVulkan.dll 생성을 확인했습니다.
+
+	Linux x64 Debug CMake / Ninja 빌드에서 CyphenEngine과 CyphenRendererVulkan.so 생성을 확인했습니다.
+
+	Windows Debug 실행에서 CoreIoTests PASS=69 FAIL=0을 확인했습니다.
+
+	현재 실행 환경에서는 Renderer 초기화 이후 RuntimeTest 로그까지 수집되지 않아 새 RuntimeTest의 전체 PASS / FAIL 합계는 확인하지 못했습니다.
+
+	변경 파일이 UTF-8 BOM 없음과 LF 형식을 유지하고 CanAttachHierarchyTo 참조가 남아 있지 않은 것을 확인했습니다.
+
+
+남은 논의
+	1. 하위 구성요소 UpdateFunction 등록 프로토콜
+		Admit으로 Runtime 소속이 확정된 하위 GameObject와 소유 GameObject에 부착된 Component의 GlobalUpdate / Update / FinalUpdate / GlobalFinalUpdate를 어느 객체가 어느 Function Group에 등록할지 결정해야 합니다.
+
+		GameRuntime이 Component 타입을 직접 관리하지 않으면서 등록 시점의 구체 타입을 UpdateFunction 실행 함수에 보존하는 호출 경계가 필요합니다.
+
+		등록과 해제가 같은 키와 같은 책임 주체를 사용하도록 설계하고, Component Detach와 GameObject Destroy에서 누락 없이 제거되는지 검증해야 합니다.
+
+	2. World-local 실행 문맥과 등록
+		일반 GameObject와 Component가 가장 가까운 WorldObject anchor를 기준으로 어느 World의 Update / FinalUpdate 그룹에 참여할지 구현해야 합니다.
+
+		WorldObject가 World에 Join되지 않은 경우 그 아래 일반 GameObject와 Component의 World-local 실행을 막고, 중첩 WorldObject가 다른 World 경계를 형성하는 경우를 검증해야 합니다.
+
+		Detach 시 Runtime 소속은 유지하지만 Outer에서 유도된 World-local 실행 근거는 달라지므로 기존 World 그룹 해제와 새 문맥 등록 정책을 결정해야 합니다.
+
+	3. 다른 Runtime 충돌 테스트
+		CanAttachSubtreeTo는 깊은 위치의 다른 Runtime GameObject를 거부하지만 현재 RunRuntimeTests는 GameRuntime 하나만 전달받습니다.
+
+		GameRuntime 생성과 Initialize가 private이므로 테스트 전용 타입이나 임의 접근을 추가하지 않고는 서로 다른 Runtime 충돌과 실패 원자성을 실행 검증할 수 없습니다.
+
+		다중 Runtime 기능 또는 엔진 테스트 fixture가 두 번째 Runtime을 정식으로 제공할 때 해당 검증을 추가합니다.
+
+	4. UpdateFunction 실제 스케줄 실행 검증
+		현재 RuntimeTest의 GameObject와 Component 기반 직접 호출은 virtual dispatch만 검증합니다.
+
+		GameRuntime::Tick과 World::Tick이 private이므로 Function Group을 통한 실제 프레임 실행과 등록·해제 결과는 현재 테스트 진입점에서 직접 검증할 수 없습니다.
+
+		프레임 테스트 경계를 별도로 제공하거나 엔진 실행 결과를 안정적으로 관측할 수 있는 진단 경계를 마련한 뒤 Scheduler 회귀 테스트를 추가합니다.
+
+	5. 이벤트 안전 지점
+		이벤트 시스템 작업에서 Attach, Detach, Admit, Join, Leave와 Destroy 요청을 ObjectHandle 기반 커맨드로 보관하고 실행 전 대상을 재검증하는 방안을 검토합니다.
+
+		Update 실행 구간에는 관계와 Function Group을 변경하지 않고 프레임 시작 또는 종료의 고정된 동기화 지점에서만 변경을 적용하는 방향을 우선 검토합니다.
+
+	6. Runtime 이주
+		일반 Attach를 통한 Runtime A에서 Runtime B로의 암묵적 이주는 계속 금지합니다.
+
+		향후 명시적 이주가 필요해지면 기존 Function Group과 World-local 등록을 모두 해제한 뒤 새 Runtime과 World 문맥에 원자적으로 등록하는 별도 특수 경로로 설계합니다.
