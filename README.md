@@ -42,7 +42,13 @@ CyphenEngine은 Unreal Engine처럼 엔진 중심의 저수준 제어와 명확�
 
 #4 2D 월드의 실행 구조입니다. OOP Object를 기본 정의 표면으로 두고, 다수·균일·hot-path 행동만 런타임에 System으로 enroll해 DOD로 실행합니다.
 
-현재 ObjectManager의 Registry와 지연 파괴, Outer/SubObject 종속 수명, GameObject-Component 합성, WorldObject의 Join/Leave와 Transform 정본, Runtime 다섯 단계와 World 세 단계까지 구성했습니다. Update 참여 Scheduler와 실제 System enroll 경계는 후속 작업입니다. 상세는 [Docs/WorldLoop.md](Docs/WorldLoop.md).
+현재 ObjectManager의 Registry와 지연 파괴, Outer/SubObject 종속 수명, GameObject-Component 합성, WorldObject의 Join/Leave와 Transform 정본, Runtime 다섯 단계와 World 세 단계까지 구성했습니다.
+
+여기에 GameRuntime이 소유하는 UpdateManager를 두고, 같은 실행 함수를 공유하는 대상을 Function Group으로 묶어 실행 중 타입 판별 없이 순회합니다.
+
+![구체 타입 바인딩에서 그룹 보관까지의 등록 경로와 프레임 실행 경로](Docs/Images/function-group.svg)
+
+구체 타입이 자신의 실행 함수를 공급하므로 최종 실행 대상은 등록 시점에 확정됩니다. World-local 실행은 Outer 방향 최초 WorldObject를 anchor로 사용합니다. 실행 우선순위 Scheduler와 System enroll 경계는 후속 작업입니다. 상세는 [Docs/WorldLoop.md](Docs/WorldLoop.md).
 
 ## 렌더 파이프라인
 
@@ -75,6 +81,12 @@ Debug 빌드 기준으로 다음 흐름을 확인합니다.
 - Windows: `CyphenEngine` + `CyphenRendererDx11` / `CyphenRendererVulkan` 실행 확인
 - Linux: `CyphenEngine` + `CyphenRendererVulkan.so` 빌드 및 GUI 실행 확인
 
+`#4` 브랜치에서 추가로 확인한 Runtime 기준선은 다음과 같습니다.
+
+- RuntimeTests: `PASS=201 / FAIL=0`
+- Runtime 1 / World 3 / Object 10000 구성에서 프레임당 약 15000회 실행 참여 유지
+- Update 실행 단계 참여 조합 48건(16조합 × 3계열)이 선언한 단계만 실행하는지 확인
+
 ## 문서
 
 - [구조 시각화](Docs/Architecture.md): 계층 구조, Renderer Module ABI, Command Stream, 빌드 / 플랫폼 경계
@@ -94,7 +106,7 @@ README는 프로젝트 소개와 현재 방향만 다룹니다. 세부 구현 �
 - FrameQueue와 렌더 제출 경계 정리
 - Runtime / Editor 책임 분리
 - Windows / Linux 양쪽에서 유지 가능한 renderer 경계 보강
-- GameObject / Component Update 계약과 실행 참여 Scheduler 결정
+- Function Group 실행 우선순위 Scheduler와 활성 상태 반영 정책 결정
 - World Loop의 Object(OOP) + 런타임 enroll된 System(DOD) 병존 실행 경계 구현
 
 ## 개발 방식

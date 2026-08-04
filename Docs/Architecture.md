@@ -43,7 +43,8 @@ flowchart TB
 - Resource는 CPU-side 리소스 표현을 관리하고, GPU resource 생성은 Renderer backend가 담당합니다.
 - Runtime은 #4에서 2D 월드 표시 흐름을 올리며 구체화할 대상입니다.
 - 현재 Runtime은 ObjectManager, Object 종속 수명, WorldObject Join/Leave와 GameRuntime / World 실행 단계 경계를 포함합니다.
-- Update Scheduler와 System enroll 실행 기계는 다음 Runtime 확장 대상입니다.
+- UpdateManager가 Runtime-global과 World-local Function Group의 등록·해제와 수명을 관리합니다.
+- 실행 우선순위 Scheduler와 System enroll 실행 기계는 다음 Runtime 확장 대상입니다.
 
 ## 플랫폼 / 렌더러 모듈 배치
 

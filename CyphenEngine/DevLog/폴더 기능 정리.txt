@@ -58,12 +58,19 @@ CyphenEngine
 			엔진 런타임 리소스 타입과 CPU-side 리소스 표현을 관리합니다.
 			GPU resource 생성과 업로드는 Renderer 모듈 책임입니다.
 
+		/Runtime
+			OOP 객체의 정체성과 종속 수명, 실행 컨텍스트 소속과 실행 참여를 관리합니다.
+			Handle 발급과 지연 파괴, 논리 공간의 Transform 정본,
+			실행 그룹 등록과 해제 및 프레임 실행 단계 경계를 포함합니다.
+			Renderer backend와 Platform 구현을 직접 알지 않습니다.
+
 		/Test
 			Debug 빌드에서 엔진 내부 기준선을 검증하는 테스트 계층입니다.
 			Runtime / Engine 및 Release 빌드에서는 의존하지 않습니다.
 
 			/Runtime
-				Object composition과 World 합류를 실제 Runtime 예제 객체로 검증합니다.
+				객체 구성과 소속 관계, 실행 참여 조합과 계층 경로 정합성을
+				엔진이 생성한 실제 Runtime / World 환경에서 검증합니다.
 
 	pch
 		사전 컴파일 헤더 및 공통 빌드 환경입니다.

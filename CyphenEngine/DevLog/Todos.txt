@@ -32,8 +32,17 @@
 	- WorldObject는 Runtime 소속과 World 소속을 분리하고 Join / Leave로 Transform 정본을 연결합니다.
 	- World::Spawn은 WorldObject 생성, Runtime Admit과 World Join을 하나의 생성 경로로 합성합니다.
 	- GameRuntime 다섯 단계와 World 세 단계의 실행 경계를 고정했습니다.
+	- World의 OOP 선행 실행 단계 이름은 PreUpdate가 아니라 Update입니다.
 	- GameObject와 Component에 네 단계의 Update 함수와 생성 시점의 UpdateParticipation 계약을 추가했습니다.
-	- #4_12는 Runtime / World 소속과 수명 경계, World::Spawn, 두 Square / Sprite 구성의 생성·파괴·재생성과 유지까지로 마감합니다.
+	- GameRuntime마다 UpdateManager 하나를 두고 Runtime-global과 World-local 실행 그룹의 수명을 함께 관리합니다.
+	- 같은 실행 함수를 공유하는 대상을 Function Group으로 묶어 실행 중 RTTI와 타입 분기 없이 순회합니다.
+	- 구체 타입이 자신의 UpdateFunction을 공급하므로 실행 대상의 최종 오버라이더는 등록 시점에 확정됩니다.
+	- GameObject가 자신과 직접 Component의 UpdateFunction을 공급하고 GameRuntime이 등록과 해제를 대행합니다.
+	- Update / FinalUpdate는 Outer 방향 최초 WorldObject를 World anchor로 사용하며, anchor가 World에 합류한 경우에만 등록합니다.
+	- GameRuntime::Leave로 서브트리의 World 탈퇴와 Runtime 이탈을 수행하며, 파괴 정리는 OnDestroy 훅으로 통일했습니다.
+	- Component가 Detach되면 그 아래 GameObject는 독립 실행 루트가 될 수 없으므로 Runtime을 떠납니다.
+	- 활성 상태는 현재 실행 게이트와 연결되어 있지 않습니다. SetActive는 선언만 유지합니다.
+	- #4_15는 UpdateManager 실행 그룹과 계층 실행 참여 등록 프로토콜, 10000 객체 부하 검증까지로 마감합니다.
 
 
 ## 해야 할 일
@@ -41,47 +50,55 @@
 1. 2D World
 	- #4 브랜치의 우선 목표입니다.
 	- debug fixture 수준의 텍스처 표시를 실제 2D 월드 표시 흐름으로 확장합니다.
-	- #4_12에서 유지한 두 Square / Sprite 구성을 후속 Scheduler와 Frame 추출의 검증 대상으로 사용합니다.
-	- UpdateParticipation을 Runtime-global 및 World-local 실행 목록에 등록·해제하는 Scheduler 경계를 결정합니다.
-	- 활성 상태와 실행 중 구조 변경을 안전 지점에서 반영하는 정책을 결정합니다.
+	- Runtime과 World에 유지한 두 Square / Sprite 구성을 대상으로 월드 데이터가 Frame / RenderCommand로 넘어가는 최소 경로를 설계합니다.
+	- WorldObject와 Sprite Component의 Transform 정본, World 이동과 계층 합성 규칙을 결정합니다.
 	- World 소속과 Update / System 참여는 별도 관계로 유지합니다.
 	- System Register / Enroll / Unenroll의 실제 저장소 변경 경계를 구체 System과 함께 구현합니다.
-	- WorldObject와 Sprite Component의 Transform 정본, World 이동과 계층 합성 규칙을 결정합니다.
-	- Runtime과 World에 유지한 두 Square / Sprite 구성을 대상으로 월드 데이터가 Frame / RenderCommand로 넘어가는 최소 경로를 설계합니다.
+	- 유지된 10000 객체 구성을 후속 Scheduler와 Frame 추출의 부하 검증 대상으로 사용합니다.
 
-2. ResourceManager / FileSystem
+2. Scheduler / 실행 참여
+	- Function Group의 실행 우선순위 계약을 정의하고 UpdateManager 그룹의 실행 순서 재구성을 연결합니다.
+	- Manager의 ActivationPivot으로 활성 상태 실행 제어를 설계합니다. 현재 SetActive는 실행 게이트와 연결되어 있지 않습니다.
+	- 실행 중 구조 변경을 안전 지점에서 반영하는 이벤트 큐 정책을 결정합니다.
+	- 이미 Runtime에 참여한 GameObject를 Detach 후 재Attach할 때 World-local 참여 복구 정책을 결정합니다.
+	- Leave 이후 다른 Runtime으로의 재Admit을 명시적 이주로 허용할지 결정합니다.
+	- 등록·해제 경로의 선형 탐색을 실제 인구 규모에 맞는 자료구조로 개선할지 판단합니다.
+	- World별 Debug 계측을 분리합니다. 현재 계측 값은 마지막으로 Tick된 World 기준입니다.
+	- 스크립트 VM이 도입되면 UpdateFunction 공급 경계를 진입점으로 사용할 수 있는지 검토합니다.
+
+3. ResourceManager / FileSystem
 	- Texture2D CPU decode와 GPU upload 경계를 ResourceCommand / RenderCommand 흐름 기준으로 유지합니다.
 	- File이 제공하는 동기 I/O API를 ResourceManager / TaskSystem 계층에서 사용할 수 있도록 상위 로딩 구조를 검토합니다.
 	- AssetId / ResourceHandle / PakHandle / Offset 기반 접근 구조를 검토합니다.
 	- 런타임 hot path에서는 문자열 path 기반 반복 접근을 피하도록 설계합니다.
 	- 파일 확장자 유형 기반 처리는 ResourceManager 또는 FileSystem 계층에서 검토합니다.
 
-3. Mesh / Material
+4. Mesh / Material
 	- 2D 월드 표시를 위한 최소 Mesh 표현을 추가합니다.
 	- Material은 renderer backend 세부 구현을 직접 노출하지 않는 방향으로 검토합니다.
 	- Texture2D, Mesh, Material이 ResourceManager를 통해 묶이는 시점을 정합니다.
 
-4. Renderer
+5. Renderer
 	- Vulkan 출력의 상하좌우 반전은 좌표계 / UV 축 보정 문제로 보고 수정 여부를 판단합니다.
 	- swapchain recreate / resize 대응을 별도 작업으로 정리합니다.
 	- GPU device 선택과 validation layer 설정을 정리합니다.
 	- renderer backend별 command decode 중복 정리 여부를 검토합니다.
 	- Server / headless 빌드에서는 Renderer 모듈을 비활성화할 수 있어야 합니다.
 
-5. Build Target / Runtime Config
+6. Build Target / Runtime Config
 	- BuildInfo를 CyphenEngine::Run 내부 BUILD_TARGET 분기에 실제 연결합니다.
 	- Server / Editor / Windowed 타겟 구분을 Build 계층에서 명확히 합니다.
 	- Renderer 모듈 활성화 여부를 빌드 설정과 실행 설정 양쪽에서 다룰 수 있도록 정리합니다.
 	- RuntimeConfig는 렌더러 선택 / PIE / Standalone Play / Multiplay Mode 같은 런타임 옵션을 다룰 때 추가합니다.
 	- Renderer 변경은 런처 재시작 또는 프로세스 재시작이 필요한 방향으로 둡니다.
 
-6. Event / Window
+7. Event / Window
 	- WndProc -> PlatformEventQueue -> Engine Tick 소비 구조를 추가합니다.
 	- Windows message loop와 Linux X11 event loop를 동일한 상위 이벤트 계약으로 올릴지 검토합니다.
 	- NativeWindowInfo는 현재 windowed renderer 초기화를 위한 최소 전달 구조로 유지합니다.
 	- Renderer 모듈 또는 별도 WindowSystem 계층이 platform window / surface를 직접 소유하는 구조가 확정되면 NativeWindowInfo 책임을 축소하거나 제거합니다.
 
-7. Logger / Diagnostics
+8. Logger / Diagnostics
 	- Windows는 OutputDebugStringA, Linux는 stderr 출력 경로를 기본 debug sink로 둡니다.
 	- Fatal / Internal 계열 로그는 크래시 추적을 위해 즉시 출력 및 중단 처리 방향을 고려합니다.
 	- 이후 Diagnostics 계층으로 LogRecord 생성과 큐 적재 책임을 분리할지 검토합니다.

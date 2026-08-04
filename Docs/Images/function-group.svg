@@ -1,0 +1,75 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 500" font-family="Segoe UI, Malgun Gothic, Arial, sans-serif">
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0 0 L10 5 L0 10 z" fill="#6b7280"/>
+    </marker>
+  </defs>
+
+  <rect x="0" y="0" width="900" height="500" fill="#ffffff"/>
+
+  <text x="40" y="35" font-size="20" font-weight="700" fill="#111827">Function Group · 등록 시점 타입 확정</text>
+  <text x="40" y="58" font-size="12" fill="#4b5563">타입 판별 비용을 등록 시점에 선불하고, 실행 중에는 RTTI · kind switch · dynamic_cast를 사용하지 않습니다.</text>
+
+  <text x="40" y="94" font-size="14" font-weight="700" fill="#111827">등록 시점 · 구체 타입 바인딩</text>
+
+  <rect x="40" y="108" width="186" height="76" rx="7" fill="#eaf2ff" stroke="#2f6fed"/>
+  <text x="133" y="134" font-size="12.5" font-weight="600" fill="#111827" text-anchor="middle">구체 타입</text>
+  <text x="133" y="153" font-size="11" fill="#4b5563" text-anchor="middle">final 클래스가 자신의</text>
+  <text x="133" y="169" font-size="11" fill="#4b5563" text-anchor="middle">UpdateFunction을 공급</text>
+
+  <rect x="251" y="108" width="186" height="76" rx="7" fill="#eaf2ff" stroke="#2f6fed"/>
+  <text x="344" y="134" font-size="12.5" font-weight="600" fill="#111827" text-anchor="middle">MakeUpdateFunction</text>
+  <text x="344" y="153" font-size="11" fill="#4b5563" text-anchor="middle">대상 타입과 실행 단계를</text>
+  <text x="344" y="169" font-size="11" fill="#4b5563" text-anchor="middle">템플릿 인자로 확정</text>
+
+  <rect x="462" y="108" width="186" height="76" rx="7" fill="#f1f3f5" stroke="#6b7280"/>
+  <text x="555" y="134" font-size="12.5" font-weight="600" fill="#111827" text-anchor="middle">UpdateFunction</text>
+  <text x="555" y="153" font-size="11" fill="#4b5563" text-anchor="middle">target + execute</text>
+  <text x="555" y="169" font-size="11" fill="#4b5563" text-anchor="middle">등록 요청용 POD 전달값</text>
+
+  <rect x="673" y="108" width="186" height="76" rx="7" fill="#f1f3f5" stroke="#6b7280"/>
+  <text x="766" y="134" font-size="12.5" font-weight="600" fill="#111827" text-anchor="middle">UpdateFunctionGroup</text>
+  <text x="766" y="153" font-size="11" fill="#4b5563" text-anchor="middle">같은 execute를 공유하는</text>
+  <text x="766" y="169" font-size="11" fill="#4b5563" text-anchor="middle">대상을 하나로 묶음</text>
+
+  <line x1="228" y1="146" x2="249" y2="146" stroke="#6b7280" marker-end="url(#arrow)"/>
+  <line x1="439" y1="146" x2="460" y2="146" stroke="#6b7280" marker-end="url(#arrow)"/>
+  <line x1="650" y1="146" x2="671" y2="146" stroke="#6b7280" marker-end="url(#arrow)"/>
+
+  <text x="40" y="232" font-size="14" font-weight="700" fill="#111827">보관 구조</text>
+
+  <rect x="40" y="246" width="390" height="108" rx="7" fill="#f1f3f5" stroke="#6b7280"/>
+  <text x="60" y="270" font-size="12.5" font-weight="600" fill="#111827">UpdateFunctionGroup</text>
+  <text x="76" y="292" font-size="11.5" fill="#374151">execute</text>
+  <text x="196" y="292" font-size="11" fill="#4b5563">그룹 전체가 공유하는 단일 함수 주소</text>
+  <text x="76" y="313" font-size="11.5" fill="#374151">targets</text>
+  <text x="196" y="313" font-size="11" fill="#4b5563">Object 포인터 연속 배열</text>
+  <text x="60" y="340" font-size="11" fill="#4b5563">그룹 안에서는 실행 대상이 모두 같은 함수로 진입합니다.</text>
+
+  <rect x="470" y="246" width="390" height="108" rx="7" fill="#f1f3f5" stroke="#6b7280"/>
+  <text x="490" y="270" font-size="12.5" font-weight="600" fill="#111827">그룹의 귀속 범위</text>
+  <text x="506" y="292" font-size="11.5" fill="#374151">Runtime-global</text>
+  <text x="646" y="292" font-size="11" fill="#4b5563">GlobalUpdate · GlobalFinalUpdate</text>
+  <text x="506" y="313" font-size="11.5" fill="#374151">World-local</text>
+  <text x="646" y="313" font-size="11" fill="#4b5563">World마다 Update · FinalUpdate</text>
+  <text x="490" y="340" font-size="11" fill="#4b5563">수명은 UpdateManager가 소유하고 실행은 소유자가 직접 순회합니다.</text>
+
+  <text x="40" y="392" font-size="14" font-weight="700" fill="#111827">프레임 실행</text>
+
+  <rect x="40" y="406" width="250" height="56" rx="7" fill="#eaf2ff" stroke="#2f6fed"/>
+  <text x="165" y="430" font-size="12" font-weight="600" fill="#111827" text-anchor="middle">그룹 순회</text>
+  <text x="165" y="448" font-size="11" fill="#4b5563" text-anchor="middle">GameRuntime과 World가 직접 실행</text>
+
+  <rect x="310" y="406" width="250" height="56" rx="7" fill="#eaf2ff" stroke="#2f6fed"/>
+  <text x="435" y="430" font-size="12" font-weight="600" fill="#111827" text-anchor="middle">execute 호출</text>
+  <text x="435" y="448" font-size="11" fill="#4b5563" text-anchor="middle">그룹 내 분기 대상이 상수</text>
+
+  <rect x="580" y="406" width="280" height="56" rx="7" fill="#eaf2ff" stroke="#2f6fed"/>
+  <text x="720" y="430" font-size="12" font-weight="600" fill="#111827" text-anchor="middle">최종 오버라이더 진입</text>
+  <text x="720" y="448" font-size="11" fill="#4b5563" text-anchor="middle">등록 당시 확정된 구현으로 직행</text>
+
+  <line x1="292" y1="434" x2="308" y2="434" stroke="#6b7280" marker-end="url(#arrow)"/>
+  <line x1="562" y1="434" x2="578" y2="434" stroke="#6b7280" marker-end="url(#arrow)"/>
+
+  <text x="40" y="486" font-size="11" fill="#4b5563">측정 기준선: Object 10000 구성에서 프레임당 약 14,988회 실행, Debug 빌드 기준 프레임 비용 증가 약 0.04ms.</text>
+</svg>

@@ -1,0 +1,83 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 500" font-family="Segoe UI, Malgun Gothic, Arial, sans-serif">
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0 0 L10 5 L0 10 z" fill="#6b7280"/>
+    </marker>
+  </defs>
+
+  <rect x="0" y="0" width="900" height="500" fill="#ffffff"/>
+
+  <text x="40" y="35" font-size="20" font-weight="700" fill="#111827">실행 참여 등록 프로토콜 · #4_15</text>
+  <text x="40" y="58" font-size="12" fill="#4b5563">파랑 = 실행 참여를 처리하는 주체 · 회색 = 선언과 보관 · 점선 = 등록하지 않는 경로</text>
+
+  <text x="40" y="94" font-size="14" font-weight="700" fill="#111827">공급과 등록 대행</text>
+
+  <rect x="40" y="108" width="186" height="76" rx="7" fill="#f1f3f5" stroke="#6b7280"/>
+  <text x="133" y="134" font-size="12.5" font-weight="600" fill="#111827" text-anchor="middle">UpdateParticipation</text>
+  <text x="133" y="153" font-size="11" fill="#4b5563" text-anchor="middle">생성 시 고정되는</text>
+  <text x="133" y="169" font-size="11" fill="#4b5563" text-anchor="middle">실행 능력 선언</text>
+
+  <rect x="251" y="108" width="186" height="76" rx="7" fill="#eaf2ff" stroke="#2f6fed"/>
+  <text x="344" y="134" font-size="12.5" font-weight="600" fill="#111827" text-anchor="middle">GameObject</text>
+  <text x="344" y="153" font-size="11" fill="#4b5563" text-anchor="middle">자신과 직접 Component의</text>
+  <text x="344" y="169" font-size="11" fill="#4b5563" text-anchor="middle">UpdateFunction 공급</text>
+
+  <rect x="462" y="108" width="186" height="76" rx="7" fill="#eaf2ff" stroke="#2f6fed"/>
+  <text x="555" y="134" font-size="12.5" font-weight="600" fill="#111827" text-anchor="middle">GameRuntime</text>
+  <text x="555" y="153" font-size="11" fill="#4b5563" text-anchor="middle">등록과 해제 대행</text>
+  <text x="555" y="169" font-size="11" fill="#4b5563" text-anchor="middle">World anchor 라우팅</text>
+
+  <rect x="673" y="108" width="186" height="76" rx="7" fill="#f1f3f5" stroke="#6b7280"/>
+  <text x="766" y="134" font-size="12.5" font-weight="600" fill="#111827" text-anchor="middle">UpdateManager</text>
+  <text x="766" y="153" font-size="11" fill="#4b5563" text-anchor="middle">Function Group 보관</text>
+  <text x="766" y="169" font-size="11" fill="#4b5563" text-anchor="middle">실행하지 않음</text>
+
+  <line x1="228" y1="146" x2="249" y2="146" stroke="#6b7280" marker-end="url(#arrow)"/>
+  <line x1="439" y1="146" x2="460" y2="146" stroke="#6b7280" marker-end="url(#arrow)"/>
+  <line x1="650" y1="146" x2="671" y2="146" stroke="#6b7280" marker-end="url(#arrow)"/>
+
+  <text x="40" y="232" font-size="14" font-weight="700" fill="#111827">실행 단계별 등록 대상 결정</text>
+
+  <rect x="40" y="248" width="205" height="50" rx="7" fill="#eaf2ff" stroke="#2f6fed"/>
+  <text x="142" y="270" font-size="12" font-weight="600" fill="#111827" text-anchor="middle">GlobalUpdate</text>
+  <text x="142" y="287" font-size="12" font-weight="600" fill="#111827" text-anchor="middle">GlobalFinalUpdate</text>
+
+  <rect x="285" y="248" width="205" height="50" rx="7" fill="#f1f3f5" stroke="#6b7280"/>
+  <text x="387" y="270" font-size="12" font-weight="600" fill="#111827" text-anchor="middle">Runtime-global 그룹</text>
+  <text x="387" y="287" font-size="11" fill="#4b5563" text-anchor="middle">Runtime 소속 확정 시 등록</text>
+
+  <line x1="247" y1="273" x2="283" y2="273" stroke="#6b7280" marker-end="url(#arrow)"/>
+
+  <rect x="40" y="340" width="205" height="50" rx="7" fill="#eaf2ff" stroke="#2f6fed"/>
+  <text x="142" y="362" font-size="12" font-weight="600" fill="#111827" text-anchor="middle">Update</text>
+  <text x="142" y="379" font-size="12" font-weight="600" fill="#111827" text-anchor="middle">FinalUpdate</text>
+
+  <rect x="285" y="340" width="205" height="50" rx="7" fill="#f1f3f5" stroke="#6b7280"/>
+  <text x="387" y="362" font-size="12" font-weight="600" fill="#111827" text-anchor="middle">World anchor 탐색</text>
+  <text x="387" y="379" font-size="11" fill="#4b5563" text-anchor="middle">Outer 방향 최초 WorldObject</text>
+
+  <line x1="247" y1="365" x2="283" y2="365" stroke="#6b7280" marker-end="url(#arrow)"/>
+
+  <rect x="530" y="316" width="150" height="48" rx="7" fill="#eaf2ff" stroke="#2f6fed"/>
+  <text x="605" y="345" font-size="12" font-weight="600" fill="#111827" text-anchor="middle">World에 합류함</text>
+
+  <rect x="530" y="392" width="150" height="48" rx="7" fill="#f1f3f5" stroke="#6b7280" stroke-dasharray="5 4"/>
+  <text x="605" y="414" font-size="12" font-weight="600" fill="#111827" text-anchor="middle">미합류 또는</text>
+  <text x="605" y="430" font-size="12" font-weight="600" fill="#111827" text-anchor="middle">anchor 없음</text>
+
+  <path d="M490 365 L510 365 L510 340 L528 340" fill="none" stroke="#6b7280" marker-end="url(#arrow)"/>
+  <path d="M490 365 L510 365 L510 416 L528 416" fill="none" stroke="#6b7280" marker-end="url(#arrow)"/>
+
+  <rect x="720" y="316" width="140" height="48" rx="7" fill="#f1f3f5" stroke="#6b7280"/>
+  <text x="790" y="338" font-size="12" font-weight="600" fill="#111827" text-anchor="middle">해당 World의</text>
+  <text x="790" y="354" font-size="12" font-weight="600" fill="#111827" text-anchor="middle">World-local 그룹</text>
+
+  <rect x="720" y="392" width="140" height="48" rx="7" fill="#f1f3f5" stroke="#6b7280" stroke-dasharray="5 4"/>
+  <text x="790" y="421" font-size="12" font-weight="600" fill="#111827" text-anchor="middle">등록하지 않음</text>
+
+  <line x1="682" y1="340" x2="718" y2="340" stroke="#6b7280" marker-end="url(#arrow)"/>
+  <line x1="682" y1="416" x2="718" y2="416" stroke="#6b7280" marker-end="url(#arrow)"/>
+
+  <text x="40" y="472" font-size="11" fill="#4b5563">Component는 UpdateManager와 GameRuntime을 알지 않습니다. 직접 부모 GameObject가 공급과 등록 요청을 대행합니다.</text>
+  <text x="40" y="489" font-size="11" fill="#4b5563">중첩 WorldObject는 자기 아래에 새로운 anchor 경계를 형성하므로 부모와 다른 World의 실행 목록에 참여할 수 있습니다.</text>
+</svg>

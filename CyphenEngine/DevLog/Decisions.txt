@@ -65,7 +65,8 @@ CyphenEngine_World_Loop_Rule
 		적용 여부는 호출 횟수가 아니라 위 조건을 만족하는지로 판단한다.
 
 	5. Enroll / Register / Unenroll
-		아래 계약은 System 참여를 구현할 때 적용할 설계 기준이며 현재 #4_10 코드에는 아직 실행 Scheduler가 없다.
+		아래 계약은 System 참여를 구현할 때 적용할 설계 기준이다.
+		OOP Update 참여는 #4_15의 UpdateManager로 구현했으나 System Enroll 저장소와 안전 지점은 아직 없다.
 		Enroll은 System 참여를 확정하는 단일 구조 변경 프리미티브이며 안전 지점에서만 수행한다.
 		진입 트리거는 둘이다: authoring-time 직접 Enroll, runtime Register 요청.
 		Register는 Enroll의 대안이 아니라, 런타임에서 Enroll을 요청하는 지연 트리거다.
@@ -99,16 +100,34 @@ CyphenEngine_World_Loop_Rule
 	9. 실행 순서 (Tick Phase)
 		GameRuntime은 GlobalUpdate / ProcessBeforeWorldTicks / World Tick / ProcessAfterWorldTicks / GlobalFinalUpdate의 다섯 단계로 실행한다.
 		Global은 프로세스 전역 싱글턴이 아니라 한 GameRuntime이 소유한 모든 World에 공통인 실행 범위다.
-		각 World Tick은 PreUpdate / ProcessAll / FinalUpdate의 세 단계로 실행한다.
-		PreUpdate와 FinalUpdate는 World-local OOP 실행 경계이고 ProcessAll은 World-local System 실행 경계다.
-		현재는 단계와 호출 순서만 확정하며 Update 참여 목록, Scheduler, SystemSync / Compute / Resolve / Apply의 세부 분할은 후속 구현한다.
+		각 World Tick은 Update / ProcessAll / FinalUpdate의 세 단계로 실행한다.
+		Update와 FinalUpdate는 World-local OOP 실행 경계이고 ProcessAll은 World-local System 실행 경계다.
+		World의 OOP 선행 단계 이름은 PreUpdate가 아니라 Update이며, UpdateParticipation 및 virtual Update 함수와 명칭을 일치시킨다.
+		현재 네 OOP 단계는 UpdateManager가 공급한 Function Group을 순회한다.
+		실행 순서 우선순위와 SystemSync / Compute / Resolve / Apply의 세부 분할은 후속 구현한다.
 		후속 세부 phase를 추가하더라도 Runtime 다섯 단계와 World 세 단계의 상위 경계는 유지한다.
 
-	10. 이번에 하지 않는 것
+	10. OOP Update 실행 참여 (#4_15 확정)
+		UpdateParticipation은 실행 능력의 선언이고 UpdateFunction은 그 선언을 실행 그룹에 반영한 결과다.
+		둘은 같은 상태가 아니며, 소속 관계 변경이 참여 선언을 새로 결정하지 않는다.
+		GameRuntime마다 UpdateManager 하나가 Runtime-global 그룹과 각 World의 World-local 그룹 수명을 소유한다.
+		UpdateManager는 실행하지 않는다. GameRuntime과 World가 자신에게 귀속된 읽기 전용 그룹을 직접 순회한다.
+		같은 실행 함수를 공유하는 대상은 하나의 Function Group으로 묶는다.
+		구체 타입이 자신의 UpdateFunction을 공급하므로 최종 오버라이더는 등록 시점에 확정되며, 실행 중에는 RTTI와 타입 분기를 사용하지 않는다.
+		Component는 UpdateManager를 알지 않는다. 직접 부모 GameObject가 공급과 등록·해제를 대행한다.
+		GlobalUpdate / GlobalFinalUpdate는 Runtime 소속이 확정되면 등록한다.
+		Update / FinalUpdate는 Outer 방향 최초 WorldObject를 World anchor로 사용하고, anchor가 World에 합류한 경우에만 등록한다.
+		중첩 WorldObject는 자기 아래에 새로운 anchor 경계를 형성한다.
+		중복 등록은 실패로, 미등록 대상의 해제는 성공으로 처리한다. 이 비대칭이 호출자 롤백의 기준이다.
+		Component 아래의 GameObject는 독립적인 Runtime 참여 루트가 될 수 없다.
+		활성 상태는 실행 함수의 게이트로 두지 않는다. 활성 제어는 후속 Manager의 ActivationPivot 정책에서 다룬다.
+		실행 우선순위는 UpdateManager가 아니라 후속 Scheduler의 책임이다.
+
+	11. 이번에 하지 않는 것
 		DOTS식 기계장치(archetype chunk, Burst/SIMD, Job 자동 스케줄러)는 이번에 도입하지 않는다.
 		지금은 developer-composed(명시적 enroll·Tick)로 두고, 자동 스케줄·병렬은 시스템 수·엔티티 수가 그 비용을 정당화할 때의 후속 과제로 남긴다.
 		분기 압축(플래그화)·캐시라인 패킹은 엔트리 수가 큰 System에만 적용한다.
-		GameObject와 Component의 Update 계약, 참여 의사, 활성 상태와 Scheduler 등록 정책은 #4_11에서 결정한다.
+		실행 중 구조 변경을 지연하는 안전 지점 이벤트 큐는 이벤트 시스템 작업에서 결정한다.
 
 CyphenEngine_Runtime_World_Snapshot_Rule
 

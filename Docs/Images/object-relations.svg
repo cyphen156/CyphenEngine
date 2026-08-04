@@ -1,0 +1,130 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 440" font-family="Segoe UI, Malgun Gothic, Arial, sans-serif">
+  <rect x="0" y="0" width="900" height="440" fill="#ffffff"/>
+
+  <text x="40" y="35" font-size="20" font-weight="700" fill="#111827">관계 변경 경로별 효과</text>
+  <text x="40" y="58" font-size="12" fill="#4b5563">네 관계는 서로 자동 전파하지 않습니다. 파랑 = 이 경로가 바꾸는 관계 · 회색 = 바뀌지 않는 관계</text>
+
+  <rect x="40" y="86" width="150" height="46" rx="6" fill="#ffffff" stroke="#6b7280"/>
+  <text x="115" y="114" font-size="12" font-weight="700" fill="#111827" text-anchor="middle">관계</text>
+
+  <rect x="190" y="86" width="111" height="46" rx="6" fill="#ffffff" stroke="#6b7280"/>
+  <text x="245" y="114" font-size="12" font-weight="700" fill="#111827" text-anchor="middle">Attach</text>
+
+  <rect x="301" y="86" width="111" height="46" rx="6" fill="#ffffff" stroke="#6b7280"/>
+  <text x="356" y="114" font-size="12" font-weight="700" fill="#111827" text-anchor="middle">Detach</text>
+
+  <rect x="412" y="86" width="111" height="46" rx="6" fill="#ffffff" stroke="#6b7280"/>
+  <text x="467" y="114" font-size="12" font-weight="700" fill="#111827" text-anchor="middle">Admit</text>
+
+  <rect x="523" y="86" width="111" height="46" rx="6" fill="#ffffff" stroke="#6b7280"/>
+  <text x="578" y="106" font-size="11.5" font-weight="700" fill="#111827" text-anchor="middle">World</text>
+  <text x="578" y="122" font-size="11.5" font-weight="700" fill="#111827" text-anchor="middle">Leave</text>
+
+  <rect x="634" y="86" width="111" height="46" rx="6" fill="#ffffff" stroke="#6b7280"/>
+  <text x="689" y="106" font-size="11.5" font-weight="700" fill="#111827" text-anchor="middle">Runtime</text>
+  <text x="689" y="122" font-size="11.5" font-weight="700" fill="#111827" text-anchor="middle">Leave</text>
+
+  <rect x="745" y="86" width="111" height="46" rx="6" fill="#ffffff" stroke="#6b7280"/>
+  <text x="800" y="114" font-size="12" font-weight="700" fill="#111827" text-anchor="middle">Destroy</text>
+
+  <rect x="40" y="132" width="150" height="52" rx="6" fill="#f8f9fa" stroke="#6b7280"/>
+  <text x="56" y="156" font-size="11.5" font-weight="600" fill="#111827">Outer / SubObject</text>
+  <text x="56" y="173" font-size="10.5" fill="#4b5563">Object 종속 수명</text>
+
+  <rect x="190" y="132" width="111" height="52" rx="6" fill="#eaf2ff" stroke="#2f6fed"/>
+  <text x="245" y="163" font-size="11.5" fill="#111827" text-anchor="middle">생성</text>
+
+  <rect x="301" y="132" width="111" height="52" rx="6" fill="#eaf2ff" stroke="#2f6fed"/>
+  <text x="356" y="163" font-size="11.5" fill="#111827" text-anchor="middle">해제</text>
+
+  <rect x="412" y="132" width="111" height="52" rx="6" fill="#f1f3f5" stroke="#9ca3af"/>
+  <text x="467" y="163" font-size="11.5" fill="#6b7280" text-anchor="middle">무관</text>
+
+  <rect x="523" y="132" width="111" height="52" rx="6" fill="#f1f3f5" stroke="#9ca3af"/>
+  <text x="578" y="163" font-size="11.5" fill="#6b7280" text-anchor="middle">무관</text>
+
+  <rect x="634" y="132" width="111" height="52" rx="6" fill="#f1f3f5" stroke="#9ca3af"/>
+  <text x="689" y="163" font-size="11.5" fill="#6b7280" text-anchor="middle">무관</text>
+
+  <rect x="745" y="132" width="111" height="52" rx="6" fill="#eaf2ff" stroke="#2f6fed"/>
+  <text x="800" y="163" font-size="11.5" fill="#111827" text-anchor="middle">해제</text>
+
+  <rect x="40" y="184" width="150" height="52" rx="6" fill="#f8f9fa" stroke="#6b7280"/>
+  <text x="56" y="208" font-size="11.5" font-weight="600" fill="#111827">Runtime 소속</text>
+  <text x="56" y="225" font-size="10.5" fill="#4b5563">실행 컨텍스트 정체성</text>
+
+  <rect x="190" y="184" width="111" height="52" rx="6" fill="#eaf2ff" stroke="#2f6fed"/>
+  <text x="245" y="208" font-size="11.5" fill="#111827" text-anchor="middle">하위 전파</text>
+  <text x="245" y="224" font-size="10" fill="#4b5563" text-anchor="middle">미참여 대상만</text>
+
+  <rect x="301" y="184" width="111" height="52" rx="6" fill="#f1f3f5" stroke="#9ca3af"/>
+  <text x="356" y="208" font-size="11.5" fill="#6b7280" text-anchor="middle">유지</text>
+  <text x="356" y="224" font-size="10" fill="#c98a00" text-anchor="middle">예외 있음 *</text>
+
+  <rect x="412" y="184" width="111" height="52" rx="6" fill="#eaf2ff" stroke="#2f6fed"/>
+  <text x="467" y="208" font-size="11.5" fill="#111827" text-anchor="middle">서브트리 확정</text>
+  <text x="467" y="224" font-size="10" fill="#4b5563" text-anchor="middle">평면 장부 등록</text>
+
+  <rect x="523" y="184" width="111" height="52" rx="6" fill="#f1f3f5" stroke="#9ca3af"/>
+  <text x="578" y="215" font-size="11.5" fill="#6b7280" text-anchor="middle">유지</text>
+
+  <rect x="634" y="184" width="111" height="52" rx="6" fill="#eaf2ff" stroke="#2f6fed"/>
+  <text x="689" y="215" font-size="11.5" fill="#111827" text-anchor="middle">서브트리 이탈</text>
+
+  <rect x="745" y="184" width="111" height="52" rx="6" fill="#eaf2ff" stroke="#2f6fed"/>
+  <text x="800" y="215" font-size="11.5" fill="#111827" text-anchor="middle">이탈</text>
+
+  <rect x="40" y="236" width="150" height="52" rx="6" fill="#f8f9fa" stroke="#6b7280"/>
+  <text x="56" y="260" font-size="11.5" font-weight="600" fill="#111827">World 소속</text>
+  <text x="56" y="277" font-size="10.5" fill="#4b5563">논리 공간 · Transform</text>
+
+  <rect x="190" y="236" width="111" height="52" rx="6" fill="#f1f3f5" stroke="#9ca3af"/>
+  <text x="245" y="267" font-size="11.5" fill="#6b7280" text-anchor="middle">무관</text>
+
+  <rect x="301" y="236" width="111" height="52" rx="6" fill="#f1f3f5" stroke="#9ca3af"/>
+  <text x="356" y="267" font-size="11.5" fill="#6b7280" text-anchor="middle">유지</text>
+
+  <rect x="412" y="236" width="111" height="52" rx="6" fill="#f1f3f5" stroke="#9ca3af"/>
+  <text x="467" y="267" font-size="11.5" fill="#6b7280" text-anchor="middle">무관</text>
+
+  <rect x="523" y="236" width="111" height="52" rx="6" fill="#eaf2ff" stroke="#2f6fed"/>
+  <text x="578" y="267" font-size="11.5" fill="#111827" text-anchor="middle">탈퇴</text>
+
+  <rect x="634" y="236" width="111" height="52" rx="6" fill="#eaf2ff" stroke="#2f6fed"/>
+  <text x="689" y="260" font-size="11.5" fill="#111827" text-anchor="middle">탈퇴</text>
+  <text x="689" y="276" font-size="10" fill="#4b5563" text-anchor="middle">자식부터 순서대로</text>
+
+  <rect x="745" y="236" width="111" height="52" rx="6" fill="#eaf2ff" stroke="#2f6fed"/>
+  <text x="800" y="267" font-size="11.5" fill="#111827" text-anchor="middle">탈퇴</text>
+
+  <rect x="40" y="288" width="150" height="52" rx="6" fill="#f8f9fa" stroke="#6b7280"/>
+  <text x="56" y="312" font-size="11.5" font-weight="600" fill="#111827">실행 참여</text>
+  <text x="56" y="329" font-size="10.5" fill="#4b5563">Function Group 등록</text>
+
+  <rect x="190" y="288" width="111" height="52" rx="6" fill="#eaf2ff" stroke="#2f6fed"/>
+  <text x="245" y="312" font-size="11.5" fill="#111827" text-anchor="middle">등록</text>
+  <text x="245" y="328" font-size="10" fill="#4b5563" text-anchor="middle">선언된 단계만</text>
+
+  <rect x="301" y="288" width="111" height="52" rx="6" fill="#eaf2ff" stroke="#2f6fed"/>
+  <text x="356" y="312" font-size="11.5" fill="#111827" text-anchor="middle">해제</text>
+  <text x="356" y="328" font-size="10" fill="#4b5563" text-anchor="middle">World-local 문맥</text>
+
+  <rect x="412" y="288" width="111" height="52" rx="6" fill="#eaf2ff" stroke="#2f6fed"/>
+  <text x="467" y="319" font-size="11.5" fill="#111827" text-anchor="middle">등록</text>
+
+  <rect x="523" y="288" width="111" height="52" rx="6" fill="#eaf2ff" stroke="#2f6fed"/>
+  <text x="578" y="312" font-size="11.5" fill="#111827" text-anchor="middle">부분 해제</text>
+  <text x="578" y="328" font-size="10" fill="#4b5563" text-anchor="middle">Update · FinalUpdate</text>
+
+  <rect x="634" y="288" width="111" height="52" rx="6" fill="#eaf2ff" stroke="#2f6fed"/>
+  <text x="689" y="312" font-size="11.5" fill="#111827" text-anchor="middle">전체 해제</text>
+  <text x="689" y="328" font-size="10" fill="#4b5563" text-anchor="middle">네 단계 모두</text>
+
+  <rect x="745" y="288" width="111" height="52" rx="6" fill="#eaf2ff" stroke="#2f6fed"/>
+  <text x="800" y="319" font-size="11.5" fill="#111827" text-anchor="middle">전체 해제</text>
+
+  <text x="40" y="368" font-size="11" fill="#4b5563">* 일반 GameObject의 Detach는 Runtime 소속을 유지합니다. 다만 Component가 Detach되면 그 아래 GameObject는</text>
+  <text x="52" y="385" font-size="11" fill="#4b5563">독립적인 실행 루트가 될 수 없으므로 Runtime을 떠나고, 다시 Attach되면 참여를 복구합니다.</text>
+  <text x="40" y="408" font-size="11" fill="#4b5563">Destroy는 ObjectManager가 자식을 부모보다 먼저 파괴하므로, 각 계약 해제는 부모의 문맥이 살아 있는 동안 수행됩니다.</text>
+  <text x="40" y="428" font-size="11" fill="#4b5563">Attach와 Admit은 참여 선언을 새로 결정하지 않습니다. 이미 선언된 참여를 실현할 실행 문맥만 제공합니다.</text>
+</svg>
