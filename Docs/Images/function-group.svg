@@ -72,5 +72,5 @@
   <line x1="562" y1="434" x2="578" y2="434" stroke="#6b7280" marker-end="url(#arrow)"/>
 
   <text x="40" y="480" font-size="11" fill="#4b5563">측정 기준선: Object 10000 · 프레임당 14,988회 실행 · 실행 대상이 없는 baseline 대비 +0.075ms (호출당 5.0ns, Debug).</text>
-  <text x="40" y="496" font-size="11" fill="#4b5563">같은 워크로드를 기반 클래스로 바인딩하면 +0.197ms (호출당 13.1ns). 등록 시점 타입 확정의 효과는 실행 비용 기준 약 2.6배.</text>
+  <text x="40" y="496" font-size="11" fill="#4b5563">기반 클래스 바인딩은 호출당 13.1ns, 실행 중 dynamic_cast는 20.7ns, 둘 다면 29.0ns. 자세한 대조는 execution-cost-matrix 참고.</text>
 </svg>
