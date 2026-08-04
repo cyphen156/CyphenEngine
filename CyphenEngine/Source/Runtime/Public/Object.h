@@ -19,9 +19,11 @@
 // Handle 내부 값의 일치만으로 관계를 추론하지 않습니다.
 //
 // Object는 하나의 Outer와 여러 SubObject로 구성되는 종속 수명 관계를 가질 수 있습니다.
-// Outer/SubObject는 Object의 구조적 포함과 파괴 전파만을 표현합니다.
-// World 소속, Transform 공간 계층과 Update 실행 순서는 이 관계로부터
-// 추론하거나 자동으로 전파하지 않습니다.
+// Outer/SubObject는 Object의 구조적 포함과 파괴 전파를 표현합니다.
+// Object 계층 자체는 World 소속, Transform 공간 계층과 Update 실행 순서를
+// 추론하거나 전파하지 않습니다.
+// 파생 타입은 Attach / Detach 통지에서 Outer 체인을 탐색하여
+// 자신의 Runtime 소속과 실행 문맥을 스스로 처리합니다.
 //
 // AddSubObject:
 //   - 새로운 Object를 생성하고 현재 Object의 직접 SubObject로 부착합니다.
@@ -35,6 +37,8 @@
 //   - 직접 관계가 유효하면 이동하는 Subtree 전체가 새 계층을 받아들일 수 있는지
 //     검사한 뒤 관계를 확정합니다.
 //   - DetachSubObject는 관계만 해제하며 SubObject를 파괴하지 않습니다.
+//   - 두 함수는 virtual이며, 파생 타입은 관계 확정 이후
+//     자신의 실행 참여 처리를 확장합니다.
 //
 // Handle 보유 여부는 객체의 실제 소유 위치를 결정하지 않습니다.
 // 동일한 ObjectHandle을 가진 객체 복제와 주소 기반 소유 관계의 변경을
@@ -42,7 +46,8 @@
 //
 // Destroy:
 //   - 실제 소멸자를 직접 호출하지 않고 ObjectManager에 파괴를 요청합니다.
-//   - 구체 Object는 자신에게 귀속된 관계를 먼저 정리한 뒤 공통 파괴 경로에 합류합니다.
+//   - ObjectManager는 SubObject를 부모보다 먼저 파괴한 뒤 OnDestroy를 호출하여
+//     구체 타입에 귀속된 Runtime / World 계약을 정리합니다.
 //   - 관계 정리나 파괴 요청이 실패하면 false를 반환합니다.
 //   - Outer/SubObject 종속 수명은 자식을 부모보다 먼저 정리합니다.
 //   - Destroy가 성공한 객체를 다시 사용하지 않는 것은 User API 계약입니다.
@@ -57,8 +62,8 @@ public:
 	template<typename SubObjectType, typename... ArgumentTypes>
 	SubObjectType* AddSubObject(ArgumentTypes&&... arguments);
 
-	bool AttachSubObject(Object& subObject);
-	bool DetachSubObject(Object& subObject);
+	virtual bool AttachSubObject(Object& subObject);
+	virtual bool DetachSubObject(Object& subObject);
 
 	ObjectHandle GetHandle() const;
 
@@ -78,6 +83,7 @@ protected:
 	virtual bool CanAttachTo(const Object& outer) const;
 	virtual bool CanAttachSubtreeTo(const Object& outer) const;
 
+	virtual bool OnDestroy();
 	virtual void OnAttached();
 	virtual void OnDetaching();
 
@@ -98,15 +104,13 @@ private:
 template<typename ObjectType, typename... ArgumentTypes>
 ObjectType* Object::NewObject(ArgumentTypes&&... arguments)
 {
-	return ObjectManager::NewObject<ObjectType>(
-		std::forward<ArgumentTypes>(arguments)...);
+	return ObjectManager::NewObject<ObjectType>(std::forward<ArgumentTypes>(arguments)...);
 }
 
 template<typename SubObjectType, typename... ArgumentTypes>
 SubObjectType* Object::AddSubObject(ArgumentTypes&&... arguments)
 {
-	SubObjectType* subObject = Object::NewObject<SubObjectType>(
-		std::forward<ArgumentTypes>(arguments)...);
+	SubObjectType* subObject = Object::NewObject<SubObjectType>(std::forward<ArgumentTypes>(arguments)...);
 
 	if (subObject == nullptr)
 	{

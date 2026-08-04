@@ -15,24 +15,27 @@ bool Component::IsActive() const
 
 void Component::GlobalUpdate(double deltaSeconds)
 {
+	static_cast<void>(deltaSeconds);
 }
 
 void Component::Update(double deltaSeconds)
 {
+	static_cast<void>(deltaSeconds);
 }
 
 void Component::FinalUpdate(double deltaSeconds)
 {
+	static_cast<void>(deltaSeconds);
 }
 
 void Component::GlobalFinalUpdate(double deltaSeconds)
 {
+	static_cast<void>(deltaSeconds);
 }
 
 bool Component::HasUpdateParticipation(UpdateParticipation participation) const
 {
-	return (static_cast<uint8>(updateParticipation) &
-		static_cast<uint8>(participation)) != 0;
+	return (static_cast<uint8>(updateParticipation) & static_cast<uint8>(participation)) != 0;
 }
 
 GameObject* Component::GetOwner()
@@ -58,7 +61,17 @@ Component::Component(ObjectHandle objectHandle, UpdateParticipation updatePartic
 
 Component::~Component() = default;
 
+UpdateFunction Component::CreateUpdateFunction(UpdateParticipation participation)
+{
+	return MakeUpdateFunction(*this, participation);
+}
+
 bool Component::CanAttachTo(const Object& outer) const
 {
 	return dynamic_cast<const GameObject*>(&outer) != nullptr;
+}
+
+bool Component::OnDestroy()
+{
+	return Object::OnDestroy();
 }

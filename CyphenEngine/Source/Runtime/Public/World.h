@@ -3,15 +3,14 @@
 #include <utility>
 #include <vector>
 
+#include "Runtime/Public/GameRuntime.h"
 #include "Core/Public/CPrimitiveTypes.h"
-#include "Core/Public/Math/Transform.h"
 #include "Runtime/Public/Chunk.h"
 #include "Runtime/Public/ComponentDataStorage.h"
-#include "Runtime/Public/GameRuntime.h"
+#include "Runtime/Public/UpdateManager.h"
 #include "Runtime/Public/Object.h"
-#include "Runtime/Public/UpdateFunction.h"
-
-class WorldObject;
+#include "Runtime/Public/WorldObject.h"
+#include "Core/Public/Math/Transform.h"
 
 // ============================================================================
 // World
@@ -24,23 +23,35 @@ class WorldObject;
 //
 // World는 WorldObject의 메모리와 수명을 소유하지 않습니다.
 // World-local ComponentData 정본과 소속 WorldObject의 비소유 참조를 유지합니다.
+// World-local Function Group은 소유 Runtime의 UpdateManager가 관리합니다.
+// World는 자신에게 공급된 Function Group의 읽기 전용 포인터만 보유하고 실행합니다.
 //
 // Spawn:
-//   - WorldObject를 새로 생성하고 소유 Runtime에 Admit한 뒤 현재 World에 Join합니다.
-//   - 대상 World와 최초 Transform을 명시하는 생성 API입니다.
+//   - WorldObject 계층을 새로 생성합니다.
+//   - 완성된 계층의 모든 GameObject를 소유 Runtime에 Admit합니다.
+//   - 완성된 계층에 포함된 모든 WorldObject를 현재 World에 Join합니다.
+//   - 루트 WorldObject에는 전달받은 initialTransform을 적용합니다.
+//   - 하위 WorldObject에는 별도 원형 데이터가 없으므로 기본 Transform을 적용합니다.
+//   - 각 WorldObject의 Join이 자신을 anchor로 하는 실행 범위의
+//     World-local Update / FinalUpdate 참여를 등록합니다.
+//   - GlobalUpdate / GlobalFinalUpdate는 Admit에서 이미 등록되었으며
+//     Join은 Runtime-global 등록을 변경하지 않습니다.
 //
 // Join:
-//   - 생성된 WorldObject를 현재 World의 논리 공간에 합류시킵니다.
-//   - 현재 World와 같은 GameRuntime에 Admit된 WorldObject만 허용합니다.
+//   - 생성된 WorldObject 하나를 현재 World의 논리 공간에 합류시킵니다.
+//   - 다른 Runtime에 Admit된 WorldObject는 허용하지 않으며,
+//     아직 Runtime에 참여하지 않았다면 소유 Runtime에 먼저 Admit합니다.
 //   - WorldObject의 Transform 정본을 생성합니다.
 //   - WorldObject의 비소유 참조와 World 소속 관계를 연결합니다.
-//   - 전달받은 WorldObject 본인의 Update / FinalUpdate 참여를 직접 등록합니다.
-//   - 자식 GameObject와 Component의 실행 참여는 처리하지 않습니다.
+//   - 자신을 anchor로 하는 실행 범위의 Update / FinalUpdate 참여를 등록합니다.
+//     하위 WorldObject 가지는 별도 anchor이므로 범위에서 제외합니다.
+//   - 하위 WorldObject를 재귀적으로 합류시키지 않습니다.
 //
 // Leave:
-//   - WorldObject 본인의 Update / FinalUpdate 등록을 제거합니다.
+//   - 자신을 anchor로 하는 실행 범위의 Update / FinalUpdate 등록을 해제합니다.
 //   - WorldObject의 Transform 정본을 제거합니다.
 //   - WorldObject의 비소유 참조와 World 소속 관계를 해제합니다.
+//   - Runtime 참여와 Runtime-global 등록은 유지합니다.
 //   - WorldObject의 메모리와 Object 수명은 변경하지 않습니다.
 //
 // TryGetTransform:
@@ -59,7 +70,8 @@ class WorldObject;
 //   - 현재 World-local simulation 상태 소유
 //   - 공유 ComponentData 정본 소유
 //   - 소속 WorldObject의 비소유 참조와 World-local 표현 연결
-//   - World-local Function Group 등록과 실행
+//   - UpdateManager를 통한 World-local Function Group 등록과 해제
+//   - 공급받은 World-local Function Group의 직접 실행
 //   - Runtime이 요청한 한 번의 simulation step 수행
 //   - Update -> ProcessAll -> FinalUpdate 실행 단계 경계 보장
 //   - Snapshot 대상이 되는 논리 상태 유지
@@ -67,7 +79,6 @@ class WorldObject;
 // 비책임:
 //   - 자체 Run loop 소유
 //   - delta time 산출과 Tick 호출 정책
-//   - 자식 GameObject와 Component의 실행 참여 전파
 //   - Render Frame 생성과 Renderer 연결
 //   - WorldObject 메모리와 Object 수명 소유
 //   - ObjectHandle 발급과 Object 메모리 소유
@@ -98,7 +109,7 @@ private:
 	World(World&&) = delete;
 	World& operator=(World&&) = delete;
 
-	explicit World(GameRuntime& owningRuntime);
+	World(GameRuntime& owningRuntime, UpdateManager& updateManager);
 	~World();
 
 	void Reset();
@@ -113,31 +124,81 @@ private:
 	double simulationTime = 0.0;
 
 	GameRuntime& owningRuntime;
+	UpdateManager& updateManager;
+	const WorldUpdateFunctionGroups* updateFunctionGroups = nullptr;
+
 	Chunk worldOrigin = {};
 
 	std::vector<WorldObject*> worldObjects;
 	ComponentDataStorage<Transform, ObjectHandle> transforms;
-
-	std::vector<UpdateFunction> updateFunctions;
-	std::vector<UpdateFunction> finalUpdateFunctions;
 };
 
 template<typename WorldObjectType, typename... ArgumentTypes>
 WorldObjectType* World::Spawn(const Transform& initialTransform, ArgumentTypes&&... arguments)
 {
-	WorldObjectType* worldObject = Object::NewObject<WorldObjectType>(std::forward<ArgumentTypes>(arguments)...);
+	WorldObjectType* spawnedObject = Object::NewObject<WorldObjectType>(std::forward<ArgumentTypes>(arguments)...);
 
-	if (worldObject == nullptr)
+	if (spawnedObject == nullptr)
 	{
 		return nullptr;
 	}
 
-	if (owningRuntime.Admit(*worldObject) == false || Join(*worldObject, initialTransform) == false)
-	{
-		worldObject->Destroy();
+	// World::Spawn의 루트는 반드시 WorldObject 파생 타입이어야 합니다.
+	// 이 제약은 Spawn 루트에만 적용되며,
+	// SubObject에는 Object, Component, GameObject와 WorldObject를 모두 사용할 수 있습니다.
+	WorldObject* worldObject = spawnedObject;
 
-		return nullptr;
+	std::vector<Object*> pendingObjects;
+	pendingObjects.push_back(worldObject);
+
+	// 완성된 Aggregate에 포함된 모든 WorldObject를
+	// 현재 World에 부모 우선 DFS 순서로 합류시킵니다.
+	//
+	// 첫 번째 루트 Join은 Runtime에 참여하지 않은 전체 GameObject 계층을
+	// 현재 World의 소유 Runtime에 Admit합니다.
+	//
+	// 이후 발견되는 하위 WorldObject는 이미 같은 Runtime에 참여하므로
+	// 각 WorldObject의 World 소속과 Transform만 구성합니다.
+	while (pendingObjects.empty() == false)
+	{
+		Object* object = pendingObjects.back();
+		pendingObjects.pop_back();
+
+		WorldObject* childWorldObject = dynamic_cast<WorldObject*>(object);
+
+		if (childWorldObject != nullptr)
+		{
+			// 루트에는 호출자가 전달한 Transform을 적용합니다.
+			// 하위 WorldObject는 별도 원형 Transform 공급 경로가 없으므로
+			// 현재는 기본 Transform을 적용합니다.
+			const Transform objectTransform =
+				object == worldObject ?
+				initialTransform :
+				Transform::Identity();
+
+			if (Join(*childWorldObject, objectTransform) == false)
+			{
+				// 루트 Join이 Runtime 참여까지만 성공했거나,
+				// 일부 WorldObject의 Join만 성공한 경우에도
+				// 생성된 전체 계층을 파괴하여 Spawn을 원복합니다.
+				worldObject->Destroy();
+
+				return nullptr;
+			}
+		}
+
+		const uint32 subObjectCount = object->GetSubObjectCount();
+
+		for (uint32 index = 0; index < subObjectCount; ++index)
+		{
+			Object* subObject = object->GetSubObject(subObjectCount - index - 1);
+
+			if (subObject != nullptr)
+			{
+				pendingObjects.push_back(subObject);
+			}
+		}
 	}
 
-	return worldObject;
+	return spawnedObject;
 }

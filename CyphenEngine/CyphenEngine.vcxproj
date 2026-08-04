@@ -156,7 +156,9 @@
     <ClInclude Include="Source\Core\Public\HandleAllocator.h" />
     <ClInclude Include="Source\Runtime\Public\Object.h" />
     <ClInclude Include="Source\Runtime\Public\ObjectManager.h" />
+    <ClInclude Include="Source\Runtime\Public\Scheduler.h" />
     <ClInclude Include="Source\Runtime\Public\UpdateFunction.h" />
+    <ClInclude Include="Source\Runtime\Public\UpdateManager.h" />
     <ClInclude Include="Source\Runtime\Public\UpdateParticipation.h" />
     <ClInclude Include="Source\Runtime\Public\World.h" />
     <ClInclude Include="Source\Runtime\Public\WorldObject.h" />
@@ -168,6 +170,10 @@
     <ClInclude Include="Source\Test\Runtime\RuntimeTest.h" />
     <ClInclude Include="Source\Test\Runtime\Sprite.h" />
     <ClInclude Include="Source\Test\Runtime\Square.h" />
+    <ClInclude Include="Source\Test\Runtime\TestComponent.h" />
+    <ClInclude Include="Source\Test\Runtime\TestRuntimeObject.h" />
+    <ClInclude Include="Source\Test\Runtime\TestUpdateCallCounts.h" />
+    <ClInclude Include="Source\Test\Runtime\TestWorldObject.h" />
   </ItemGroup>
   <!-- Source Files -->
   <ItemGroup>
@@ -237,6 +243,8 @@
     <ClCompile Include="Source\Runtime\Private\GameRuntime.cpp" />
     <ClCompile Include="Source\Runtime\Private\Object.cpp" />
     <ClCompile Include="Source\Runtime\Private\ObjectManager.cpp" />
+    <ClCompile Include="Source\Runtime\Private\Scheduler.cpp" />
+    <ClCompile Include="Source\Runtime\Private\UpdateManager.cpp" />
     <ClCompile Include="Source\Runtime\Private\World.cpp" />
     <ClCompile Include="Source\Runtime\Private\WorldObject.cpp" />
     <!-- Test -->
@@ -250,6 +258,9 @@
     <ClCompile Include="Source\Test\Runtime\RuntimeTest.cpp" />
     <ClCompile Include="Source\Test\Runtime\Sprite.cpp" />
     <ClCompile Include="Source\Test\Runtime\Square.cpp" />
+    <ClCompile Include="Source\Test\Runtime\TestComponent.cpp" />
+    <ClCompile Include="Source\Test\Runtime\TestRuntimeObject.cpp" />
+    <ClCompile Include="Source\Test\Runtime\TestWorldObject.cpp" />
   </ItemGroup>
   <!-- Resources -->
   <ItemGroup>

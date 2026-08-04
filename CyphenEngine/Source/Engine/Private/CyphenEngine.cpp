@@ -83,11 +83,28 @@ void CyphenEngine::Run()
 #pragma region Debug Resource Bootstrap
 	{
 		debugTexturedQuadResourceIds.clear();
-		World* debugWorld = gameRuntime.CreateWorld();
 
-		if (debugWorld == nullptr)
+		// Debug 실환경은 다중 World 검증을 위해 World 세 개를 생성합니다.
+		// 첫 번째 World는 Square / Sprite 렌더 fixture가 사용합니다.
+		constexpr uint32 DebugWorldCount = 3;
+
+		World* debugWorld = nullptr;
+
+		for (uint32 worldIndex = 0; worldIndex < DebugWorldCount; ++worldIndex)
 		{
-			PRINT_DEBUG_OUTPUT("[RuntimeTest] World 생성에 실패했습니다.\n");
+			World* createdWorld = gameRuntime.CreateWorld();
+
+			if (createdWorld == nullptr)
+			{
+				PRINT_DEBUG_OUTPUT("[RuntimeTest] World 생성에 실패했습니다.\n");
+
+				break;
+			}
+
+			if (debugWorld == nullptr)
+			{
+				debugWorld = createdWorld;
+			}
 		}
 
 		ResourceCommandBuffer resourceCommands;
@@ -198,6 +215,13 @@ void CyphenEngine::Run()
 
 		// TODO:
 		gameRuntime.Tick(Time::DeltaTime());
+
+#ifdef _DEBUG
+		if (frameNumber == 0)
+		{
+			VerifyRuntimeUpdateTests();
+		}
+#endif
 
 		// 렌더링을 위한 프레임 생산
 		Frame frame = {};

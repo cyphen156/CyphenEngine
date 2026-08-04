@@ -7,6 +7,82 @@
 #include "Runtime/Public/Object.h"
 #include "Runtime/Public/ObjectManager.h"
 
+bool Object::AttachSubObject(Object& subObject)
+{
+	if (&subObject == this)
+	{
+		return false;
+	}
+
+	if (subObject.outer == this)
+	{
+		return true;
+	}
+
+	if (subObject.outer != nullptr)
+	{
+		return false;
+	}
+
+	// 직접 부모와 자식의 구조적 관계를 검사합니다.
+	if (subObject.CanAttachTo(*this) == false)
+	{
+		return false;
+	}
+
+	// 부착으로 발생할 계층 전파를
+	// 서브트리 전체가 받아들일 수 있는지 검사합니다.
+	if (subObject.CanAttachSubtreeTo(*this) == false)
+	{
+		return false;
+	}
+
+	const Object* ancestor = GetOuter();
+
+	while (ancestor != nullptr)
+	{
+		if (ancestor == &subObject)
+		{
+			return false;
+		}
+
+		ancestor = ancestor->outer;
+	}
+
+	subObjects.push_back(&subObject);
+	subObject.outer = this;
+
+	subObject.OnAttached();
+
+	return true;
+}
+
+bool Object::DetachSubObject(Object& subObject)
+{
+	if (subObject.outer != this)
+	{
+		return false;
+	}
+
+	std::vector<Object*>::iterator iterator;
+	for (iterator = subObjects.begin(); iterator != subObjects.end(); ++iterator)
+	{
+		if (*iterator != &subObject)
+		{
+			continue;
+		}
+
+		subObject.OnDetaching();
+
+		subObjects.erase(iterator);
+		subObject.outer = nullptr;
+
+		return true;
+	}
+
+	return false;
+}
+
 ObjectHandle Object::GetHandle() const
 {
 	return handle;
@@ -87,6 +163,11 @@ bool Object::CanAttachSubtreeTo(const Object& outer) const
 	return true;
 }
 
+bool Object::OnDestroy()
+{
+	return true;
+}
+
 void Object::OnAttached()
 {
 	for (Object* subObject : subObjects)
@@ -107,80 +188,4 @@ void Object::OnDetaching()
 			subObject->OnDetaching();
 		}
 	}
-}
-
-bool Object::AttachSubObject(Object& subObject)
-{
-	if (&subObject == this)
-	{
-		return false;
-	}
-
-	if (subObject.outer == this)
-	{
-		return true;
-	}
-
-	if (subObject.outer != nullptr)
-	{
-		return false;
-	}
-
-	// 직접 부모와 자식의 구조적 관계를 검사합니다.
-	if (subObject.CanAttachTo(*this) == false)
-	{
-		return false;
-	}
-
-	// 부착으로 발생할 계층 전파를
-	// 서브트리 전체가 받아들일 수 있는지 검사합니다.
-	if (subObject.CanAttachSubtreeTo(*this) == false)
-	{
-		return false;
-	}
-
-	const Object* ancestor = GetOuter();
-
-	while (ancestor != nullptr)
-	{
-		if (ancestor == &subObject)
-		{
-			return false;
-		}
-
-		ancestor = ancestor->outer;
-	}
-
-	subObjects.push_back(&subObject);
-	subObject.outer = this;
-
-	subObject.OnAttached();
-
-	return true;
-}
-
-bool Object::DetachSubObject(Object& subObject)
-{
-	if (subObject.outer != this)
-	{
-		return false;
-	}
-
-	std::vector<Object*>::iterator iterator;
-	for (iterator = subObjects.begin(); iterator != subObjects.end(); ++iterator)
-	{
-		if (*iterator != &subObject)
-		{
-			continue;
-		}
-
-		subObject.OnDetaching();
-
-		subObjects.erase(iterator);
-		subObject.outer = nullptr;
-
-		return true;
-	}
-
-	return false;
 }

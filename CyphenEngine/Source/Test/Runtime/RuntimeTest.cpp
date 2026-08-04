@@ -11,6 +11,9 @@
 #include "Runtime/Public/WorldObject.h"
 #include "Test/Runtime/Sprite.h"
 #include "Test/Runtime/Square.h"
+#include "Test/Runtime/TestComponent.h"
+#include "Test/Runtime/TestRuntimeObject.h"
+#include "Test/Runtime/TestWorldObject.h"
 
 namespace
 {
@@ -19,6 +22,42 @@ namespace
 		int32 passCount = 0;
 		int32 failCount = 0;
 	};
+
+	struct UpdateExecutionFixture
+	{
+		const TestUpdateCallCounts* callCounts = nullptr;
+		UpdateParticipation participation = UpdateParticipation::None;
+	};
+
+	TestContext runtimeTestContext;
+
+	constexpr uint32 TestParticipationTypeCount = 16;
+
+	constexpr UpdateParticipation TestParticipations[TestParticipationTypeCount] =
+	{
+		UpdateParticipation::None,
+		UpdateParticipation::GlobalUpdate,
+		UpdateParticipation::Update,
+		UpdateParticipation::FinalUpdate,
+		UpdateParticipation::GlobalFinalUpdate,
+		UpdateParticipation::GlobalUpdate | UpdateParticipation::Update,
+		UpdateParticipation::GlobalUpdate | UpdateParticipation::FinalUpdate,
+		UpdateParticipation::GlobalUpdate | UpdateParticipation::GlobalFinalUpdate,
+		UpdateParticipation::Update | UpdateParticipation::FinalUpdate,
+		UpdateParticipation::Update | UpdateParticipation::GlobalFinalUpdate,
+		UpdateParticipation::FinalUpdate | UpdateParticipation::GlobalFinalUpdate,
+		UpdateParticipation::GlobalUpdate | UpdateParticipation::Update | UpdateParticipation::FinalUpdate,
+		UpdateParticipation::GlobalUpdate | UpdateParticipation::Update | UpdateParticipation::GlobalFinalUpdate,
+		UpdateParticipation::GlobalUpdate | UpdateParticipation::FinalUpdate | UpdateParticipation::GlobalFinalUpdate,
+		UpdateParticipation::Update | UpdateParticipation::FinalUpdate | UpdateParticipation::GlobalFinalUpdate,
+		UpdateParticipation::GlobalUpdate | UpdateParticipation::Update | UpdateParticipation::FinalUpdate | UpdateParticipation::GlobalFinalUpdate
+	};
+
+	UpdateExecutionFixture worldObjectExecutionFixtures[TestParticipationTypeCount];
+	UpdateExecutionFixture runtimeObjectExecutionFixtures[TestParticipationTypeCount];
+	UpdateExecutionFixture componentExecutionFixtures[TestParticipationTypeCount];
+
+	bool runtimeExecutionVerificationPending = false;
 
 	void WriteTestLine(const char* message)
 	{
@@ -50,6 +89,200 @@ namespace
 
 		WriteTestLine(name);
 	}
+
+	template<typename TargetType, typename BaseType>
+	BaseType* CaptureUpdateExecutionFixture(
+		TargetType* target,
+		const TestUpdateCallCounts*& outUpdateCallCounts)
+	{
+		outUpdateCallCounts = target != nullptr ?
+			&target->GetUpdateCallCounts() :
+			nullptr;
+
+		return target;
+	}
+
+	bool HasTestParticipation(
+		UpdateParticipation participation,
+		UpdateParticipation targetParticipation)
+	{
+		return
+			(static_cast<uint8>(participation) &
+				static_cast<uint8>(targetParticipation)) != 0;
+	}
+
+	bool MatchesExpectedUpdateCalls(
+		const UpdateExecutionFixture& fixture)
+	{
+		if (fixture.callCounts == nullptr)
+		{
+			return false;
+		}
+
+		const TestUpdateCallCounts& callCounts = *fixture.callCounts;
+
+		return
+			callCounts.globalUpdate ==
+				(HasTestParticipation(fixture.participation, UpdateParticipation::GlobalUpdate) ? 1u : 0u) &&
+			callCounts.update ==
+				(HasTestParticipation(fixture.participation, UpdateParticipation::Update) ? 1u : 0u) &&
+			callCounts.finalUpdate ==
+				(HasTestParticipation(fixture.participation, UpdateParticipation::FinalUpdate) ? 1u : 0u) &&
+			callCounts.globalFinalUpdate ==
+				(HasTestParticipation(fixture.participation, UpdateParticipation::GlobalFinalUpdate) ? 1u : 0u);
+	}
+
+	// UpdateParticipation 16조합 테스트 타입을 typeIndex로 순환 선택합니다.
+	// 타입 순서는 TestWorldObject / TestRuntimeObject / TestComponent 헤더의
+	// 선언 순서를 따릅니다.
+	WorldObject* SpawnTestWorldObject(
+		World& world,
+		const Transform& initialTransform,
+		uint32 typeIndex,
+		const TestUpdateCallCounts*& outUpdateCallCounts)
+	{
+		switch (typeIndex % TestParticipationTypeCount)
+		{
+		case 0:
+			return CaptureUpdateExecutionFixture<TestWorldObject_None, WorldObject>(world.Spawn<TestWorldObject_None>(initialTransform), outUpdateCallCounts);
+		case 1:
+			return CaptureUpdateExecutionFixture<TestWorldObject_GU, WorldObject>(world.Spawn<TestWorldObject_GU>(initialTransform), outUpdateCallCounts);
+		case 2:
+			return CaptureUpdateExecutionFixture<TestWorldObject_U, WorldObject>(world.Spawn<TestWorldObject_U>(initialTransform), outUpdateCallCounts);
+		case 3:
+			return CaptureUpdateExecutionFixture<TestWorldObject_FU, WorldObject>(world.Spawn<TestWorldObject_FU>(initialTransform), outUpdateCallCounts);
+		case 4:
+			return CaptureUpdateExecutionFixture<TestWorldObject_GFU, WorldObject>(world.Spawn<TestWorldObject_GFU>(initialTransform), outUpdateCallCounts);
+		case 5:
+			return CaptureUpdateExecutionFixture<TestWorldObject_GU_U, WorldObject>(world.Spawn<TestWorldObject_GU_U>(initialTransform), outUpdateCallCounts);
+		case 6:
+			return CaptureUpdateExecutionFixture<TestWorldObject_GU_FU, WorldObject>(world.Spawn<TestWorldObject_GU_FU>(initialTransform), outUpdateCallCounts);
+		case 7:
+			return CaptureUpdateExecutionFixture<TestWorldObject_GU_GFU, WorldObject>(world.Spawn<TestWorldObject_GU_GFU>(initialTransform), outUpdateCallCounts);
+		case 8:
+			return CaptureUpdateExecutionFixture<TestWorldObject_U_FU, WorldObject>(world.Spawn<TestWorldObject_U_FU>(initialTransform), outUpdateCallCounts);
+		case 9:
+			return CaptureUpdateExecutionFixture<TestWorldObject_U_GFU, WorldObject>(world.Spawn<TestWorldObject_U_GFU>(initialTransform), outUpdateCallCounts);
+		case 10:
+			return CaptureUpdateExecutionFixture<TestWorldObject_FU_GFU, WorldObject>(world.Spawn<TestWorldObject_FU_GFU>(initialTransform), outUpdateCallCounts);
+		case 11:
+			return CaptureUpdateExecutionFixture<TestWorldObject_GU_U_FU, WorldObject>(world.Spawn<TestWorldObject_GU_U_FU>(initialTransform), outUpdateCallCounts);
+		case 12:
+			return CaptureUpdateExecutionFixture<TestWorldObject_GU_U_GFU, WorldObject>(world.Spawn<TestWorldObject_GU_U_GFU>(initialTransform), outUpdateCallCounts);
+		case 13:
+			return CaptureUpdateExecutionFixture<TestWorldObject_GU_FU_GFU, WorldObject>(world.Spawn<TestWorldObject_GU_FU_GFU>(initialTransform), outUpdateCallCounts);
+		case 14:
+			return CaptureUpdateExecutionFixture<TestWorldObject_U_FU_GFU, WorldObject>(world.Spawn<TestWorldObject_U_FU_GFU>(initialTransform), outUpdateCallCounts);
+		default:
+			return CaptureUpdateExecutionFixture<TestWorldObject_GU_U_FU_GFU, WorldObject>(world.Spawn<TestWorldObject_GU_U_FU_GFU>(initialTransform), outUpdateCallCounts);
+		}
+	}
+
+	WorldObject* SpawnTestWorldObject(
+		World& world,
+		const Transform& initialTransform,
+		uint32 typeIndex)
+	{
+		const TestUpdateCallCounts* ignoredUpdateCallCounts = nullptr;
+
+		return SpawnTestWorldObject(world, initialTransform, typeIndex, ignoredUpdateCallCounts);
+	}
+
+	GameObject* CreateTestRuntimeObject(
+		uint32 typeIndex,
+		const TestUpdateCallCounts*& outUpdateCallCounts)
+	{
+		switch (typeIndex % TestParticipationTypeCount)
+		{
+		case 0:
+			return CaptureUpdateExecutionFixture<TestRuntimeObject_None, GameObject>(Object::NewObject<TestRuntimeObject_None>(), outUpdateCallCounts);
+		case 1:
+			return CaptureUpdateExecutionFixture<TestRuntimeObject_GU, GameObject>(Object::NewObject<TestRuntimeObject_GU>(), outUpdateCallCounts);
+		case 2:
+			return CaptureUpdateExecutionFixture<TestRuntimeObject_U, GameObject>(Object::NewObject<TestRuntimeObject_U>(), outUpdateCallCounts);
+		case 3:
+			return CaptureUpdateExecutionFixture<TestRuntimeObject_FU, GameObject>(Object::NewObject<TestRuntimeObject_FU>(), outUpdateCallCounts);
+		case 4:
+			return CaptureUpdateExecutionFixture<TestRuntimeObject_GFU, GameObject>(Object::NewObject<TestRuntimeObject_GFU>(), outUpdateCallCounts);
+		case 5:
+			return CaptureUpdateExecutionFixture<TestRuntimeObject_GU_U, GameObject>(Object::NewObject<TestRuntimeObject_GU_U>(), outUpdateCallCounts);
+		case 6:
+			return CaptureUpdateExecutionFixture<TestRuntimeObject_GU_FU, GameObject>(Object::NewObject<TestRuntimeObject_GU_FU>(), outUpdateCallCounts);
+		case 7:
+			return CaptureUpdateExecutionFixture<TestRuntimeObject_GU_GFU, GameObject>(Object::NewObject<TestRuntimeObject_GU_GFU>(), outUpdateCallCounts);
+		case 8:
+			return CaptureUpdateExecutionFixture<TestRuntimeObject_U_FU, GameObject>(Object::NewObject<TestRuntimeObject_U_FU>(), outUpdateCallCounts);
+		case 9:
+			return CaptureUpdateExecutionFixture<TestRuntimeObject_U_GFU, GameObject>(Object::NewObject<TestRuntimeObject_U_GFU>(), outUpdateCallCounts);
+		case 10:
+			return CaptureUpdateExecutionFixture<TestRuntimeObject_FU_GFU, GameObject>(Object::NewObject<TestRuntimeObject_FU_GFU>(), outUpdateCallCounts);
+		case 11:
+			return CaptureUpdateExecutionFixture<TestRuntimeObject_GU_U_FU, GameObject>(Object::NewObject<TestRuntimeObject_GU_U_FU>(), outUpdateCallCounts);
+		case 12:
+			return CaptureUpdateExecutionFixture<TestRuntimeObject_GU_U_GFU, GameObject>(Object::NewObject<TestRuntimeObject_GU_U_GFU>(), outUpdateCallCounts);
+		case 13:
+			return CaptureUpdateExecutionFixture<TestRuntimeObject_GU_FU_GFU, GameObject>(Object::NewObject<TestRuntimeObject_GU_FU_GFU>(), outUpdateCallCounts);
+		case 14:
+			return CaptureUpdateExecutionFixture<TestRuntimeObject_U_FU_GFU, GameObject>(Object::NewObject<TestRuntimeObject_U_FU_GFU>(), outUpdateCallCounts);
+		default:
+			return CaptureUpdateExecutionFixture<TestRuntimeObject_GU_U_FU_GFU, GameObject>(Object::NewObject<TestRuntimeObject_GU_U_FU_GFU>(), outUpdateCallCounts);
+		}
+	}
+
+	GameObject* CreateTestRuntimeObject(uint32 typeIndex)
+	{
+		const TestUpdateCallCounts* ignoredUpdateCallCounts = nullptr;
+
+		return CreateTestRuntimeObject(typeIndex, ignoredUpdateCallCounts);
+	}
+
+	Component* CreateTestComponent(
+		uint32 typeIndex,
+		const TestUpdateCallCounts*& outUpdateCallCounts)
+	{
+		switch (typeIndex % TestParticipationTypeCount)
+		{
+		case 0:
+			return CaptureUpdateExecutionFixture<TestComponent_None, Component>(Object::NewObject<TestComponent_None>(), outUpdateCallCounts);
+		case 1:
+			return CaptureUpdateExecutionFixture<TestComponent_GU, Component>(Object::NewObject<TestComponent_GU>(), outUpdateCallCounts);
+		case 2:
+			return CaptureUpdateExecutionFixture<TestComponent_U, Component>(Object::NewObject<TestComponent_U>(), outUpdateCallCounts);
+		case 3:
+			return CaptureUpdateExecutionFixture<TestComponent_FU, Component>(Object::NewObject<TestComponent_FU>(), outUpdateCallCounts);
+		case 4:
+			return CaptureUpdateExecutionFixture<TestComponent_GFU, Component>(Object::NewObject<TestComponent_GFU>(), outUpdateCallCounts);
+		case 5:
+			return CaptureUpdateExecutionFixture<TestComponent_GU_U, Component>(Object::NewObject<TestComponent_GU_U>(), outUpdateCallCounts);
+		case 6:
+			return CaptureUpdateExecutionFixture<TestComponent_GU_FU, Component>(Object::NewObject<TestComponent_GU_FU>(), outUpdateCallCounts);
+		case 7:
+			return CaptureUpdateExecutionFixture<TestComponent_GU_GFU, Component>(Object::NewObject<TestComponent_GU_GFU>(), outUpdateCallCounts);
+		case 8:
+			return CaptureUpdateExecutionFixture<TestComponent_U_FU, Component>(Object::NewObject<TestComponent_U_FU>(), outUpdateCallCounts);
+		case 9:
+			return CaptureUpdateExecutionFixture<TestComponent_U_GFU, Component>(Object::NewObject<TestComponent_U_GFU>(), outUpdateCallCounts);
+		case 10:
+			return CaptureUpdateExecutionFixture<TestComponent_FU_GFU, Component>(Object::NewObject<TestComponent_FU_GFU>(), outUpdateCallCounts);
+		case 11:
+			return CaptureUpdateExecutionFixture<TestComponent_GU_U_FU, Component>(Object::NewObject<TestComponent_GU_U_FU>(), outUpdateCallCounts);
+		case 12:
+			return CaptureUpdateExecutionFixture<TestComponent_GU_U_GFU, Component>(Object::NewObject<TestComponent_GU_U_GFU>(), outUpdateCallCounts);
+		case 13:
+			return CaptureUpdateExecutionFixture<TestComponent_GU_FU_GFU, Component>(Object::NewObject<TestComponent_GU_FU_GFU>(), outUpdateCallCounts);
+		case 14:
+			return CaptureUpdateExecutionFixture<TestComponent_U_FU_GFU, Component>(Object::NewObject<TestComponent_U_FU_GFU>(), outUpdateCallCounts);
+		default:
+			return CaptureUpdateExecutionFixture<TestComponent_GU_U_FU_GFU, Component>(Object::NewObject<TestComponent_GU_U_FU_GFU>(), outUpdateCallCounts);
+		}
+	}
+
+	Component* CreateTestComponent(uint32 typeIndex)
+	{
+		const TestUpdateCallCounts* ignoredUpdateCallCounts = nullptr;
+
+		return CreateTestComponent(typeIndex, ignoredUpdateCallCounts);
+	}
 }
 
 void RunRuntimeTests(
@@ -57,7 +290,16 @@ void RunRuntimeTests(
 	World& world,
 	const std::vector<ResourceId>& resourceIds)
 {
-	TestContext context;
+	runtimeTestContext = {};
+	TestContext& context = runtimeTestContext;
+	runtimeExecutionVerificationPending = false;
+
+	for (uint32 typeIndex = 0; typeIndex < TestParticipationTypeCount; ++typeIndex)
+	{
+		worldObjectExecutionFixtures[typeIndex] = {};
+		runtimeObjectExecutionFixtures[typeIndex] = {};
+		componentExecutionFixtures[typeIndex] = {};
+	}
 
 	WriteTestLine("[RuntimeTests] Begin");
 
@@ -133,8 +375,8 @@ void RunRuntimeTests(
 
 			Expect(
 				context,
-				runtime.Admit(*square) == false,
-				"GameRuntime rejects duplicate Admit");
+				runtime.Admit(*square),
+				"GameRuntime accepts duplicate Admit without new registration");
 
 			Expect(
 				context,
@@ -263,7 +505,7 @@ void RunRuntimeTests(
 			Expect(
 				context,
 				squares[0]->GetHandle() !=
-				squares[1]->GetHandle(),
+					squares[1]->GetHandle(),
 				"Squares have independent ObjectHandles");
 		}
 
@@ -947,8 +1189,8 @@ void RunRuntimeTests(
 				nullptr &&
 				attachedComponentGameObject->
 				GetGameRuntime() ==
-				&runtime,
-				"Detached Component hierarchy preserves nested Runtime membership");
+				nullptr,
+				"Component Detach removes nested Runtime membership");
 
 			const ObjectHandle attachedComponentObjectHandle =
 				attachedComponentObject->GetHandle();
@@ -1096,8 +1338,8 @@ void RunRuntimeTests(
 				hierarchyComponent->GetOwner() == nullptr &&
 				hierarchyOwner->GetSubObjectCount() == 0 &&
 				hierarchyGameObject->GetGameRuntime() ==
-				&runtime,
-				"Detached Component hierarchy preserves nested GameObject Runtime");
+				nullptr,
+				"Component Detach removes the nested GameObject Runtime");
 		}
 
 		if (hierarchyComponent != nullptr &&
@@ -1245,15 +1487,451 @@ void RunRuntimeTests(
 		}
 	}
 
+	// ------------------------------------------------------------------------
+	// 서브트리 경로 정합성
+	//
+	// 엔진이 만든 GameRuntime과 World 실환경을 대상으로
+	// Runtime 참여 경로와 World anchor 경계 규칙을 검증합니다.
+	// 이 구간의 fixture는 검증 후 모두 파괴합니다.
+	// ------------------------------------------------------------------------
+	World* secondWorld = runtime.GetWorld(1);
+	World* thirdWorld = runtime.GetWorld(2);
+
+	Expect(
+		context,
+		runtime.GetWorldCount() == 3 &&
+		runtime.GetWorld(0) == &world &&
+		secondWorld != nullptr &&
+		thirdWorld != nullptr,
+		"GameRuntime owns three debug Worlds");
+
+	if (secondWorld != nullptr &&
+		thirdWorld != nullptr)
+	{
+		// 1. 소유 GameObject가 없는 Component 아래의 GameObject는
+		//    독립적인 Runtime 참여 루트가 될 수 없습니다.
+		Component* orphanComponent = CreateTestComponent(0);
+		Object* orphanBridge = Object::NewObject<Object>();
+		GameObject* orphanGameObject = CreateTestRuntimeObject(0);
+
+		Expect(
+			context,
+			orphanComponent != nullptr &&
+			orphanBridge != nullptr &&
+			orphanGameObject != nullptr,
+			"Subtree path fixtures are created");
+
+		if (orphanComponent != nullptr &&
+			orphanBridge != nullptr &&
+			orphanGameObject != nullptr)
+		{
+			Expect(
+				context,
+				orphanComponent->AttachSubObject(*orphanBridge) &&
+				orphanBridge->AttachSubObject(*orphanGameObject),
+				"Detached Component owns an Object and GameObject path");
+
+			Expect(
+				context,
+				runtime.Admit(*orphanGameObject) == false,
+				"GameObject below an unowned Component cannot join a Runtime");
+
+			Expect(
+				context,
+				orphanComponent->Destroy(),
+				"Subtree path fixture destruction succeeds");
+		}
+
+		// 2. 중첩 WorldObject는 같은 Runtime의 다른 World에 합류하여
+		//    독립적인 World anchor 경계를 형성합니다.
+		WorldObject* outerWorldObject = SpawnTestWorldObject(
+			world,
+			Transform::Identity(),
+			8);
+
+		WorldObject* nestedWorldObject = Object::NewObject<TestWorldObject_U_FU>();
+
+		Expect(
+			context,
+			outerWorldObject != nullptr &&
+			nestedWorldObject != nullptr,
+			"Nested WorldObject fixtures are created");
+
+		if (outerWorldObject != nullptr &&
+			nestedWorldObject != nullptr)
+		{
+			Expect(
+				context,
+				outerWorldObject->AttachSubObject(*nestedWorldObject) &&
+				nestedWorldObject->GetGameRuntime() == &runtime,
+				"Nested WorldObject joins the Runtime through its outer");
+
+			Expect(
+				context,
+				secondWorld->Join(*nestedWorldObject, Transform::Identity()),
+				"Nested WorldObject joins a different World of the same Runtime");
+
+			Expect(
+				context,
+				outerWorldObject->GetWorld() == &world &&
+				nestedWorldObject->GetWorld() == secondWorld,
+				"Nested WorldObjects keep independent World anchors");
+
+			Expect(
+				context,
+				outerWorldObject->Destroy(),
+				"Nested WorldObject anchor destruction succeeds");
+		}
+
+		// 3. World에 합류한 WorldObject는 구조적 Detach 이후에도
+		//    자신의 World anchor와 Runtime 참여를 유지합니다.
+		GameObject* anchorParent = CreateTestRuntimeObject(1);
+		WorldObject* anchoredWorldObject = Object::NewObject<TestWorldObject_GU_U>();
+
+		Expect(
+			context,
+			anchorParent != nullptr &&
+			anchoredWorldObject != nullptr,
+			"Anchor retention fixtures are created");
+
+		if (anchorParent != nullptr &&
+			anchoredWorldObject != nullptr)
+		{
+			Expect(
+				context,
+				runtime.Admit(*anchorParent) &&
+				anchorParent->AttachSubObject(*anchoredWorldObject),
+				"Anchor retention hierarchy joins the Runtime");
+
+			Expect(
+				context,
+				thirdWorld->Join(*anchoredWorldObject, Transform::Identity()),
+				"Attached WorldObject joins a World below its parent");
+
+			Expect(
+				context,
+				anchorParent->DetachSubObject(*anchoredWorldObject),
+				"Parent detaches the World-joined WorldObject");
+
+			Expect(
+				context,
+				anchoredWorldObject->GetWorld() == thirdWorld &&
+				anchoredWorldObject->GetGameRuntime() == &runtime,
+				"Detached WorldObject keeps its World anchor and Runtime");
+
+			Expect(
+				context,
+				anchoredWorldObject->Destroy() &&
+				anchorParent->Destroy(),
+				"Anchor retention fixtures destruction succeeds");
+		}
+
+		// 4. Runtime Leave는 World 탈퇴를 포함하며
+		//    살아 있는 미소속 GameObject 상태로 되돌립니다.
+		WorldObject* leavingWorldObject = SpawnTestWorldObject(
+			*secondWorld,
+			Transform::Identity(),
+			15);
+
+		Expect(
+			context,
+			leavingWorldObject != nullptr,
+			"Runtime Leave fixture is created");
+
+		if (leavingWorldObject != nullptr)
+		{
+			Expect(
+				context,
+				runtime.Leave(*leavingWorldObject),
+				"Runtime Leave removes a joined WorldObject");
+
+			Expect(
+				context,
+				leavingWorldObject->GetWorld() == nullptr &&
+				leavingWorldObject->GetGameRuntime() == nullptr,
+				"Left WorldObject loses World and Runtime membership");
+
+			Expect(
+				context,
+				leavingWorldObject->Destroy(),
+				"Left WorldObject destruction succeeds");
+		}
+
+		// --------------------------------------------------------------------
+		// 최종 유지 인구 구성
+		//
+		// 유지된 Square / Sprite 두 쌍을 포함하여 최종 상태를
+		// Total Object 10000 = WorldObject 2500 + GameObject 2500 +
+		// Component 2500 + Object 2500으로 구성합니다.
+		//
+		// 각 클러스터는 WorldObject 루트 아래에 Object 다리와
+		// 중첩 GameObject를 부착하고, Component는 anchor WorldObject와
+		// 중첩 GameObject에 번갈아 부착하여 두 공급 경로를 모두 사용합니다.
+		// Runtime이 소유한 세 World에 순환 배치하며
+		// 16가지 UpdateParticipation 조합을 모두 사용합니다.
+		// --------------------------------------------------------------------
+		constexpr uint32 PopulationClusterCount = 2498;
+
+		uint32 spawnedWorldObjectCount = 0;
+		uint32 attachedObjectCount = 0;
+		uint32 attachedGameObjectCount = 0;
+		uint32 attachedComponentCount = 0;
+		uint32 worldMembershipMatchCount = 0;
+		uint32 transformMatchCount = 0;
+		uint32 runtimeMembershipMatchCount = 0;
+		uint32 componentOwnerMatchCount = 0;
+
+		for (uint32 clusterIndex = 0; clusterIndex < PopulationClusterCount; ++clusterIndex)
+		{
+			World* targetWorld = runtime.GetWorld(clusterIndex % 3);
+
+			if (targetWorld == nullptr)
+			{
+				continue;
+			}
+
+			const uint32 typeIndex = clusterIndex % TestParticipationTypeCount;
+
+			const Transform clusterTransform = Transform::FromPlanar(
+				Vector2(
+					static_cast<float>(clusterIndex % 100),
+					static_cast<float>(clusterIndex / 100)),
+				0.0f,
+				Vector2::One());
+
+			const TestUpdateCallCounts* worldObjectUpdateCallCounts = nullptr;
+			const TestUpdateCallCounts* runtimeObjectUpdateCallCounts = nullptr;
+			const TestUpdateCallCounts* componentUpdateCallCounts = nullptr;
+
+			WorldObject* worldObject = SpawnTestWorldObject(
+				*targetWorld,
+				clusterTransform,
+				typeIndex,
+				worldObjectUpdateCallCounts);
+
+			if (worldObject == nullptr)
+			{
+				continue;
+			}
+
+			++spawnedWorldObjectCount;
+
+			Object* bridgeObject = Object::NewObject<Object>();
+			GameObject* nestedGameObject = CreateTestRuntimeObject(
+				typeIndex,
+				runtimeObjectUpdateCallCounts);
+
+			Component* component = CreateTestComponent(
+				typeIndex,
+				componentUpdateCallCounts);
+
+			if (bridgeObject == nullptr ||
+				nestedGameObject == nullptr ||
+				component == nullptr)
+			{
+				continue;
+			}
+
+			if (worldObject->AttachSubObject(*bridgeObject))
+			{
+				++attachedObjectCount;
+			}
+
+			if (bridgeObject->AttachSubObject(*nestedGameObject))
+			{
+				++attachedGameObjectCount;
+			}
+
+			GameObject* componentOwner =
+				clusterIndex % 2 == 0 ?
+				static_cast<GameObject*>(worldObject) :
+				nestedGameObject;
+
+			if (componentOwner->AttachSubObject(*component))
+			{
+				++attachedComponentCount;
+			}
+
+			if (worldObject->GetWorld() == targetWorld)
+			{
+				++worldMembershipMatchCount;
+			}
+
+			Transform storedTransform;
+
+			if (targetWorld->TryGetTransform(worldObject->GetHandle(), storedTransform) &&
+				storedTransform.position == clusterTransform.position)
+			{
+				++transformMatchCount;
+			}
+
+			if (worldObject->GetGameRuntime() == &runtime &&
+				nestedGameObject->GetGameRuntime() == &runtime)
+			{
+				++runtimeMembershipMatchCount;
+			}
+
+			if (component->GetOwner() == componentOwner)
+			{
+				++componentOwnerMatchCount;
+			}
+
+			if (worldObjectExecutionFixtures[typeIndex].callCounts == nullptr)
+			{
+				worldObjectExecutionFixtures[typeIndex] =
+				{
+					worldObjectUpdateCallCounts,
+					TestParticipations[typeIndex]
+				};
+
+				runtimeObjectExecutionFixtures[typeIndex] =
+				{
+					runtimeObjectUpdateCallCounts,
+					TestParticipations[typeIndex]
+				};
+
+				componentExecutionFixtures[typeIndex] =
+				{
+					componentUpdateCallCounts,
+					TestParticipations[typeIndex]
+				};
+			}
+		}
+
+		Expect(
+			context,
+			spawnedWorldObjectCount == PopulationClusterCount,
+			"Population spawns every WorldObject cluster root");
+
+		Expect(
+			context,
+			attachedObjectCount == PopulationClusterCount,
+			"Population attaches an Object bridge per cluster");
+
+		Expect(
+			context,
+			attachedGameObjectCount == PopulationClusterCount,
+			"Population attaches a nested GameObject per cluster");
+
+		Expect(
+			context,
+			attachedComponentCount == PopulationClusterCount,
+			"Population attaches a Component per cluster");
+
+		Expect(
+			context,
+			worldMembershipMatchCount == PopulationClusterCount,
+			"Population WorldObjects join their round-robin World");
+
+		Expect(
+			context,
+			transformMatchCount == PopulationClusterCount,
+			"Population WorldObjects retain their initial Transform");
+
+		Expect(
+			context,
+			runtimeMembershipMatchCount == PopulationClusterCount,
+			"Population subtree shares the target GameRuntime");
+
+		Expect(
+			context,
+			componentOwnerMatchCount == PopulationClusterCount,
+			"Population Components reference their owner");
+
+		// Square / Sprite 두 쌍이 WorldObject / Component 총계를 채우므로
+		// GameObject / Object 총계를 2500으로 맞추는 여분 두 쌍은
+		// World 없이 Runtime에만 참여시킵니다.
+		uint32 admittedExtraPairCount = 0;
+
+		for (uint32 extraIndex = 0; extraIndex < 2; ++extraIndex)
+		{
+			GameObject* extraGameObject = CreateTestRuntimeObject(extraIndex);
+			Object* extraObject = Object::NewObject<Object>();
+
+			if (extraGameObject == nullptr ||
+				extraObject == nullptr)
+			{
+				continue;
+			}
+
+			if (runtime.Admit(*extraGameObject) &&
+				extraGameObject->AttachSubObject(*extraObject) &&
+				extraGameObject->GetGameRuntime() == &runtime)
+			{
+				++admittedExtraPairCount;
+			}
+		}
+
+		Expect(
+			context,
+			admittedExtraPairCount == 2,
+			"Population admits two world-less GameObject pairs");
+	}
+
+	runtimeExecutionVerificationPending = true;
+}
+
+void VerifyRuntimeUpdateTests()
+{
+	if (runtimeExecutionVerificationPending == false)
+	{
+		return;
+	}
+
+	for (uint32 typeIndex = 0;
+		typeIndex < TestParticipationTypeCount;
+		++typeIndex)
+	{
+		char testName[128] = {};
+
+		std::snprintf(
+			testName,
+			sizeof(testName),
+			"TestWorldObject combination %u executes only declared update phases",
+			typeIndex);
+
+		Expect(
+			runtimeTestContext,
+			MatchesExpectedUpdateCalls(
+				worldObjectExecutionFixtures[typeIndex]),
+			testName);
+
+		std::snprintf(
+			testName,
+			sizeof(testName),
+			"TestRuntimeObject combination %u executes only declared update phases",
+			typeIndex);
+
+		Expect(
+			runtimeTestContext,
+			MatchesExpectedUpdateCalls(
+				runtimeObjectExecutionFixtures[typeIndex]),
+			testName);
+
+		std::snprintf(
+			testName,
+			sizeof(testName),
+			"TestComponent combination %u executes only declared update phases",
+			typeIndex);
+
+		Expect(
+			runtimeTestContext,
+			MatchesExpectedUpdateCalls(
+				componentExecutionFixtures[typeIndex]),
+			testName);
+	}
+
 	char summary[128] = {};
 
 	std::snprintf(
 		summary,
 		sizeof(summary),
 		"[RuntimeTests] Summary PASS=%d FAIL=%d",
-		context.passCount,
-		context.failCount);
+		runtimeTestContext.passCount,
+		runtimeTestContext.failCount);
 
 	WriteTestLine(summary);
 	WriteTestLine("[RuntimeTests] End");
+
+	runtimeExecutionVerificationPending = false;
 }

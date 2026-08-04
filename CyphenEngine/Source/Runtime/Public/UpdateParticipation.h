@@ -11,13 +11,16 @@
 // 선언은 실행 능력을 나타낼 뿐 실제 Function Group 등록을 보장하지 않습니다.
 //
 // GlobalUpdate / GlobalFinalUpdate:
-//   - 소속 Runtime이 확정된 객체군에서 등록합니다.
+//   - GameRuntime::Admit이 서브트리의 각 GameObject와 직접 Component의 참여를
+//     Runtime-global Function Group에 등록합니다.
 //
 // Update / FinalUpdate:
-//   - World::Join이 전달받은 WorldObject 본인의 참여를 등록합니다.
+//   - Outer 체인의 최초 WorldObject를 World anchor로 사용합니다.
+//   - anchor가 World에 합류한 경우에만 해당 World의 Function Group에 등록합니다.
+//   - World::Join이 anchor 실행 범위의 참여를 일괄 등록하고,
+//     이후의 Attach는 Admit 경로에서 개별 등록합니다.
 //
-// 현재는 자식 GameObject와 Component의 참여를 자동으로 등록하지 않습니다.
-// Attach / Detach에 의한 참여 변경은 후속 구현합니다.
+// Component의 참여는 직접 부모 GameObject가 공급하고 등록과 해제를 대행합니다.
 // ============================================================================
 
 enum class UpdateParticipation : uint8

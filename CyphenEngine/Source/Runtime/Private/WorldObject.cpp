@@ -7,16 +7,6 @@
 #include "Runtime/Public/WorldObject.h"
 #include "Runtime/Public/World.h"
 
-bool WorldObject::Destroy()
-{
-	if (world != nullptr && world->Leave(*this) == false)
-	{
-		return false;
-	}
-
-	return GameObject::Destroy();
-}
-
 Transform WorldObject::GetTransform() const
 {
 	Transform transform = Transform::Identity();
@@ -43,6 +33,11 @@ Transform WorldObject::GetTransform() const
 	return transform;
 }
 
+World* WorldObject::GetWorld()
+{
+	return world;
+}
+
 const World* WorldObject::GetWorld() const
 {
 	return world;
@@ -59,3 +54,25 @@ WorldObject::WorldObject(ObjectHandle objectHandle, UpdateParticipation updatePa
 }
 
 WorldObject::~WorldObject() = default;
+
+bool WorldObject::IsUpdateExecutionAnchor(UpdateParticipation participation) const
+{
+	if (world == nullptr)
+	{
+		return false;
+	}
+
+	return 
+		participation == UpdateParticipation::Update ||
+		participation == UpdateParticipation::FinalUpdate;
+}
+
+bool WorldObject::OnDestroy()
+{
+	if (world != nullptr && world->Leave(*this) == false)
+	{
+		return false;
+	}
+
+	return GameObject::OnDestroy();
+}
