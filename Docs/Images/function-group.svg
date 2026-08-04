@@ -1,11 +1,11 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 500" font-family="Segoe UI, Malgun Gothic, Arial, sans-serif">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 516" font-family="Segoe UI, Malgun Gothic, Arial, sans-serif">
   <defs>
     <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
       <path d="M0 0 L10 5 L0 10 z" fill="#6b7280"/>
     </marker>
   </defs>
 
-  <rect x="0" y="0" width="900" height="500" fill="#ffffff"/>
+  <rect x="0" y="0" width="900" height="516" fill="#ffffff"/>
 
   <text x="40" y="35" font-size="20" font-weight="700" fill="#111827">Function Group · 등록 시점 타입 확정</text>
   <text x="40" y="58" font-size="12" fill="#4b5563">타입 판별 비용을 등록 시점에 선불하고, 실행 중에는 RTTI · kind switch · dynamic_cast를 사용하지 않습니다.</text>
@@ -71,5 +71,6 @@
   <line x1="292" y1="434" x2="308" y2="434" stroke="#6b7280" marker-end="url(#arrow)"/>
   <line x1="562" y1="434" x2="578" y2="434" stroke="#6b7280" marker-end="url(#arrow)"/>
 
-  <text x="40" y="486" font-size="11" fill="#4b5563">측정 기준선: Object 10000 구성에서 프레임당 약 14,988회 실행, Debug 빌드 기준 프레임 비용 증가 약 0.04ms.</text>
+  <text x="40" y="480" font-size="11" fill="#4b5563">측정 기준선: Object 10000 · 프레임당 14,988회 실행 · 실행 대상이 없는 baseline 대비 +0.075ms (호출당 5.0ns, Debug).</text>
+  <text x="40" y="496" font-size="11" fill="#4b5563">같은 워크로드를 기반 클래스로 바인딩하면 +0.197ms (호출당 13.1ns). 등록 시점 타입 확정의 효과는 실행 비용 기준 약 2.6배.</text>
 </svg>

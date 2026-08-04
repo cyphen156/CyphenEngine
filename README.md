@@ -85,6 +85,7 @@ Debug 빌드 기준으로 다음 흐름을 확인합니다.
 
 - RuntimeTests: `PASS=201 / FAIL=0`
 - Runtime 1 / World 3 / Object 10000 구성에서 프레임당 약 15000회 실행 참여 유지
+- 실행 대상이 없는 baseline 대비 프레임 비용 증가 `+0.075ms`(호출당 5.0ns, Debug)
 - Update 실행 단계 참여 조합 48건(16조합 × 3계열)이 선언한 단계만 실행하는지 확인
 
 ## 문서
