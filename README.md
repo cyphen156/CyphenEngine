@@ -24,7 +24,7 @@ CyphenEngine은 Unreal Engine처럼 엔진 중심의 저수준 제어와 명확�
 
 ## 현재 상태
 
-현재 main 브랜치는 #3 Linux 포팅 검증을 마치고 #4 2D 월드 개발 단계로 넘어간 상태입니다.
+현재 main 브랜치는 #3 Linux 포팅 검증을 마친 기준선입니다. 현재 개발 브랜치 `#4-2D-월드-개발`은 #4_15까지 진행되어 Runtime / World 소속과 계층형 OOP Update 실행 참여 경계를 검증한 상태입니다.
 
 완료된 큰 흐름은 다음과 같습니다.
 
@@ -86,7 +86,7 @@ Debug 빌드 기준으로 다음 흐름을 확인합니다.
 - RuntimeTests: `PASS=201 / FAIL=0`
 - Runtime 1 / World 3 / Object 10000 구성에서 프레임당 약 15000회 실행 참여 유지
 - 실행 대상이 없는 baseline 대비 프레임 비용 증가 `+0.075ms`(호출당 5.0ns, Debug)
-- 바인딩 방식과 실행 중 타입 검증을 2×2로 교차 측정한 결과 최악 조건 대비 실행 비용 약 5.8배 절감
+- 현재 구현인 구체 타입 바인딩 + `static_cast`를 기준으로 나머지 세 조건을 임시 구현해 2×2 교차 측정했으며, 현재 정상 경로가 최악 조건보다 약 5.8배 낮은 실행 비용임을 확인
 - Tick 구간만 직접 계측 시 실행 대상이 없을 때 프레임당 고정 비용 153ns (Release)
 - Update 실행 단계 참여 조합 48건(16조합 × 3계열)이 선언한 단계만 실행하는지 확인
 
@@ -108,7 +108,7 @@ README는 프로젝트 소개와 현재 방향만 다룹니다. 세부 구현 �
 - Mesh / Material 기초 구조 추가
 - FrameQueue와 렌더 제출 경계 정리
 - Runtime / Editor 책임 분리
-- Windows / Linux 양쪽에서 유지 가능한 renderer 경계 보강
+- Dx11 / Vulkan Renderer backend의 실제 그래픽스 API 구현 확장
 - Function Group 실행 우선순위 Scheduler와 활성 상태 반영 정책 결정
 - World Loop의 Object(OOP) + 런타임 enroll된 System(DOD) 병존 실행 경계 구현
 

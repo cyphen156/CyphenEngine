@@ -6,8 +6,8 @@
 // 빌드 시스템이 주입한 TARGET_PLATFORM_* 매크로를 기준으로
 // 엔진 내부에서 사용할 PLATFORM_* 매크로를 확정합니다.
 //
-// 현재는 vcxproj PreprocessorDefinitions에서 TARGET_PLATFORM_WINDOWS를
-// 수동 주입합니다.
+// Visual Studio 프로젝트와 CMake의 CyphenTarget 규칙이 대상 플랫폼에 맞는
+// TARGET_PLATFORM_* 매크로를 주입합니다.
 // ============================================================================
 
 #if (defined(TARGET_PLATFORM_WINDOWS) + defined(TARGET_PLATFORM_LINUX) + defined(TARGET_PLATFORM_ANDROID) + defined(TARGET_PLATFORM_MAC)) != 1

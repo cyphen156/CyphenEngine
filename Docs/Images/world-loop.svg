@@ -49,17 +49,21 @@
   <line x1="340" y1="249" x2="368" y2="249" stroke="#6b7280" marker-end="url(#arrow)"/>
   <line x1="530" y1="249" x2="558" y2="249" stroke="#6b7280" marker-end="url(#arrow)"/>
 
-  <text x="40" y="323" font-size="14" font-weight="700" fill="#111827">서로 분리된 세 관계</text>
+  <text x="40" y="323" font-size="14" font-weight="700" fill="#111827">서로 분리된 네 관계</text>
 
-  <rect x="40" y="338" width="250" height="58" rx="7" fill="#eaf2ff" stroke="#2f6fed"/>
-  <text x="165" y="362" font-size="12.5" font-weight="600" fill="#111827" text-anchor="middle">Outer / SubObject</text>
-  <text x="165" y="381" font-size="11" fill="#4b5563" text-anchor="middle">Object 종속 수명</text>
+  <rect x="40" y="338" width="190" height="58" rx="7" fill="#eaf2ff" stroke="#2f6fed"/>
+  <text x="135" y="362" font-size="12.5" font-weight="600" fill="#111827" text-anchor="middle">Outer / SubObject</text>
+  <text x="135" y="381" font-size="11" fill="#4b5563" text-anchor="middle">Object 종속 수명</text>
 
-  <rect x="325" y="338" width="250" height="58" rx="7" fill="#f1f3f5" stroke="#6b7280"/>
-  <text x="450" y="362" font-size="12.5" font-weight="600" fill="#111827" text-anchor="middle">World Join / Leave</text>
-  <text x="450" y="381" font-size="11" fill="#4b5563" text-anchor="middle">World 소속 · Transform SSOT</text>
+  <rect x="250" y="338" width="190" height="58" rx="7" fill="#eaf2ff" stroke="#2f6fed"/>
+  <text x="345" y="362" font-size="12.5" font-weight="600" fill="#111827" text-anchor="middle">Runtime Admit / Leave</text>
+  <text x="345" y="381" font-size="11" fill="#4b5563" text-anchor="middle">실행 컨텍스트 소속</text>
 
-  <rect x="610" y="338" width="250" height="58" rx="7" fill="#fff4d6" stroke="#c98a00" stroke-dasharray="5 4"/>
-  <text x="735" y="362" font-size="12.5" font-weight="600" fill="#111827" text-anchor="middle">Update / System 참여</text>
-  <text x="735" y="381" font-size="11" fill="#4b5563" text-anchor="middle">UpdateManager · System은 후속</text>
+  <rect x="460" y="338" width="190" height="58" rx="7" fill="#f1f3f5" stroke="#6b7280"/>
+  <text x="555" y="362" font-size="12.5" font-weight="600" fill="#111827" text-anchor="middle">World Join / Leave</text>
+  <text x="555" y="381" font-size="11" fill="#4b5563" text-anchor="middle">World 소속 · Transform SSOT</text>
+
+  <rect x="670" y="338" width="190" height="58" rx="7" fill="#fff4d6" stroke="#c98a00" stroke-dasharray="5 4"/>
+  <text x="765" y="362" font-size="12.5" font-weight="600" fill="#111827" text-anchor="middle">Update / System 참여</text>
+  <text x="765" y="381" font-size="11" fill="#4b5563" text-anchor="middle">UpdateManager · System 후속</text>
 </svg>

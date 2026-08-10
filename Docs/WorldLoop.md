@@ -12,13 +12,14 @@ CyphenEngine World는 순수 ECS가 아닙니다. OOP Object를 기본 정의 �
 
 ![Runtime 다섯 단계와 World 세 단계, Object 수명·World 소속·실행 참여를 분리한 현재 World Loop 경계](Images/world-loop.svg)
 
-세 관계는 서로 자동 전파하지 않습니다.
+다음 네 관계는 같은 상태가 아니며, 한 관계만으로 다른 관계를 자동 결정하지 않습니다.
 
 - `Outer / SubObject`: Object의 종속 수명
+- `GameRuntime Admit / Leave`: GameObject 서브트리의 실행 컨텍스트 소속
 - `World Join / Leave`: WorldObject의 논리 공간 소속과 Transform 정본
 - `Update / System 참여`: UpdateManager가 관리하는 실행 관계
 
-관계 변경은 실행 참여를 자동으로 결정하지 않습니다. 다만 Runtime 소속이 확정되는 경로(`Admit`, `Attach`, `Join`)에서 이미 선언된 참여를 실현하고, 이탈 경로(`Leave`, `Detach`, `Destroy`)에서 해제합니다.
+관계 변경은 UpdateParticipation 선언을 새로 결정하지 않습니다. 다만 Runtime 또는 World 문맥이 확정되는 경로(`Admit`, `Attach`, `Join`)에서 이미 선언된 참여를 실현하고, 문맥 이탈 경로(`Leave`, `Detach`, `Destroy`)에서 해당 실행 참여를 해제합니다.
 
 ![Attach·Detach·Admit·World Leave·Runtime Leave·Destroy가 네 관계를 각각 어떻게 바꾸는지 정리한 표](Images/object-relations.svg)
 
@@ -56,7 +57,7 @@ FinalUpdate
 
 ## 실행 참여 등록
 
-`UpdateParticipation`은 실행 능력의 선언이고, `UpdateFunction`은 그 선언을 실행 그룹에 반영한 결과입니다. 둘은 같은 상태가 아닙니다.
+`UpdateParticipation`은 실행 단계 등록 의사의 불변 선언이고, `UpdateFunction`은 그 선언을 실행 그룹에 반영하기 위한 전달값입니다. 함수 구현 여부와 참여 선언, 실제 그룹 등록은 서로 다른 계약입니다.
 
 GameRuntime마다 `UpdateManager` 하나가 Runtime-global 그룹과 각 World의 World-local 그룹 수명을 소유합니다. 실행은 UpdateManager가 하지 않습니다. GameRuntime과 World가 자신에게 귀속된 읽기 전용 그룹을 직접 순회합니다.
 
@@ -85,7 +86,7 @@ Object 10000 · 프레임당 14,988회      0.167ms   (+0.075ms · 호출당 5.0
 
 `#4_1`부터 `#4_14`까지는 실행 대상이 없는 동안 프레임 비용이 baseline에서 변하지 않았습니다. Function Group 구조를 도입한 `#4_13` 시점에도 측정 가능한 상시 비용은 없었고, 비용은 등록된 실행 대상 수에만 비례했습니다.
 
-두 설계 결정의 값을 분리하기 위해 바인딩 방식과 캐스팅 방식을 2×2로 교차 측정했습니다. 네 조건 모두 실행 횟수와 테스트 결과가 동일했고 측정 대상 코드만 달랐습니다.
+두 설계 결정의 값을 분리하기 위해 바인딩 방식과 캐스팅 방식을 2×2로 교차 측정했습니다. A인 구체 타입 바인딩 + `static_cast`는 현재 구현이며, B/C/D를 위한 변경만 비교용으로 임시 적용한 뒤 측정 후 제거했습니다. 네 조건 모두 실행 횟수와 테스트 결과가 동일했고 측정 대상 코드만 달랐습니다.
 
 ![바인딩 방식과 캐스팅 방식을 교차한 2x2 실행 비용 매트릭스](Images/execution-cost-matrix.svg)
 

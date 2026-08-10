@@ -14,11 +14,10 @@
 // ----------------------------------------------------------------------------
 // Renderer와 선택된 Renderer 구현 DLL 사이의 ABI 계약입니다.
 //
-// #2_5 추가:
-//   - executeCommandList
-//
-// #2_6 Debug 추가:
-//   - executeResourceCommandList
+// createRenderer / destroyRenderer는 backend 실행 인스턴스 수명을 연결합니다.
+// executeCommandList는 RenderCommand IR을 backend에 전달합니다.
+// Debug 빌드의 executeDebugResourceCommandList는 정식 Resource/RHI 경계가
+// 들어오기 전 Texture2D 업로드를 검증하는 bootstrap bridge입니다.
 //
 // 주의:
 //   - 함수표는 기능마다 늘리지 않습니다.
@@ -68,9 +67,8 @@ struct RendererModuleApi
 	ExecuteCommandListFunction executeCommandList = nullptr;
 
 #ifdef _DEBUG
-	// #2_6 debug resource bridge:
-	// ResourceCommandList is routed through Renderer backend only until
-	// Resource/RHI module owns GPU resource uploads.
+	// 정식 Resource/RHI 계층이 GPU resource upload를 소유하기 전까지 사용하는
+	// Debug bootstrap bridge입니다.
 	ExecuteDebugResourceCommandListFunction executeDebugResourceCommandList = nullptr;
 #endif
 };

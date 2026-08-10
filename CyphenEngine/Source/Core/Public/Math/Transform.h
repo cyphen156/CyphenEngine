@@ -13,7 +13,7 @@
 // 위치(Vector) + 회전(Quaternion) + 스케일(Vector)을 들고,
 // 4x4 월드 행렬은 필요할 때 파생한다(저장하지 않는다).
 //
-// #4 2D 월드는 평면 제약으로 사용한다: z 고정, Z축 회전만.
+// 현재 2D World에서는 평면 제약으로 사용합니다: z 고정, Z축 회전만.
 // 편의 생성자 FromPlanar가 그 제약을 표현한다.
 // ============================================================================
 
@@ -37,7 +37,7 @@ struct Transform
 		return Transform(Vector::Zero(), Quaternion::Identity(), Vector::One());
 	}
 
-	// #4 평면 편의 생성자입니다. XY 평면 위치 + Z축 회전 + XY 스케일.
+	// 2D 평면 편의 생성자입니다. XY 평면 위치 + Z축 회전 + XY 스케일.
 	static Transform FromPlanar(const Vector2& planarPosition, float rotationZ, const Vector2& planarScale)
 	{
 		return Transform(

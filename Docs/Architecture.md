@@ -3,10 +3,10 @@
 이 문서는 README에서 줄인 구조 설명을 보충하는 시각화 문서입니다.
 세부 결정과 작업 이력은 `CyphenEngine/DevLog/`를 기준으로 관리합니다.
 
-현재 main 기준은 #3 Linux 포팅 검증 이후 상태입니다.
+main 기준은 #3 Linux 포팅 검증을 마친 상태입니다. 현재 개발 브랜치 `#4-2D-월드-개발`은 #4_15까지 진행되어 Runtime / World 소속과 계층형 OOP Update 실행 참여 경계를 포함합니다.
 Windows에서는 Dx11 / Vulkan backend를, Linux에서는 Vulkan backend를 같은 Renderer Module ABI 위에서 실행하는 데까지 확인했습니다.
 
-> 색 규칙: 파란색 = 현재 구현 경로, 노란색 = 다음 단계(#4), 회색 = 예정.
+> 색 규칙: 파란색 = 현재 구현 경로, 노란색 = 다음 확장 대상, 회색 = 예정.
 
 ## 전체 계층 방향
 
@@ -32,7 +32,7 @@ flowchart TB
     classDef next fill:#fff4d6,stroke:#c98a00,color:#111827;
     classDef future fill:#f1f3f5,stroke:#9ca3af,color:#111827;
     class Launch,Engine,Modules,Core,Content,Resource,HAL,Platform,Windows,Linux current;
-    class Runtime next;
+    class Runtime current;
     class Editor future;
 ```
 
@@ -41,8 +41,7 @@ flowchart TB
 - HAL은 Core / Engine 내부 구현과 Platform 구현 사이의 내부 계약입니다.
 - Content는 파일 바이트를 엔진 중간 표현으로 해석합니다.
 - Resource는 CPU-side 리소스 표현을 관리하고, GPU resource 생성은 Renderer backend가 담당합니다.
-- Runtime은 #4에서 2D 월드 표시 흐름을 올리며 구체화할 대상입니다.
-- 현재 Runtime은 ObjectManager, Object 종속 수명, WorldObject Join/Leave와 GameRuntime / World 실행 단계 경계를 포함합니다.
+- Runtime은 #4_15까지 ObjectManager, Object 종속 수명, Runtime / World 소속, WorldObject Join/Leave와 GameRuntime / World 실행 단계 경계를 포함합니다.
 - UpdateManager가 Runtime-global과 World-local Function Group의 등록·해제와 수명을 관리합니다.
 - 실행 우선순위 Scheduler와 System enroll 실행 기계는 다음 Runtime 확장 대상입니다.
 
@@ -119,23 +118,24 @@ flowchart TB
 - Linux main 기준으로 `CyphenEngine`, `CyphenRendererVulkan.so`, SPIR-V shader 산출물을 같은 출력 경로에 배치합니다.
 - module export 규칙은 Windows `__declspec(dllexport)`와 Linux `visibility default`를 공통 매크로 뒤에서 갈라 처리합니다.
 
-## #4 진입점
+## #4 현재 경계와 다음 확장
 
 ```mermaid
 %%{init: {'flowchart': {'curve': 'linear'}}}%%
 flowchart LR
-    Close3["Linux 포팅 검증 마감"] --> Start4["2D World 개발"]
-    Start4 --> ResourceManager["ResourceManager 정식화"]
-    Start4 --> MeshMaterial["Mesh / Material 기초"]
-    Start4 --> FrameQueue["FrameQueue · 제출 경계"]
-    Start4 --> RuntimeEditor["Runtime / Editor 분리"]
-    Start4 --> RendererStable["Renderer backend 안정화"]
+    Close3["#3 Linux 포팅 검증 마감"] --> Runtime15["#4_15 Runtime · World · OOP Update"]
+    Runtime15 --> ResourceManager["ResourceManager 정식화"]
+    Runtime15 --> MeshMaterial["Mesh / Material 기초"]
+    Runtime15 --> FrameQueue["FrameQueue · 제출 경계"]
+    Runtime15 --> Scheduler["Scheduler · ActivationPivot"]
+    Runtime15 --> SystemEnroll["System Enroll · 안전 지점"]
+    Runtime15 --> RuntimeEditor["Runtime / Editor 분리"]
 
     classDef done fill:#eaf2ff,stroke:#2f6fed,color:#111827;
     classDef next fill:#fff4d6,stroke:#c98a00,color:#111827;
-    class Close3 done;
-    class Start4,ResourceManager,MeshMaterial,FrameQueue,RuntimeEditor,RendererStable next;
+    class Close3,Runtime15 done;
+    class ResourceManager,MeshMaterial,FrameQueue,Scheduler,SystemEnroll,RuntimeEditor next;
 ```
 
-#3(Linux 포팅 검증)을 마감하고 #4로 진입합니다.
-#4의 목표는 debug fixture로 확인한 Texture2D 표시 경로 위에 실제 2D 월드 표시 흐름을 올리는 것입니다.
+#3 Linux 포팅 검증 뒤 #4_15까지 Runtime / World 수명·소속과 OOP Update Function Group을 구성했습니다.
+다음 확장은 이 기준 위에서 실행 우선순위와 활성 제어, System Enroll 안전 지점, 실제 2D 월드 표시 입력을 연결합니다.

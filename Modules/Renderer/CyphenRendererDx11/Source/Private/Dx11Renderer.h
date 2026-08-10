@@ -30,7 +30,13 @@ struct Dx11Texture2D
 //   - D3D11 Device / ImmediateContext / SwapChain 생성
 //   - BackBuffer RenderTargetView 생성
 //   - RenderCommand IR 해석
-//   - Clear / Present 실행
+//   - Clear / TexturedQuad draw / Present 실행
+//   - Debug ResourceCommand의 Texture2D upload / destroy 처리
+//
+// 현재 범위:
+//   - ResourceId 기반 Texture2D table과 textured quad pipeline을 제공합니다.
+//   - 정식 Mesh / Material / ResourceManager와 일반화된 그래픽스 API는 후속
+//     Renderer 구현 확장 범위입니다.
 // ============================================================================
 
 class Dx11Renderer final
@@ -73,13 +79,13 @@ private:
 	Dx11Texture2D* FindTexture2D(ResourceId resourceId);
 
 private:
-	// GPU 리소스 Dx11 디바이스(Buffer / Texture / Shader / RenderTargetView / Pipeline State)
+	// D3D11 GPU resource와 pipeline object를 생성하는 device입니다.
 	Microsoft::WRL::ComPtr<ID3D11Device> device;
 
-	// GPU 명령 실행라인 Context(Bind : Shader / Buffer, Texture / Draw, Dispatch / RenderTargeting / Clear)
+	// Resource binding, draw와 render-target 명령을 실행하는 immediate context입니다.
 	Microsoft::WRL::ComPtr<ID3D11DeviceContext> deviceContext;
 
-	// 실제 네이티브에 연결되는 Chain - 현재 더블 버퍼 사용중
+	// Native Window에 연결된 현재 double-buffer swap chain입니다.
 	Microsoft::WRL::ComPtr<IDXGISwapChain> swapChain;
 
 	// SwapChain BackBuffer에 연결된 출력 Render Target View입니다.

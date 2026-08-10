@@ -14,8 +14,8 @@ struct Texture2D;
 // 이 클래스는 HAL / Platform abstraction이 아니라 Content JPEG codec의
 // Windows provider입니다. WIC / COM 세부 구현을 JPEG provider 내부에 가둡니다.
 //
-// 장기적으로 libjpeg-turbo 같은 provider를 추가하더라도 JpegCodec의 public
-// facade는 유지됩니다.
+// Linux provider는 libjpeg-turbo를 사용하며, 두 플랫폼 구현 모두
+// JpegCodec facade 뒤에서 같은 Texture2D RGBA8 결과 계약을 제공합니다.
 // ============================================================================
 
 class WindowsJpegCodec final

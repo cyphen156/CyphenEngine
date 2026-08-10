@@ -26,7 +26,7 @@
 	- Handle과 StorageSlot의 정체성 / 저장 위치 역할을 분리했습니다.
 	- ObjectManager의 Handle 발급, Registry 단건 조회와 지연 파괴 경계를 구성했습니다.
 	- Object의 Outer/SubObject를 composition과 종속 수명의 단일 정본으로 구성했습니다.
-	- GameObject는 생성 뒤 Runtime에 속하지 않을 수 있으며, Admit으로 하나의 Runtime 소속을 확정하고 파괴할 때만 이탈합니다.
+	- GameObject는 생성 뒤 Runtime에 속하지 않을 수 있으며, Admit으로 하나의 Runtime 소속을 확정합니다. 명시적 GameRuntime::Leave 또는 파괴 시 OnDestroy 경로로 이탈합니다.
 	- GameRuntime은 World를 자동 생성하지 않으며, 명시적으로 생성한 World를 0개 이상 소유합니다.
 	- World는 생성 시점부터 하나의 Runtime에 속하고 다른 Runtime으로 전이할 수 없습니다.
 	- WorldObject는 Runtime 소속과 World 소속을 분리하고 Join / Leave로 Transform 정본을 연결합니다.
@@ -45,7 +45,7 @@
 	- 커밋 시점을 옮겨 가며 측정한 결과 #4_1부터 #4_14까지는 실행 대상이 없는 동안 프레임 비용이 baseline에서 변하지 않았습니다.
 	- Function Group 구조 자체에는 측정 가능한 상시 비용이 없으며, 비용은 등록된 실행 대상 수에만 비례합니다.
 	- Object 10000 구성의 프레임 비용은 baseline 대비 +0.075ms이고 호출당 5.0ns입니다.
-	- 바인딩 방식과 캐스팅 방식을 2x2로 교차 측정한 호출당 실행 비용은 5.0ns / 13.1ns / 20.7ns / 29.0ns입니다.
+	- 현재 구현인 구체 타입 바인딩 + static_cast를 기준으로 B/C/D를 위한 변경을 임시 적용해 2x2 교차 측정한 호출당 실행 비용은 5.0ns / 13.1ns / 20.7ns / 29.0ns입니다. 측정 후 B/C/D 비교 코드는 제거했습니다.
 	- 바인딩 효과와 캐스팅 효과는 서로 영향을 주지 않고 가법으로 합산되므로 두 결정은 독립적으로 평가할 수 있습니다.
 	- 최악 조건과 현재 구현의 차이는 호출당 24ns, 프레임당 0.36ms이며 실행 비용 기준 약 5.8배입니다.
 	- Tick 구간만 직접 계측하면 Release 기준 실행 대상 없음 0.000153ms, Object 10000 0.109565ms입니다.

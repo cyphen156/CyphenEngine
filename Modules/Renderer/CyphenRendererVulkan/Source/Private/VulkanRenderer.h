@@ -21,19 +21,17 @@
 //   - Vulkan Instance / Surface / Device / Swapchain 수명 관리
 //   - RenderCommandList를 Vulkan command buffer 제출로 변환
 //   - Debug ResourceCommandList의 Texture2D 업로드를 VkImage로 변환
-//   - 현재 first-light 범위에서 loaded texture를 full-screen quad로 출력
+//   - ResourceId 기반 Texture2D table과 textured quad pipeline 실행
 //
 // 비책임:
 //   - 파일 I/O / 이미지 코덱 decode
 //   - Engine Frame 생산
 //   - 플랫폼별 native surface 생성 세부 구현
 //   - resize 대응 / swapchain recreate / advanced frame scheduling
+//   - 정식 Mesh / Material / ResourceManager와 일반화된 그래픽스 API
 //
-// #3_3 Windows first-light 단계:
-//   - SDK 헤더/링크 기반 Vulkan 초기화
-//   - Swapchain / RenderPass / Pipeline 생성
-//   - Debug Texture2D UploadResource를 실제 VkImage로 업로드
-//   - DrawTexturedQuad command의 textureId를 렌더링
+// 현재 구현은 Windows와 Linux에서 동일한 Renderer Module ABI와 Vulkan
+// 초기화·Texture2D 표시 경로를 검증한 bootstrap 범위입니다.
 // ============================================================================
 
 // ============================================================================

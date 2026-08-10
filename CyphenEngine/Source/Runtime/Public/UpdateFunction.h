@@ -28,12 +28,13 @@ void ExecuteUpdateFunction(Object* target, double deltaSeconds)
 // ============================================================================
 // UpdateFunction
 // ----------------------------------------------------------------------------
-// 평면 Function Group에 저장되는 Update 실행 데이터입니다.
+// UpdateManager 등록과 해제 요청에 사용하는 임시 전달값입니다.
 //
 // target은 실제 GameObject 또는 Component를 가리킵니다.
 // execute는 target의 구체 타입과 실행 단계를 등록 시점에 확정합니다.
 //
-// Function Group은 저장된 target과 execute를 사용하여 직접 실행합니다.
+// UpdateManager는 execute별 Function Group에 target만 분리해 보관합니다.
+// 실행 시 Function Group에 저장된 target과 execute를 직접 사용합니다.
 // 실행 시 RTTI, kind switch 또는 dynamic_cast를 사용하지 않습니다.
 // ============================================================================
 

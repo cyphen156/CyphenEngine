@@ -28,8 +28,9 @@ using ObjectHandle = Handle<Object>;
 //   - Object 내부의 Handle을 역참조하여 순차 탐색하지 않습니다.
 //
 // Destroy:
-//   - Object::Destroy 요청 시 Object를 활성 Registry에서 즉시 제거합니다.
-//   - Registry에서 제거된 Object를 Destroy Queue에 보관합니다.
+//   - Object::Destroy가 구체 수명 계약과 Outer 관계를 정리한 뒤 성공하면
+//     반환 전에 Object를 활성 Registry에서 제거합니다.
+//   - Registry에서 제거한 Object를 Destroy Queue에 보관합니다.
 //   - Collect 안전 지점에서 실제 소멸자를 호출합니다.
 //
 // Collect:

@@ -2,6 +2,7 @@
 # Source/text types are pinned to LF in the working tree too (eol=lf overrides
 # core.autocrlf), so Windows/MSVC and Linux/WSL2 see identical LF endings.
 * text=auto
+.gitattributes text eol=lf
 
 # Explicit text types — LF in working tree (deterministic across machines)
 *.cpp   text eol=lf
@@ -17,6 +18,7 @@
 *.txt   text eol=lf
 *.json  text eol=lf
 *.xml   text eol=lf
+*.svg   text eol=lf
 *.props text eol=lf
 *.targets text eol=lf
 

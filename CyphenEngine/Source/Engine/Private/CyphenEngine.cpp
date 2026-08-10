@@ -213,7 +213,6 @@ void CyphenEngine::Run()
 	{
 		Time::Tick();
 
-		// TODO:
 		gameRuntime.Tick(Time::DeltaTime());
 
 #ifdef _DEBUG
@@ -223,7 +222,7 @@ void CyphenEngine::Run()
 		}
 #endif
 
-		// 렌더링을 위한 프레임 생산
+		// 현재 Runtime 상태에서 Renderer에 전달할 Frame snapshot을 구성합니다.
 		Frame frame = {};
 		frame.frameNumber = frameNumber++;
 		
@@ -252,22 +251,7 @@ void CyphenEngine::Run()
 		}
 
 #ifdef _DEBUG
-		//// Debug Log Per 1000 FPS
-		//if ((frame.frameNumber % 1000) == 0)
-		//{
-		//	char message[128] = {};
-		//	std::snprintf(
-		//		message,
-		//		sizeof(message),
-		//		"[Renderer] Frame submitted: %llu\n"
-		//		"[Time] ElapsedTime: %.6f\n",
-		//		static_cast<unsigned long long>(
-		//			frame.frameNumber),
-		//		Time::ElapsedTime());
-		//	PRINT_DEBUG_OUTPUT(message);
-		//}
-
-		// Debug Log Per sec(FPS)
+		// 1초 단위로 Engine 제출 프레임률을 기록합니다.
 		const double currentEngineLogTime = Time::ElapsedTime();
 		const double engineLogDeltaTime =
 			currentEngineLogTime - lastEngineLogTime;

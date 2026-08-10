@@ -312,11 +312,7 @@ int main(int argc, char** argv)
 	return EXIT_SUCCESS;
 }
 
-//
-//  함수: MyRegisterClass()
-//
-//  용도: 창 클래스를 등록합니다.
-//
+// Xlib의 thread-safe 호출 조건을 준비하고 기본 Display 연결을 엽니다.
 bool MyRegisterClass()
 {
 	if (XInitThreads() == 0)
@@ -329,16 +325,7 @@ bool MyRegisterClass()
 	return g_display != nullptr;
 }
 
-//
-//   함수: InitInstance(int)
-//
-//   용도: 인스턴스 핸들을 저장하고 주 창을 만듭니다.
-//
-//   주석:
-//
-//        이 함수를 통해 인스턴스 핸들을 전역 변수에 저장하고
-//        주 프로그램 창을 만든 다음 표시합니다.
-//
+// X11 main window를 생성하고 입력·크기 변경·종료 이벤트를 연결합니다.
 Window InitInstance(int showCommand)
 {
 	(void)showCommand;

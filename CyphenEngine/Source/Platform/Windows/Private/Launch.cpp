@@ -156,19 +156,19 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 	_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
 #endif
 
-	// 전역 문자열을 초기화합니다.
+	// Window title과 Win32 window class 이름을 resource에서 읽습니다.
 	LoadStringW(hInstance, IDS_APP_TITLE, szTitle, MAX_LOADSTRING);
 	LoadStringW(hInstance, IDC_CYPHENENGINE, szWindowClass, MAX_LOADSTRING);
 	MyRegisterClass(hInstance);
 
-	// 애플리케이션 초기화를 수행합니다:
+	// Win32 main window를 생성하고 표시합니다.
 	g_hMainWindow = InitInstance(hInstance, nCmdShow);
 	if (!g_hMainWindow)
 	{
 		return FALSE;
 	}
 
-	// 초기화
+	// 메뉴 accelerator table을 로드합니다.
 	HACCEL hAccelTable = LoadAccelerators(hInstance, MAKEINTRESOURCE(IDC_CYPHENENGINE));
 
 #ifdef _DEBUG
@@ -252,11 +252,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 #endif
 	return (int)msg.wParam;
 }
-//
-//  함수: MyRegisterClass()
-//
-//  용도: 창 클래스를 등록합니다.
-//
+// CyphenEngine main window의 Win32 class를 등록합니다.
 ATOM MyRegisterClass(HINSTANCE hInstance)
 {
 	WNDCLASSEXW wcex;
@@ -278,17 +274,7 @@ ATOM MyRegisterClass(HINSTANCE hInstance)
 	return RegisterClassExW(&wcex);
 }
 
-//
-//   함수: InitInstance(HINSTANCE, int)
-//
-//   용도: 인스턴스 핸들을 저장하고 주 창을 만듭니다.
-//
-//   주석:
-//
-//        이 함수를 통해 인스턴스 핸들을 전역 변수에 저장하고
-//        주 프로그램 창을 만든 다음 표시합니다.
-//
-
+// Win32 application instance를 보관하고 main window를 생성·표시합니다.
 HWND InitInstance(HINSTANCE hInstance, int nCmdShow)
 {
 	hInst = hInstance; // 인스턴스 핸들을 전역 변수에 저장합니다.
@@ -307,16 +293,7 @@ HWND InitInstance(HINSTANCE hInstance, int nCmdShow)
 	return hWnd;
 }
 
-//
-//  함수: WndProc(HWND, UINT, WPARAM, LPARAM)
-//
-//  용도: 주 창의 메시지를 처리합니다.
-//
-//  WM_COMMAND  - 애플리케이션 메뉴를 처리합니다.
-//  WM_PAINT    - 주 창을 그립니다.
-//  WM_DESTROY  - 종료 메시지를 게시하고 반환합니다.
-//
-//
+// Main window의 메뉴, paint와 종료 메시지를 처리합니다.
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
 	switch (message)

@@ -47,7 +47,7 @@ CyphenEngine_World_Loop_Rule
 		Enrolled System은 RuntimeEntry / ComponentDataStorage 기반으로 다수·균일·hot-path 행동을 일괄 처리한다.
 		Object System은 즉시성을 기대하는 영역이므로 기본적으로 병렬 compute graph에 넣지 않는다.
 		Enrolled System은 안정된 입력을 기준으로 compute하고, 결과는 정해진 apply point에서만 World에 반영한다.
-		World 소속, Object 종속 수명과 Update/System 실행 참여는 서로 다른 관계다.
+		Object 종속 수명, GameRuntime 소속, World 소속과 Update/System 실행 참여는 서로 다른 관계다.
 		World에 Join했다고 Update 또는 System 참여가 자동으로 결정되지는 않는다.
 
 	3. System (실행 단위)
@@ -108,8 +108,8 @@ CyphenEngine_World_Loop_Rule
 		후속 세부 phase를 추가하더라도 Runtime 다섯 단계와 World 세 단계의 상위 경계는 유지한다.
 
 	10. OOP Update 실행 참여 (#4_15 확정)
-		UpdateParticipation은 실행 능력의 선언이고 UpdateFunction은 그 선언을 실행 그룹에 반영한 결과다.
-		둘은 같은 상태가 아니며, 소속 관계 변경이 참여 선언을 새로 결정하지 않는다.
+		UpdateParticipation은 실행 단계 등록 의사의 불변 선언이고 UpdateFunction은 그 선언을 실행 그룹에 반영하기 위한 전달값이다.
+		함수 구현 여부, 참여 선언과 실제 그룹 등록은 같은 상태가 아니며, 소속 관계 변경이 참여 선언을 새로 결정하지 않는다.
 		GameRuntime마다 UpdateManager 하나가 Runtime-global 그룹과 각 World의 World-local 그룹 수명을 소유한다.
 		UpdateManager는 실행하지 않는다. GameRuntime과 World가 자신에게 귀속된 읽기 전용 그룹을 직접 순회한다.
 		같은 실행 함수를 공유하는 대상은 하나의 Function Group으로 묶는다.
@@ -130,6 +130,7 @@ CyphenEngine_World_Loop_Rule
 			Object 10000 구성은 baseline 대비 +0.075ms이며 호출당 5.0ns다.
 
 			두 설계 결정의 값을 분리하기 위해 바인딩 방식과 캐스팅 방식을 2x2로 교차 측정했다.
+			A인 구체 타입 바인딩 + static_cast는 현재 구현이며, B/C/D를 위한 변경만 비교용으로 임시 적용한 뒤 측정 후 제거했다.
 			네 조건 모두 실행 횟수와 테스트 결과가 동일했고 측정된 코드 차이만 달랐다.
 
 				호출당 실행 비용        static_cast    dynamic_cast
@@ -180,13 +181,17 @@ CyphenEngine_Runtime_World_Snapshot_Rule
 		현재 World는 simulationTick, simulationTime, 원점 Chunk와 ComponentDataStorage<Transform, ObjectHandle>을 소유한다.
 		World는 Join한 WorldObject의 비소유 참조를 유지하며 WorldObject의 메모리와 Object 수명은 소유하지 않는다.
 		GameObject는 ObjectManager가 생성한 뒤 Runtime에 속하지 않은 상태로 존재할 수 있다.
-		GameRuntime::Admit은 생성된 루트 GameObject의 Runtime 소속을 한 번 확정하며 다른 Runtime으로의 전이를 허용하지 않는다.
+		GameRuntime::Admit은 전달받은 서브트리의 GameObject를 같은 Runtime의 평면 장부에 등록하며 다른 Runtime으로의 암묵적 전이를 허용하지 않는다.
 		GameObject는 Runtime에 Admit된 뒤에도 World에 Join하지 않은 상태로 존재할 수 있다.
 		World::Join은 같은 Runtime에 Admit된 WorldObject의 참조와 Transform 정본을 연결하고 Leave는 World 소속만 해제한다.
 		World::Spawn은 NewObject, Runtime Admit, World Join을 합성하며 복제 API가 아니다.
-		Runtime 소속 해제는 GameObject 파괴 경로에서만 수행한다.
+		GameRuntime::Leave는 객체를 파괴하지 않고 서브트리의 World 소속, 실행 참여와 Runtime 소속을 함께 해제한다.
+		파괴 경로는 OnDestroy에서 GameRuntime::Leave를 호출해 같은 해제 계약을 사용한다.
+		일반 GameObject의 Detach는 Runtime 소속을 유지하고 물려받은 World-local 실행 참여만 제거한다.
+		WorldObject의 Detach는 독립 World anchor가 될 수 있으므로 World와 Runtime 소속 및 실행 참여를 유지한다.
+		Component의 Detach는 Component와 그 아래 GameObject가 독립 실행 루트를 구성할 수 없으므로 실행 참여와 Runtime 소속을 제거한다.
 		ObjectManager는 ObjectHandle 발급, 활성 Registry, 지연 파괴를 담당하고 Object의 Outer/SubObject는 종속 수명만 표현한다.
-		Update와 System 실행 참여 기계장치는 현재 구현하지 않는다.
+		OOP Update 실행 참여는 #4_15 UpdateManager와 Function Group으로 구현했다. System Enroll 저장소와 안전 지점은 아직 구현하지 않았다.
 
 	3. Live World, Snapshot, Render Frame
 		World는 여러 tick에 걸쳐 유지되는 현재의 가변 simulation state다.
