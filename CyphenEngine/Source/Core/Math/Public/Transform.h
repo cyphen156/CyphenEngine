@@ -1,9 +1,9 @@
 #pragma once
 
-#include "Core/Public/Math/Vector.h"
-#include "Core/Public/Math/Vector2.h"
-#include "Core/Public/Math/Quaternion.h"
-#include "Core/Public/Math/Matrix4x4.h"
+#include "Core/Math/Public/Vector.h"
+#include "Core/Math/Public/Vector2.h"
+#include "Core/Math/Public/Quaternion.h"
+#include "Core/Math/Public/Matrix4x4.h"
 
 // ============================================================================
 // Transform

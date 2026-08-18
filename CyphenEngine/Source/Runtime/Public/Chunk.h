@@ -1,7 +1,7 @@
 #pragma once
 
-#include "Core/Public/Math/Coordinate.h"
-#include "Core/Public/Math/Vector.h"
+#include "Core/Math/Public/Coordinate.h"
+#include "Core/Math/Public/Vector.h"
 
 struct Chunk
 {

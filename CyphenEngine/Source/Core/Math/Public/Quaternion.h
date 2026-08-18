@@ -1,7 +1,7 @@
 #pragma once
 
-#include "Core/Public/Math/Mathf.h"
-#include "Core/Public/Math/Vector.h"
+#include "Core/Math/Public/Mathf.h"
+#include "Core/Math/Public/Vector.h"
 
 // ============================================================================
 // Quaternion
